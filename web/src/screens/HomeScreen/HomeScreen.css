@@ -1,0 +1,47 @@
+.homescreen {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  /* Top padding clears the floating status bar; bottom is small so the dock
+     sits low on the screen. */
+  padding: calc(var(--safe-top) + 0.6em) 1.6em 0.55em;
+  animation: home-in 0.32s ease both;
+}
+
+/* Subtle reveal when arriving from the lock screen. */
+@keyframes home-in {
+  from {
+    opacity: 0;
+    transform: scale(1.06);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* 4-column app grid. */
+.homescreen__grid {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-auto-rows: min-content;
+  row-gap: 1.5em;
+  column-gap: 0.6em;
+  align-content: start;
+  padding-top: 0.8em;
+}
+
+/* Frosted dock pinned to the bottom. */
+.homescreen__dock {
+  flex: 0 0 auto;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  column-gap: 0.6em;
+  padding: 0.9em 0.7em;
+  border-radius: 1.8em;
+  background: rgba(255, 255, 255, 0.16);
+  backdrop-filter: blur(1.2em);
+  -webkit-backdrop-filter: blur(1.2em);
+}

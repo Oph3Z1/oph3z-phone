@@ -1,0 +1,341 @@
+/* ===========================================================================
+   Photos app
+   =========================================================================== */
+.photos {
+  position: absolute;
+  inset: 0;
+  background: #000;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ---- Header (large title + count + Select) ------------------------------ */
+.photos__header {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  padding: calc(var(--safe-top) + 0.4em) 0.9em 0.5em;
+}
+.photos__title {
+  font-size: 2em;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+}
+.photos__count {
+  font-size: 0.8em;
+  color: #8e8e93;
+  margin-top: 0.15em;
+}
+.photos__select {
+  color: #0a84ff;
+  font-size: 1em;
+  font-weight: 500;
+  padding: 0.2em 0.1em;
+}
+
+/* ---- Grid --------------------------------------------------------------- */
+.photos__scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  padding-bottom: calc(var(--safe-bottom) + 5em);
+}
+.photos__scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.ph-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.12em;
+  /* Align the grid with the header (same left/right inset). */
+  padding: 0 0.9em;
+}
+
+.ph-thumb {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+  overflow: hidden;
+  background: #1c1c1e;
+  display: block;
+}
+.ph-thumb__media {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  pointer-events: none;
+  transition: transform 0.18s ease, filter 0.18s ease;
+}
+/* Hover zoom (within the tile, since the thumb clips overflow). */
+.ph-thumb:hover:not(.is-selected) .ph-thumb__media {
+  transform: scale(1.07);
+  filter: brightness(1.06);
+}
+.ph-thumb.is-selected .ph-thumb__media {
+  transform: scale(0.86);
+  transition: transform 0.1s ease;
+}
+.ph-thumb__video {
+  position: absolute;
+  right: 0.35em;
+  bottom: 0.3em;
+  color: #fff;
+  font-size: 1em;
+  filter: drop-shadow(0 0.05em 0.2em rgba(0, 0, 0, 0.6));
+}
+.ph-thumb__check {
+  position: absolute;
+  right: 0.3em;
+  bottom: 0.3em;
+  width: 1.3em;
+  height: 1.3em;
+  border-radius: 50%;
+  border: 0.12em solid #fff;
+  background: rgba(0, 0, 0, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 0.8em;
+}
+.ph-thumb__check.is-on {
+  background: #0a84ff;
+  border-color: #0a84ff;
+}
+
+.ph-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 60vh;
+  gap: 0.4em;
+  color: #8e8e93;
+  text-align: center;
+  padding: 2em;
+}
+.ph-empty__title {
+  font-size: 1.1em;
+  font-weight: 600;
+  color: #c7c7cc;
+}
+
+/* ---- Floating glass nav (iOS-18) ---------------------------------------- */
+.ph-nav {
+  position: absolute;
+  left: 0.7em;
+  right: 0.7em;
+  bottom: calc(var(--safe-bottom) + 0.35em);
+  z-index: 6;
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+}
+
+/* shared glass look */
+.ph-nav__segment,
+.ph-nav__search,
+.ph-nav__searchbox {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.05));
+  backdrop-filter: blur(3.2em) saturate(220%) brightness(1.18);
+  -webkit-backdrop-filter: blur(3.2em) saturate(220%) brightness(1.18);
+  border: 0.5px solid rgba(255, 255, 255, 0.2);
+  box-shadow:
+    0 0.5em 1.6em rgba(0, 0, 0, 0.45),
+    inset 0 0.7px 0 rgba(255, 255, 255, 0.4);
+}
+
+.ph-nav__segment {
+  flex: 1 1 auto;
+  display: flex;
+  border-radius: 1.7em;
+  padding: 0.28em;
+  gap: 0.2em;
+}
+.ph-nav__segment button {
+  flex: 1;
+  padding: 0.55em 0;
+  border-radius: 1.4em;
+  color: #e6e6ea;
+  font-size: 0.85em;
+  font-weight: 600;
+}
+.ph-nav__segment button.is-active {
+  background: rgba(255, 255, 255, 0.22);
+  color: #fff;
+}
+
+.ph-nav__search {
+  flex: 0 0 auto;
+  width: 2.5em;
+  height: 2.5em;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 1em;
+  transition: transform 0.12s ease;
+}
+.ph-nav__search:active {
+  transform: scale(0.9);
+}
+
+/* expanded search state — animates in from the right (like iOS expand). */
+.ph-nav--search .ph-nav__searchbox {
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  gap: 0.4em;
+  border-radius: 1.5em;
+  padding: 0.6em 0.9em;
+  color: #c7c7cc;
+  font-size: 1em;
+  transform-origin: right center;
+  animation: ph-search-in 0.26s cubic-bezier(0.32, 0.72, 0, 1) both;
+}
+.ph-nav--search .ph-nav__cancel {
+  animation: ph-fade-in 0.3s ease both;
+}
+@keyframes ph-search-in {
+  from {
+    transform: translateX(1.6em);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+@keyframes ph-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.ph-nav__searchbox input {
+  flex: 1;
+  background: none;
+  border: none;
+  outline: none;
+  color: #fff;
+  font-size: 1em;
+}
+.ph-nav__searchbox input::placeholder {
+  color: #c7c7cc;
+}
+.ph-nav__cancel {
+  flex: 0 0 auto;
+  color: #0a84ff;
+  font-weight: 500;
+  font-size: 0.95em;
+}
+
+/* ---- Select action bar -------------------------------------------------- */
+.photos__selectbar {
+  position: absolute;
+  left: 0.7em;
+  right: 0.7em;
+  bottom: calc(var(--safe-bottom) + 0.35em);
+  z-index: 6;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.7em 1.1em;
+  border-radius: 1.6em;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.05));
+  backdrop-filter: blur(3.2em) saturate(220%) brightness(1.18);
+  -webkit-backdrop-filter: blur(3.2em) saturate(220%) brightness(1.18);
+  border: 0.5px solid rgba(255, 255, 255, 0.2);
+}
+.photos__selectbar button {
+  display: flex;
+  align-items: center;
+  gap: 0.3em;
+  color: #0a84ff;
+  font-size: 0.85em;
+  font-weight: 500;
+}
+.photos__selectbar button:disabled {
+  color: #5a5a5e;
+}
+.photos__selectbar-danger {
+  color: #ff453a !important;
+}
+.photos__selectbar-danger:disabled {
+  color: #5a5a5e !important;
+}
+.photos__selectcount {
+  font-size: 0.8em;
+  color: #c7c7cc;
+}
+
+/* ---- Fullscreen viewer -------------------------------------------------- */
+.ph-viewer {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  background: #000;
+  display: flex;
+  flex-direction: column;
+  touch-action: none;
+}
+.ph-viewer__bar {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: calc(var(--safe-top) + 0.3em) 0.7em 0.4em;
+  color: #fff;
+}
+.ph-viewer__btn {
+  font-size: 1.5em;
+  color: #fff;
+  padding: 0.1em;
+}
+.ph-viewer__btn--danger {
+  color: #ff453a;
+  font-size: 1.3em;
+}
+.ph-viewer__count {
+  font-size: 0.85em;
+  color: #c7c7cc;
+}
+.ph-viewer__stage {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+.ph-viewer__media {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  pointer-events: auto;
+}
+.ph-viewer__media--zoom {
+  cursor: zoom-in;
+}
+.ph-viewer__actions {
+  flex: 0 0 auto;
+  display: flex;
+  justify-content: center;
+  padding: 0.6em 0 calc(var(--safe-bottom) + 0.8em);
+}
+.ph-viewer__fav {
+  font-size: 1.6em;
+  color: #fff;
+  padding: 0.2em 0.6em;
+}
+.ph-viewer__fav.is-on {
+  color: #ff375f;
+}

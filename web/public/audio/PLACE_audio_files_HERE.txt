@@ -1,0 +1,14 @@
+Call / phone sound files (copied into web/build/ on `npm run build`).
+
+Played by the UI (2D, caller hears only) — base name + .ogg/.mp3/.wav:
+  ringback  -> the "ringing..." tone the CALLER hears while waiting (loops)
+  end       -> short beep when a call ends
+  busy      -> tone for Busy / Unavailable / failed calls
+
+Played by xsound (3D world sound, callee + nearby players hear it):
+  ringtone  -> incoming call ringtone.
+              Either drop `ringtone.mp3` here (served at
+              https://cfx-nui-oph3z-phone/web/build/audio/ringtone.mp3)
+              or set Config.RingtoneUrl in config.lua to any audio URL.
+
+Other (future use): CameraShot, notify, etc.

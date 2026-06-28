@@ -1,0 +1,87 @@
+/* ===========================================================================
+   Phone frame
+   ---------------------------------------------------------------------------
+   The phone is anchored bottom-right and scales with the viewport height while
+   keeping the case's aspect ratio (399 x 803).
+
+   Layering (bottom -> top):
+     .phone__case      the physical frame image (fills the box, rounded corners)
+     .phone__screen    wallpaper + UI, INSET so the case bezel frames it
+
+   Tunables — nudge these if the screen doesn't sit perfectly inside the bezel:
+     --phone-height      overall size (vh)
+     --screen-width      screen width  as a % of the case width
+     --screen-height     screen height as a % of the case height
+     --screen-radius     screen corner rounding
+   The screen is CENTERED in the case, so changing width/height grows or shrinks
+   it symmetrically (it never drifts toward an edge).
+   =========================================================================== */
+
+.phone {
+  --phone-height: 74vh;
+  --case-aspect: 399 / 803;
+  --screen-width: 90.7%;
+  --screen-height: 97%;
+  --screen-radius: 2.9vw;
+
+  position: fixed;
+  right: 2.5vh;
+  bottom: 2.5vh;
+  height: var(--phone-height);
+  aspect-ratio: var(--case-aspect);
+  z-index: 1;
+  filter: drop-shadow(0 1.5vh 3vh rgba(0, 0, 0, 0.55));
+}
+
+/* The case image: fills the frame, behind the screen, ignores clicks. */
+.phone__case {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* The active "screen": centered on top of the case, sized as a % of it. */
+.phone__screen {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: var(--screen-width);
+  height: var(--screen-height);
+  transform: translate(-50%, -50%);
+  z-index: 2;
+  overflow: hidden;
+  border-radius: var(--screen-radius);
+  background: #000;
+  /* font-size is set at runtime (scale * 16px) for proportional `em` sizing. */
+}
+
+/* Heights reserved for the floating status bar / home indicator so screen
+   content (home, lock) doesn't sit underneath them. Apps ignore these and run
+   truly fullscreen. */
+.phone__screen {
+  --safe-top: 3.2em;
+  --safe-bottom: 1.6em;
+}
+
+.phone__wallpaper {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 0;
+}
+
+/* A fullscreen layer (home / app). Stacks beneath the lock + overlays. */
+.phone__layer {
+  position: absolute;
+  inset: 0;
+}
+
+.phone__layer--base {
+  z-index: 1;
+}

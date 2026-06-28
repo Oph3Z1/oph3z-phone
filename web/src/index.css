@@ -1,0 +1,50 @@
+/* Global reset + NUI baseline.
+   The page background MUST be transparent so only the phone is visible in-game. */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  -webkit-user-select: none !important;
+  user-select: none !important;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html,
+body,
+#root {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: transparent;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI',
+    Roboto, Helvetica, Arial, sans-serif;
+}
+
+/* In a browser (npm run dev) show a dark backdrop so the phone is visible.
+   Inside FiveM this class is removed and the background stays transparent. */
+body.dev-backdrop {
+  background: radial-gradient(circle at 30% 20%, #2a2a35, #0c0c10 70%);
+}
+
+img {
+  -webkit-user-drag: none;
+  user-drag: none;
+  pointer-events: none;
+}
+
+button {
+  font-family: inherit;
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: inherit;
+  outline: none;
+}
+
+/* NUI doesn't need keyboard-focus rings — they show as an ugly border on
+   buttons (e.g. the tab bar) after a key press. Remove them everywhere. */
+*:focus,
+*:focus-visible {
+  outline: none !important;
+}
