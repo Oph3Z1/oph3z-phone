@@ -7,32 +7,15 @@ import './MapsApp.css';
 import { fetchNui } from '../../utils/fetchNui';
 import { useNuiEvent } from '../../hooks/useNuiEvent';
 import { loadBlips, addBlip, moveBlip, deleteBlip } from '../../store/slices/mapsSlice';
+import { setFocus } from '../../store/slices/mapsSlice';
+import { setResumeThread } from '../../store/slices/messagesSlice';
+import { openApp } from '../../store/slices/phoneSlice';
+import { MAP, CUSTOM_CRS, toLatLng, MAP_BOUNDS, tileUrl } from './crs';
 
-// GTA V map transform (from the gta-v-map-leaflet tileset). center_x/y + scale_x/y
-// map GTA world coords onto the tile pixels. Tune here if the marker is offset.
-const MAP = { centerX: 117.3, centerY: 172.8, scaleX: 0.02072, scaleY: 0.0205, minZoom: 0, maxZoom: 5 };
-
-const CUSTOM_CRS = L.Util.extend({}, L.CRS.Simple, {
-  projection: L.Projection.LonLat,
-  scale: (zoom) => Math.pow(2, zoom),
-  zoom: (sc) => Math.log(sc) / 0.6931471805599453,
-  distance: (p1, p2) => {
-    const dx = p2.lng - p1.lng;
-    const dy = p2.lat - p1.lat;
-    return Math.sqrt(dx * dx + dy * dy);
-  },
-  transformation: new L.Transformation(MAP.scaleX, MAP.centerX, -MAP.scaleY, MAP.centerY),
-  infinite: true,
-});
-
-// GTA (x, y) -> Leaflet latLng (lat = y, lng = x).
-const toLatLng = (x, y) => [y, x];
-
-// The atlas image spans projected 0..256 (at zoom 0); convert that to GTA bounds
-// so the map can't be panned into the void around it.
-const MAP_BOUNDS = L.latLngBounds(
-  [(MAP.centerY - 256) / MAP.scaleY, (0 - MAP.centerX) / MAP.scaleX],
-  [MAP.centerY / MAP.scaleY, (256 - MAP.centerX) / MAP.scaleX]
+const ChevronLeft = () => (
+  <svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M15 5l-7 7 7 7" />
+  </svg>
 );
 
 const playerIcon = L.divIcon({
@@ -64,6 +47,7 @@ const LocateIcon = () => (
 export default function MapsApp() {
   const dispatch = useDispatch();
   const blips = useSelector((s) => s.maps.blips);
+  const focus = useSelector((s) => s.maps.focus); // shared location to jump to
 
   const mapEl = useRef(null);
   const map = useRef(null);
@@ -71,16 +55,20 @@ export default function MapsApp() {
   const playerMarker = useRef(null);
   const pendingMarker = useRef(null);
   const pendingCoords = useRef(null); // live position of the draggable pin
+  const focusMarker = useRef(null);
   const follow = useRef(true);
   const lastPos = useRef(null);
 
   const [pending, setPending] = useState(null); // { x, y }
   const [pendingName, setPendingName] = useState('');
   const [selected, setSelected] = useState(null); // a blip
+  const [shared, setShared] = useState(null); // a location opened from Messages
+  const [returnTo, setReturnTo] = useState(null); // conversation number to go back to
+  const viewOnly = !!returnTo; // opened from a location: look-only, no editing
 
   // Create the map once.
   useEffect(() => {
-    const atlas = L.tileLayer('./mapStyles/styleAtlas/{z}/{x}/{y}.jpg', {
+    const atlas = L.tileLayer(tileUrl, {
       minZoom: MAP.minZoom,
       maxZoom: MAP.maxZoom,
       noWrap: true,
@@ -148,11 +136,42 @@ export default function MapsApp() {
     if (follow.current) map.current.panTo(ll, { animate: true, duration: 0.4 });
   });
 
-  // Redraw blips when they change.
+  // A location was opened from Messages: center on it, drop a marker, and offer
+  // a waypoint. Consumed once (cleared from the store).
+  useEffect(() => {
+    const m = map.current;
+    if (!m || !focus) return;
+    follow.current = false;
+    const ll = toLatLng(focus.x, focus.y);
+    if (focusMarker.current) m.removeLayer(focusMarker.current);
+    focusMarker.current = L.marker(ll, { icon: pendingIcon, zIndexOffset: 1500 }).addTo(m);
+
+    // Opened from Messages: view-only — no panning, zooming, or dropping pins.
+    m.dragging.disable();
+    m.scrollWheelZoom.disable();
+    m.doubleClickZoom.disable();
+    m.touchZoom.disable();
+    m.boxZoom.disable();
+    m.keyboard.disable();
+    m.off('contextmenu');
+
+    // The map may still be sizing up on first mount; settle before centering.
+    setTimeout(() => {
+      m.invalidateSize();
+      m.setView(ll, 4, { animate: false });
+    }, 160);
+    setShared({ x: focus.x, y: focus.y, label: focus.label || 'Shared Location' });
+    if (focus.number) setReturnTo(focus.number);
+    dispatch(setFocus(null));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [focus]);
+
+  // Redraw blips when they change. Hidden entirely in view-only (location) mode.
   useEffect(() => {
     const layer = blipLayer.current;
     if (!layer) return;
     layer.clearLayers();
+    if (viewOnly) return;
     blips.forEach((b) => {
       const mk = L.marker(toLatLng(b.x, b.y), { icon: blipIcon, draggable: true }).addTo(layer);
       mk.on('click', () => {
@@ -164,7 +183,7 @@ export default function MapsApp() {
         dispatch(moveBlip(b.id, ll.lng, ll.lat)); // drag to reposition a saved place
       });
     });
-  }, [blips]);
+  }, [blips, viewOnly]);
 
   // Draggable pin for the pending new blip (right-click drop, then drag to place).
   useEffect(() => {
@@ -209,6 +228,22 @@ export default function MapsApp() {
     if (selected) fetchNui('phone:maps:waypoint', { x: selected.x, y: selected.y }, {});
     setSelected(null);
   };
+  const closeShared = () => {
+    if (focusMarker.current && map.current) {
+      map.current.removeLayer(focusMarker.current);
+      focusMarker.current = null;
+    }
+    setShared(null);
+  };
+  // Back to the conversation that opened this location.
+  const backToChat = () => {
+    if (returnTo) dispatch(setResumeThread(returnTo));
+    dispatch(openApp('message'));
+  };
+  const waypointShared = () => {
+    if (shared) fetchNui('phone:maps:waypoint', { x: shared.x, y: shared.y }, {});
+    closeShared();
+  };
   const removeSelected = () => {
     if (selected) dispatch(deleteBlip(selected.id));
     setSelected(null);
@@ -218,13 +253,20 @@ export default function MapsApp() {
     <div className="maps">
       <div className="maps__map" ref={mapEl} />
 
-      <div className="maps__tip">
-        Right-click to add · hold <b>Ctrl</b> + drag to move a pin
-      </div>
-
-      <button className="maps__locate" onClick={recenter} aria-label="Recenter">
-        <LocateIcon />
-      </button>
+      {viewOnly ? (
+        <button className="maps__back" onClick={backToChat}>
+          <ChevronLeft /> Messages
+        </button>
+      ) : (
+        <>
+          <div className="maps__tip">
+            Right-click to add · hold <b>Ctrl</b> + drag to move a pin
+          </div>
+          <button className="maps__locate" onClick={recenter} aria-label="Recenter">
+            <LocateIcon />
+          </button>
+        </>
+      )}
 
       {pending && (
         <div className="maps__sheet">
@@ -263,6 +305,22 @@ export default function MapsApp() {
             </button>
             <button className="maps__btn maps__btn--danger" onClick={removeSelected}>
               Delete
+            </button>
+          </div>
+        </div>
+      )}
+
+      {shared && (
+        <div className="maps__sheet">
+          <div className="maps__sheet-head">
+            <div className="maps__sheet-title">{shared.label}</div>
+            <button className="maps__close" onClick={closeShared} aria-label="Close">
+              ✕
+            </button>
+          </div>
+          <div className="maps__row">
+            <button className="maps__btn maps__btn--primary" onClick={waypointShared}>
+              Set Waypoint
             </button>
           </div>
         </div>

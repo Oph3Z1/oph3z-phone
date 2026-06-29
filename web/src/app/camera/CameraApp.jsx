@@ -6,6 +6,7 @@ import { fetchNui } from '../../utils/fetchNui';
 import { pad2 } from '../../utils/misc';
 import { openApp } from '../../store/slices/phoneSlice';
 import { loadPhotos, upsertPhoto } from '../../store/slices/photosSlice';
+import { setShareTo, setResumeThread, setDraftAttach } from '../../store/slices/messagesSlice';
 import { FlipIcon } from './components/icons';
 
 const fmt = (s) => `${pad2(Math.floor(s / 60))}:${pad2(s % 60)}`;
@@ -70,6 +71,10 @@ async function uploadToProvider(blob, filename, cfg) {
 export default function CameraApp() {
   const dispatch = useDispatch();
   const items = useSelector((s) => s.photos.items);
+  // When launched from a chat's camera button, the capture is sent there.
+  const shareTo = useSelector((s) => s.messages.shareTo);
+  const shareToRef = useRef(shareTo);
+  shareToRef.current = shareTo;
 
   const [mode, setMode] = useState('photo'); // 'photo' | 'video'
   const [recording, setRecording] = useState(false);
@@ -99,6 +104,8 @@ export default function CameraApp() {
     return () => {
       if (recRef.current && recRef.current.state !== 'inactive') recRef.current.stop();
       fetchNui('phone:camera:exit', {}, {});
+      // Leaving the camera without capturing cancels any pending chat attach.
+      dispatch(setShareTo(null));
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -140,12 +147,23 @@ export default function CameraApp() {
     return () => clearInterval(id);
   }, [recording]);
 
-  // Save an uploaded URL into the Photos library (server), then show it.
+  // Save an uploaded URL into the Photos library (server), then show it. If the
+  // camera was opened from a chat, also send it there and return to Messages.
   const save = async (url, type, duration) => {
     if (!url) return;
     const photo = await fetchNui('phone:camera:save', { url, type, duration }, null);
     if (photo) dispatch(upsertPhoto(photo));
     else console.error('[camera] save returned no photo for', url);
+
+    // If launched from a chat, hand the capture back as a draft attachment so the
+    // player can add a caption before sending (don't auto-send).
+    const to = shareToRef.current;
+    if (to) {
+      dispatch(setShareTo(null));
+      dispatch(setDraftAttach({ number: to, attach: { type, url } }));
+      dispatch(setResumeThread(to));
+      dispatch(openApp('message'));
+    }
   };
 
   // PHOTO: grab the phone-view canvas (JPEG), upload it, save the URL.
@@ -204,6 +222,14 @@ export default function CameraApp() {
 
   const onShutter = () => (mode === 'photo' ? takePhoto() : toggleVideo());
 
+  // Cancel: go back to the chat that launched the camera, without capturing.
+  const backToChat = () => {
+    const to = shareToRef.current;
+    dispatch(setShareTo(null));
+    if (to) dispatch(setResumeThread(to));
+    dispatch(openApp('message'));
+  };
+
   // Flip rear/front. In PHOTO selfie the native cam is off-centre, so shift the
   // crop left; the VIDEO selfie cam is centred, so no shift there.
   const flip = async () => {
@@ -222,6 +248,13 @@ export default function CameraApp() {
 
       {/* Black bar behind the status bar / dynamic island */}
       <div className="camera__topbar" />
+
+      {/* Cancel back to the chat (only when launched from Messages) */}
+      {shareTo && !recording && (
+        <button className="camera__cancel" onClick={backToChat}>
+          Cancel
+        </button>
+      )}
 
       {/* REC timer — visible in video mode (00:00 idle), counts while recording */}
       {mode === 'video' && (

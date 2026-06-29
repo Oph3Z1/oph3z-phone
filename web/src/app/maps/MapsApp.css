@@ -123,6 +123,28 @@
   transform: scale(0.92);
 }
 
+/* Back-to-conversation button (view-only location mode). */
+.maps__back {
+  position: absolute;
+  top: calc(var(--safe-top) + 0.5em);
+  left: 0.7em;
+  z-index: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.15em;
+  padding: 0.4em 0.8em 0.4em 0.55em;
+  border-radius: 1.2em;
+  font-size: 0.9em;
+  font-weight: 600;
+  color: #0a84ff;
+  background: rgba(28, 28, 30, 0.82);
+  backdrop-filter: blur(1.2em) saturate(180%);
+  -webkit-backdrop-filter: blur(1.2em) saturate(180%);
+  border: 0.5px solid rgba(255, 255, 255, 0.16);
+  box-shadow: 0 0.3em 1em rgba(0, 0, 0, 0.45);
+}
+.maps__back:active { transform: scale(0.96); }
+
 /* ---- Bottom sheet (add / blip actions) ---------------------------------- */
 .maps__sheet {
   position: absolute;

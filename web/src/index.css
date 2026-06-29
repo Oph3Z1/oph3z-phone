@@ -15,7 +15,7 @@ body,
 #root {
   width: 100%;
   height: 100%;
-  overflow: hidden;
+  overflow: hidden !important;
   background: transparent;
   font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI',
     Roboto, Helvetica, Arial, sans-serif;

@@ -6,11 +6,11 @@ import { deleteThreads } from '../../../store/slices/messagesSlice';
 
 function preview(t) {
   switch (t.lastType) {
-    case 'image': return '📷 Photo';
-    case 'video': return '📹 Video';
-    case 'location': return '📍 Location';
-    case 'money': return '💵 Money';
-    case 'voice': return '🎤 Voice message';
+    case 'image': return 'Photo';
+    case 'video': return 'Video';
+    case 'location': return 'Location';
+    case 'money': return 'Money';
+    case 'voice': return 'Voice message';
     default: return t.lastBody || '';
   }
 }

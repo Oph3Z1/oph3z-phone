@@ -35,6 +35,19 @@
   background: #000;
 }
 
+/* Cancel back to chat (top-left, over the black top bar). */
+.camera__cancel {
+  position: absolute;
+  top: calc(var(--safe-top) + 0.2em);
+  left: 0.8em;
+  z-index: 3;
+  color: #fff;
+  font-size: 0.95em;
+  font-weight: 600;
+  padding: 0.2em 0.1em;
+  text-shadow: 0 0 0.4em rgba(0, 0, 0, 0.6);
+}
+
 /* REC timer (sits below the top bar; bigger gap = the requested margin). */
 .camera__rec {
   position: absolute;

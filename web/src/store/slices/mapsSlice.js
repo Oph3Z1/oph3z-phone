@@ -9,6 +9,7 @@ const MOCK = [
 const initialState = {
   loaded: false,
   blips: [],
+  focus: null, // { x, y, label } location to jump to (set from Messages)
 };
 
 const mapsSlice = createSlice({
@@ -33,10 +34,14 @@ const mapsSlice = createSlice({
     removeBlipLocal(state, action) {
       state.blips = state.blips.filter((b) => b.id !== action.payload);
     },
+    setFocus(state, action) {
+      state.focus = action.payload;
+    },
   },
 });
 
-export const { hydrateBlips, addBlipLocal, updateBlipLocal, removeBlipLocal } = mapsSlice.actions;
+export const { hydrateBlips, addBlipLocal, updateBlipLocal, removeBlipLocal, setFocus } =
+  mapsSlice.actions;
 
 // ---- Thunks ---------------------------------------------------------------
 export const loadBlips = () => async (dispatch) => {

@@ -1,4 +1,106 @@
 {
+    "phone": {
+        "nextRecentId": 13,
+        "recents": [
+            {
+                "number": "555-3873",
+                "direction": "out",
+                "missed": false,
+                "ts": 1782539617,
+                "id": 12
+            },
+            {
+                "number": "555-3873",
+                "direction": "in",
+                "missed": false,
+                "ts": 1782539499,
+                "id": 11
+            },
+            {
+                "number": "555-3873",
+                "direction": "in",
+                "missed": false,
+                "ts": 1782539357,
+                "id": 10
+            },
+            {
+                "number": "555-3873",
+                "direction": "in",
+                "missed": false,
+                "ts": 1782538658,
+                "id": 9
+            },
+            {
+                "number": "555-3873",
+                "direction": "in",
+                "missed": false,
+                "ts": 1782538579,
+                "id": 8
+            },
+            {
+                "number": "555-3873",
+                "direction": "in",
+                "missed": false,
+                "ts": 1782538509,
+                "id": 7
+            },
+            {
+                "number": "555-3873",
+                "direction": "in",
+                "missed": false,
+                "ts": 1782538426,
+                "id": 6
+            },
+            {
+                "number": "555-3873",
+                "direction": "in",
+                "missed": false,
+                "ts": 1782538153,
+                "id": 5
+            },
+            {
+                "number": "555-3873",
+                "direction": "in",
+                "missed": false,
+                "ts": 1782538103,
+                "id": 4
+            },
+            {
+                "number": "555-3873",
+                "direction": "in",
+                "missed": false,
+                "ts": 1782538030,
+                "id": 3
+            },
+            {
+                "number": "555-3873",
+                "direction": "in",
+                "missed": false,
+                "ts": 1782537657,
+                "id": 2
+            },
+            {
+                "number": "555-3873",
+                "direction": "in",
+                "missed": false,
+                "ts": 1782537498,
+                "id": 1
+            }
+        ],
+        "contacts": [],
+        "numberRaw": "5558944",
+        "nextContactId": 1,
+        "blocked": [],
+        "number": "555-8944"
+    },
+    "updatedAt": 1782777214,
+    "createdAt": 1782537349,
+    "settings": {
+        "wallpaper": "default",
+        "locked": true,
+        "brightness": 100
+    },
+    "citizenid": "C7E3021X",
     "messages": {
         "threads": {
             "5553873": {
@@ -6,222 +108,422 @@
                 "unread": 0,
                 "items": [
                     {
-                        "read": true,
                         "body": "naber lo",
+                        "type": "text",
+                        "dir": "in",
                         "id": "17827577538669",
                         "ts": 1782757753,
-                        "type": "text",
-                        "dir": "in"
+                        "read": true
                     },
                     {
-                        "read": true,
                         "body": "iyidir lo",
+                        "type": "text",
+                        "dir": "out",
                         "id": "17827577718354",
                         "ts": 1782757771,
-                        "type": "text",
-                        "dir": "out"
+                        "read": true
                     },
                     {
-                        "read": true,
                         "body": "senden naber",
+                        "type": "text",
+                        "dir": "out",
                         "id": "17827577745451",
                         "ts": 1782757774,
-                        "type": "text",
-                        "dir": "out"
+                        "read": true
                     },
                     {
-                        "read": true,
                         "body": "asdasd",
+                        "type": "text",
+                        "dir": "out",
                         "id": "17827577806511",
                         "ts": 1782757780,
-                        "type": "text",
-                        "dir": "out"
+                        "read": true
                     },
                     {
-                        "read": true,
                         "body": "asdasd",
+                        "type": "text",
+                        "dir": "in",
                         "id": "17827577835381",
                         "ts": 1782757783,
-                        "type": "text",
-                        "dir": "in"
+                        "read": true
                     },
                     {
-                        "read": true,
                         "body": "asd",
+                        "type": "text",
+                        "dir": "in",
                         "id": "17827579049788",
                         "ts": 1782757904,
-                        "type": "text",
-                        "dir": "in"
+                        "read": true
                     },
                     {
-                        "read": true,
                         "body": "asd",
+                        "type": "text",
+                        "dir": "out",
                         "id": "17827579089521",
                         "ts": 1782757908,
-                        "type": "text",
-                        "dir": "out"
+                        "read": true
                     },
                     {
-                        "read": true,
                         "body": "asd",
+                        "type": "text",
+                        "dir": "in",
                         "id": "17827590279863",
                         "ts": 1782759027,
-                        "type": "text",
-                        "dir": "in"
+                        "read": true
                     },
                     {
-                        "read": true,
                         "body": "asdsadasd",
+                        "type": "text",
+                        "dir": "out",
                         "id": "17827590339694",
                         "ts": 1782759033,
-                        "type": "text",
-                        "dir": "out"
+                        "read": true
                     },
                     {
-                        "read": true,
                         "body": "selömdöl amsölkdm lökasmd lökamsdlköm lakösmdl kmaslödm lasdm asöda msdlök maslkdm ölkmasd",
+                        "type": "text",
+                        "dir": "in",
                         "id": "17827590447226",
                         "ts": 1782759044,
-                        "type": "text",
-                        "dir": "in"
+                        "read": true
                     },
                     {
-                        "read": true,
                         "body": "100",
-                        "id": "17827596629072",
+                        "type": "money",
+                        "read": true,
+                        "dir": "in",
                         "meta": {
                             "amount": 100
                         },
                         "ts": 1782759662,
-                        "type": "money",
-                        "dir": "in"
+                        "id": "17827596629072"
                     },
                     {
-                        "read": true,
                         "body": "10",
-                        "id": "17827607156361",
+                        "type": "request",
+                        "read": true,
+                        "dir": "in",
                         "meta": {
                             "amount": 10
                         },
                         "ts": 1782760715,
-                        "type": "request",
-                        "dir": "in"
+                        "id": "17827607156361"
                     },
                     {
-                        "read": true,
                         "body": "10",
-                        "id": "17827607266641",
+                        "type": "money",
+                        "read": true,
+                        "dir": "out",
                         "meta": {
                             "amount": 10
                         },
                         "ts": 1782760726,
+                        "id": "17827607266641"
+                    },
+                    {
+                        "body": "10",
                         "type": "money",
-                        "dir": "out"
+                        "read": true,
+                        "dir": "out",
+                        "meta": {
+                            "amount": 10
+                        },
+                        "ts": 1782769399,
+                        "id": "17827693994122"
+                    },
+                    {
+                        "body": "10",
+                        "type": "request",
+                        "read": true,
+                        "dir": "in",
+                        "meta": {
+                            "status": "countered",
+                            "payee": "5553873",
+                            "payer": "5558944",
+                            "amount": 10
+                        },
+                        "ts": 1782770461,
+                        "id": "17827704619185"
+                    },
+                    {
+                        "body": "8",
+                        "type": "request",
+                        "read": true,
+                        "dir": "out",
+                        "meta": {
+                            "status": "declined",
+                            "payee": "5553873",
+                            "payer": "5558944",
+                            "amount": 8
+                        },
+                        "ts": 1782770479,
+                        "id": "17827704794227"
+                    },
+                    {
+                        "body": "10",
+                        "type": "money",
+                        "read": true,
+                        "dir": "in",
+                        "meta": {
+                            "amount": 10
+                        },
+                        "ts": 1782771041,
+                        "id": "17827710418088"
+                    },
+                    {
+                        "body": "6",
+                        "type": "request",
+                        "read": true,
+                        "dir": "in",
+                        "meta": {
+                            "status": "paid",
+                            "payee": "5553873",
+                            "payer": "5558944",
+                            "amount": 6
+                        },
+                        "ts": 1782771056,
+                        "id": "17827710569305"
+                    },
+                    {
+                        "body": "asd",
+                        "type": "text",
+                        "dir": "in",
+                        "id": "17827710708594",
+                        "ts": 1782771070,
+                        "read": true
+                    },
+                    {
+                        "body": "asd",
+                        "type": "text",
+                        "dir": "in",
+                        "id": "17827710712107",
+                        "ts": 1782771071,
+                        "read": true
+                    },
+                    {
+                        "body": "asd",
+                        "type": "text",
+                        "dir": "in",
+                        "id": "17827710714012",
+                        "ts": 1782771071,
+                        "read": true
+                    },
+                    {
+                        "body": "asd",
+                        "type": "text",
+                        "dir": "in",
+                        "id": "17827710711568",
+                        "ts": 1782771071,
+                        "read": true
+                    },
+                    {
+                        "body": "asd",
+                        "type": "text",
+                        "dir": "in",
+                        "id": "17827710710215",
+                        "ts": 1782771071,
+                        "read": true
+                    },
+                    {
+                        "body": "asd",
+                        "type": "text",
+                        "dir": "in",
+                        "id": "17827710722398",
+                        "ts": 1782771072,
+                        "read": true
+                    },
+                    {
+                        "body": "asd",
+                        "type": "text",
+                        "dir": "in",
+                        "id": "17827710721506",
+                        "ts": 1782771072,
+                        "read": true
+                    },
+                    {
+                        "body": "https://r2.fivemanage.com/QwvYnlNIMcYTc1520iXl0/2yYXZ0GmVrbk.jpg",
+                        "type": "image",
+                        "dir": "in",
+                        "id": "17827715904698",
+                        "ts": 1782771590,
+                        "read": true
+                    },
+                    {
+                        "body": "https://r2.fivemanage.com/QwvYnlNIMcYTc1520iXl0/qcd3rgBh3crH.webm",
+                        "type": "video",
+                        "dir": "in",
+                        "id": "17827716036432",
+                        "ts": 1782771603,
+                        "read": true
+                    },
+                    {
+                        "body": "https://r2.fivemanage.com/QwvYnlNIMcYTc1520iXl0/Dk7ttHEFTAnJ.jpg",
+                        "type": "image",
+                        "dir": "in",
+                        "id": "17827723105570",
+                        "ts": 1782772310,
+                        "read": true
+                    },
+                    {
+                        "body": "Hahahaha",
+                        "type": "text",
+                        "dir": "in",
+                        "id": "17827723102398",
+                        "ts": 1782772310,
+                        "read": true
+                    },
+                    {
+                        "body": "https://r2.fivemanage.com/QwvYnlNIMcYTc1520iXl0/1w2kRiORN1Ap.webm",
+                        "type": "video",
+                        "dir": "in",
+                        "id": "17827729442628",
+                        "ts": 1782772944,
+                        "read": true
+                    },
+                    {
+                        "body": "https://r2.fivemanage.com/QwvYnlNIMcYTc1520iXl0/29yQi9SXIg5w.jpg",
+                        "type": "image",
+                        "dir": "in",
+                        "id": "17827738808399",
+                        "ts": 1782773880,
+                        "read": true
+                    },
+                    {
+                        "body": "https://r2.fivemanage.com/QwvYnlNIMcYTc1520iXl0/O7BWTynVRPsb.jpg",
+                        "type": "image",
+                        "dir": "in",
+                        "id": "17827739238262",
+                        "ts": 1782773923,
+                        "read": true
+                    },
+                    {
+                        "body": "Eclipse Blvd, West Vinewood",
+                        "type": "location",
+                        "read": true,
+                        "dir": "in",
+                        "meta": {
+                            "live": false,
+                            "x": -206.26596069335936,
+                            "y": 244.98724365234376,
+                            "label": "Eclipse Blvd, West Vinewood"
+                        },
+                        "ts": 1782774629,
+                        "id": "17827746291955"
+                    },
+                    {
+                        "body": "Eclipse Blvd, West Vinewood",
+                        "type": "location",
+                        "read": true,
+                        "dir": "in",
+                        "meta": {
+                            "live": false,
+                            "label": "Mirror Park Blvd, East Vinewood",
+                            "y": -178.44261169433598,
+                            "x": 1015.9879150390624,
+                            "sid": "17827748545740"
+                        },
+                        "ts": 1782774854,
+                        "id": "17827748548634"
+                    },
+                    {
+                        "body": "Mirror Park Blvd, East Vinewood",
+                        "type": "location",
+                        "read": true,
+                        "dir": "in",
+                        "meta": {
+                            "live": true,
+                            "label": "Mirror Park Blvd, East Vinewood",
+                            "y": -176.52825927734376,
+                            "x": 1011.3014526367188,
+                            "sid": "17827760295146"
+                        },
+                        "ts": 1782776029,
+                        "id": "17827760297145"
+                    },
+                    {
+                        "body": "San Andreas Ave, Pillbox Hill",
+                        "type": "location",
+                        "read": true,
+                        "dir": "in",
+                        "meta": {
+                            "live": true,
+                            "label": "San Andreas Ave, Pillbox Hill",
+                            "y": -807.0899658203125,
+                            "x": 194.7139587402344,
+                            "sid": "17827764037741"
+                        },
+                        "ts": 1782776403,
+                        "id": "17827764038273"
+                    },
+                    {
+                        "body": "San Andreas Ave, Pillbox Hill",
+                        "type": "location",
+                        "read": true,
+                        "dir": "in",
+                        "meta": {
+                            "live": true,
+                            "label": "San Andreas Ave, Pillbox Hill",
+                            "y": -807.0899658203125,
+                            "x": 194.7139587402344,
+                            "sid": "17827765915791"
+                        },
+                        "ts": 1782776591,
+                        "id": "17827765915768"
+                    },
+                    {
+                        "body": "San Andreas Ave, Pillbox Hill",
+                        "id": "17827767287132",
+                        "read": true,
+                        "dir": "in",
+                        "meta": {
+                            "live": false,
+                            "x": 194.7139587402344,
+                            "y": -807.0899658203125,
+                            "label": "San Andreas Ave, Pillbox Hill"
+                        },
+                        "ts": 1782776728,
+                        "type": "location"
+                    },
+                    {
+                        "body": "asdasd",
+                        "read": true,
+                        "dir": "in",
+                        "type": "text",
+                        "ts": 1782776760,
+                        "id": "17827767600534"
+                    },
+                    {
+                        "body": "San Andreas Ave, Pillbox Hill",
+                        "type": "location",
+                        "read": true,
+                        "dir": "in",
+                        "meta": {
+                            "live": false,
+                            "x": 194.7139587402344,
+                            "y": -807.0899658203125,
+                            "label": "San Andreas Ave, Pillbox Hill"
+                        },
+                        "ts": 1782776768,
+                        "id": "17827767684083"
+                    },
+                    {
+                        "body": "ait lil bro i understand",
+                        "id": "17827772124164",
+                        "dir": "out",
+                        "read": true,
+                        "ts": 1782777212,
+                        "type": "text"
+                    },
+                    {
+                        "body": "fucking hell",
+                        "read": true,
+                        "dir": "out",
+                        "type": "text",
+                        "ts": 1782777214,
+                        "id": "17827772143382"
                     }
                 ]
             }
         }
-    },
-    "updatedAt": 1782760726,
-    "settings": {
-        "locked": true,
-        "wallpaper": "default",
-        "brightness": 100
-    },
-    "citizenid": "C7E3021X",
-    "createdAt": 1782537349,
-    "phone": {
-        "nextContactId": 1,
-        "contacts": [],
-        "numberRaw": "5558944",
-        "recents": [
-            {
-                "number": "555-3873",
-                "id": 12,
-                "ts": 1782539617,
-                "direction": "out",
-                "missed": false
-            },
-            {
-                "number": "555-3873",
-                "id": 11,
-                "ts": 1782539499,
-                "direction": "in",
-                "missed": false
-            },
-            {
-                "number": "555-3873",
-                "id": 10,
-                "ts": 1782539357,
-                "direction": "in",
-                "missed": false
-            },
-            {
-                "number": "555-3873",
-                "id": 9,
-                "ts": 1782538658,
-                "direction": "in",
-                "missed": false
-            },
-            {
-                "number": "555-3873",
-                "id": 8,
-                "ts": 1782538579,
-                "direction": "in",
-                "missed": false
-            },
-            {
-                "number": "555-3873",
-                "id": 7,
-                "ts": 1782538509,
-                "direction": "in",
-                "missed": false
-            },
-            {
-                "number": "555-3873",
-                "id": 6,
-                "ts": 1782538426,
-                "direction": "in",
-                "missed": false
-            },
-            {
-                "number": "555-3873",
-                "id": 5,
-                "ts": 1782538153,
-                "direction": "in",
-                "missed": false
-            },
-            {
-                "number": "555-3873",
-                "id": 4,
-                "ts": 1782538103,
-                "direction": "in",
-                "missed": false
-            },
-            {
-                "number": "555-3873",
-                "id": 3,
-                "ts": 1782538030,
-                "direction": "in",
-                "missed": false
-            },
-            {
-                "number": "555-3873",
-                "id": 2,
-                "ts": 1782537657,
-                "direction": "in",
-                "missed": false
-            },
-            {
-                "number": "555-3873",
-                "id": 1,
-                "ts": 1782537498,
-                "direction": "in",
-                "missed": false
-            }
-        ],
-        "blocked": [],
-        "number": "555-8944",
-        "nextRecentId": 13
     }
 }

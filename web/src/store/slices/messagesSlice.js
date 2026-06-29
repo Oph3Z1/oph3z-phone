@@ -13,6 +13,9 @@ const initialState = {
   threads: [], // [{ number, name, avatar, lastType, lastBody, lastDir, lastTs, unread }]
   byNumber: {}, // { [number]: { number, name, avatar, items: [...] } }
   active: null, // number of the thread currently being viewed
+  shareTo: null, // number the Camera should attach its next capture to
+  resumeThread: null, // number MessagesApp should reopen on mount (after a capture)
+  draftAttach: {}, // { [number]: { type, url } } pending media in the composer
 };
 
 const messagesSlice = createSlice({
@@ -35,6 +38,17 @@ const messagesSlice = createSlice({
     },
     setActive(state, action) {
       state.active = action.payload;
+    },
+    setShareTo(state, action) {
+      state.shareTo = action.payload;
+    },
+    setResumeThread(state, action) {
+      state.resumeThread = action.payload;
+    },
+    setDraftAttach(state, action) {
+      const { number, attach } = action.payload;
+      if (attach) state.draftAttach[number] = attach;
+      else delete state.draftAttach[number];
     },
     markReadLocal(state, action) {
       const th = state.threads.find((t) => t.number === action.payload);
@@ -78,6 +92,29 @@ const messagesSlice = createSlice({
       const th = state.threads.find((t) => t.number === number);
       if (th && th.lastTs === msg.ts) th.lastBody = msg.body;
     },
+    updateMessageStatus(state, action) {
+      const { number, id, status } = action.payload;
+      const conv = state.byNumber[number];
+      if (!conv) return;
+      const m = conv.items.find((x) => x.id === id);
+      if (m) {
+        m.meta = m.meta || {};
+        m.meta.status = status;
+      }
+    },
+    updateLocation(state, action) {
+      const { number, id, x, y, label, live, endReason } = action.payload;
+      const conv = state.byNumber[number];
+      if (!conv) return;
+      const m = conv.items.find((it) => it.id === id);
+      if (!m) return;
+      m.meta = m.meta || {};
+      if (typeof x === 'number') m.meta.x = x;
+      if (typeof y === 'number') m.meta.y = y;
+      if (label != null) m.meta.label = label;
+      if (typeof live === 'boolean') m.meta.live = live;
+      if (endReason != null) m.meta.endReason = endReason;
+    },
   },
 });
 
@@ -85,10 +122,15 @@ export const {
   setThreads,
   setThread,
   setActive,
+  setShareTo,
+  setResumeThread,
+  setDraftAttach,
   markReadLocal,
   appendMessage,
   removeThreadsLocal,
   reconcileMessage,
+  updateMessageStatus,
+  updateLocation,
 } = messagesSlice.actions;
 
 // ---- Thunks ---------------------------------------------------------------
@@ -139,8 +181,53 @@ export const sendMoney = (number, amount) => async (dispatch) => {
   return res;
 };
 
-export const sendRequest = (number, amount) => async (dispatch) =>
-  dispatch(sendMessage(number, { type: 'request', body: String(amount), meta: { amount } }));
+export const sendRequest = (number, amount) => async (dispatch) => {
+  const msg = await fetchNui(
+    'phone:messages:request',
+    { to: number, amount },
+    { id: 'srv' + Date.now(), dir: 'out', type: 'request', body: String(amount), meta: { amount, status: 'pending', payer: number, payee: 'me' }, ts: Math.floor(Date.now() / 1000), read: true }
+  );
+  if (msg) dispatch(appendMessage({ number, msg }));
+  return msg;
+};
+
+export const settleNegotiation = (number, id) => async (dispatch) => {
+  const res = await fetchNui('phone:messages:negotiate', { action: 'settle', number, id }, { ok: true });
+  if (res && res.ok) dispatch(updateMessageStatus({ number, id, status: 'paid' }));
+  return res;
+};
+
+export const declineNegotiation = (number, id) => async (dispatch) => {
+  const res = await fetchNui('phone:messages:negotiate', { action: 'decline', number, id }, { ok: true });
+  if (res && res.ok) dispatch(updateMessageStatus({ number, id, status: 'declined' }));
+  return res;
+};
+
+// Send a location. opts: { live, duration } — static if !live. The client
+// resolves the current coords/label and the server delivers a 'location' message.
+export const sendLocation = (number, opts = {}) => async (dispatch) => {
+  const msg = await fetchNui(
+    'phone:messages:location',
+    { to: number, live: !!opts.live, duration: opts.duration || 0 },
+    {
+      id: 'srv' + Date.now(),
+      dir: 'out',
+      type: 'location',
+      body: 'Location',
+      meta: { x: 0, y: 0, label: 'Current Location', live: !!opts.live },
+      ts: Math.floor(Date.now() / 1000),
+      read: true,
+    }
+  );
+  if (msg) dispatch(appendMessage({ number, msg }));
+  return msg;
+};
+
+export const stopLive = (number, sid, id) => async (dispatch) => {
+  const res = await fetchNui('phone:messages:locstop', { sid }, { ok: true });
+  if (res && res.ok) dispatch(updateLocation({ number, id, live: false, endReason: 'stopped' }));
+  return res;
+};
 
 export const deleteThreads = (numbers) => async (dispatch) => {
   dispatch(removeThreadsLocal(numbers)); // optimistic

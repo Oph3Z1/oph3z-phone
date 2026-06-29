@@ -238,6 +238,141 @@
 .msg-link { color: inherit; text-decoration: underline; }
 .msg-bubble.is-in .msg-link { color: #4aa8ff; }
 
+/* ---- Photo / video bubble ----------------------------------------------- */
+.msg-media {
+  position: relative;
+  max-width: 62%;
+  border-radius: 1.15em;
+  overflow: hidden;
+  background: #1c1c1e;
+  line-height: 0;
+  cursor: pointer;
+}
+.msg-media.is-pending { opacity: 0.55; }
+.msg-media__el {
+  display: block;
+  width: 100%;
+  max-height: 16em;
+  object-fit: cover;
+}
+.msg-media__play {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-40%, -50%);
+  width: 2.4em;
+  height: 2.4em;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.45);
+  color: #fff;
+  font-size: 1em;
+  line-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+/* ---- Location bubble (mini-map card) ------------------------------------ */
+.msg-loc {
+  width: 13em;
+  max-width: 70%;
+  border-radius: 1.15em;
+  /* NO overflow:hidden here: clipping the composited Leaflet map would promote
+     the whole card to a GPU layer and rasterize the header/footer text (grayscale
+     AA = blurry, esp. when the composer input isn't focused). The map sits between
+     header and footer and self-clips, so the card never reaches its corners. */
+  background: #1c1c1e;
+  cursor: pointer;
+}
+.msg-loc__head {
+  display: flex;
+  align-items: center;
+  gap: 0.4em;
+  padding: 0.55em 0.7em 0.5em;
+  color: #fff;
+}
+.msg-loc__head svg { font-size: 1em; color: #ff453a; }
+.msg-loc.is-ended .msg-loc__head svg,
+.msg-loc.is-ended .msg-loc__head .msg-loc__dot { color: #8e8e93; background: #8e8e93; animation: none; }
+.msg-loc__title {
+  font-size: 0.9em;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+.msg-loc__map {
+  width: 100%;
+  height: 8.5em;
+  background: #2a2a2d;
+  pointer-events: none; /* the whole card is the tap target */
+  /* Confine Leaflet's internal pane z-indexes (up to ~1000) to the map only, so
+     they can't cover the composer sheets — WITHOUT compositing the card's text
+     (isolating the whole card rasterizes the header/footer text = blurry). */
+  isolation: isolate;
+}
+.msg-loc.is-ended .msg-loc__map { filter: grayscale(0.6) brightness(0.8); }
+.msg-loc__bar {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  padding: 0.5em 0.7em;
+}
+.msg-loc__text {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+.msg-loc__label {
+  font-size: 0.9em;
+  font-weight: 600;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.msg-loc__status {
+  display: flex;
+  align-items: center;
+  gap: 0.35em;
+  font-size: 0.72em;
+  color: #8e8e93;
+  margin-top: 0.1em;
+}
+.msg-loc.is-live .msg-loc__status { color: #ff453a; }
+.msg-loc__dot {
+  width: 0.5em;
+  height: 0.5em;
+  border-radius: 50%;
+  background: #ff453a;
+  animation: msg-loc-pulse 1.4s ease-in-out infinite;
+}
+@keyframes msg-loc-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.25; }
+}
+.msg-loc__stop {
+  flex: 0 0 auto;
+  padding: 0.3em 0.7em;
+  border-radius: 0.8em;
+  background: #3a3a3c;
+  color: #fff;
+  font-size: 0.78em;
+  font-weight: 600;
+}
+/* Mini-map marker pin. */
+.msg-loc-pin span {
+  display: block;
+  width: 1em;
+  height: 1em;
+  margin: 0 auto;
+  background: #ff453a;
+  border: 0.13em solid #fff;
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg);
+  box-shadow: 0 0.1em 0.3em rgba(0, 0, 0, 0.5);
+}
+
 /* ---- Money / request bubble (Apple-Pay style) --------------------------- */
 .msg-cashmsg {
   display: flex;
@@ -270,17 +405,19 @@
   letter-spacing: -0.02em;
 }
 .msg-cashmsg__req { font-size: 0.72em; color: #8e8e93; margin-top: 0.25em; }
-.msg-cashmsg__pay {
-  margin-top: 0.6em;
-  width: 100%;
-  padding: 0.45em 0;
+.msg-cashmsg__card.is-done { opacity: 0.5; }
+.msg-cashmsg__btns { display: flex; gap: 0.45em; margin-top: 0.6em; }
+.msg-cashmsg__btn {
+  flex: 1;
+  padding: 0.45em 1.1em;
   border-radius: 0.7em;
-  background: #0a84ff;
-  color: #fff;
-  font-size: 0.85em;
+  font-size: 0.82em;
   font-weight: 600;
   text-align: center;
+  white-space: nowrap;
 }
+.msg-cashmsg__btn--pay { background: #34c759; color: #fff; }
+.msg-cashmsg__btn--decline { background: #3a3a3c; color: #fff; }
 .msg-cashmsg__status {
   font-size: 0.66em;
   color: #8e8e93;
@@ -309,24 +446,84 @@
   from { transform: translateY(1em); opacity: 0; }
   to { transform: translateY(0); opacity: 1; }
 }
-.msg-attach__item,
-.msg-attach__cancel {
-  width: 100%;
-  padding: 0.85em;
+.msg-attach__group {
   border-radius: 1em;
-  background: rgba(44, 44, 46, 0.96);
-  backdrop-filter: blur(1.6em);
-  -webkit-backdrop-filter: blur(1.6em);
+  overflow: hidden;
+  background: #1c1c1e;
+}
+.msg-attach__item {
+  width: 100%;
+  padding: 0.7em 0.9em;
+  background: transparent;
   color: #fff;
   font-size: 1em;
   font-weight: 500;
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 0.5em;
+  gap: 0.8em;
+  text-align: left;
 }
-.msg-attach__cancel { color: #0a84ff; font-weight: 600; }
-.msg-attach__emoji { font-size: 1.1em; }
+.msg-attach__item + .msg-attach__item {
+  border-top: 0.5px solid rgba(255, 255, 255, 0.08);
+}
+.msg-attach__item:active { background: rgba(255, 255, 255, 0.06); }
+.msg-attach__ico {
+  flex: 0 0 auto;
+  width: 2.1em;
+  height: 2.1em;
+  border-radius: 0.55em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 1em;
+  font-weight: 700;
+}
+.msg-attach__ico--cash {
+  background: linear-gradient(160deg, #34c759, #1a8f3c);
+  font-size: 1.15em;
+}
+.msg-attach__ico--req { background: #3a3a3c; }
+.msg-attach__ico--photos {
+  background: linear-gradient(160deg, #0a84ff, #0a5fd0);
+  font-size: 1.1em;
+}
+.msg-attach__ico--loc {
+  background: linear-gradient(160deg, #34c759, #1a8f3c);
+  font-size: 1.05em;
+}
+.msg-attach__ico--live {
+  background: linear-gradient(160deg, #ff453a, #c4271e);
+  font-size: 1.05em;
+}
+.msg-attach__label { flex: 1 1 auto; }
+.msg-attach__cancel {
+  width: 100%;
+  padding: 0.9em;
+  border-radius: 1em;
+  background: #1c1c1e;
+  color: #0a84ff;
+  font-size: 1em;
+  font-weight: 600;
+  text-align: center;
+}
+
+/* Transient error notice (settle failures). */
+.msg-notice {
+  position: absolute;
+  top: calc(var(--safe-top) + 3.2em);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 30;
+  background: rgba(255, 69, 58, 0.94);
+  color: #fff;
+  font-size: 0.76em;
+  font-weight: 500;
+  padding: 0.4em 0.9em;
+  border-radius: 1em;
+  white-space: nowrap;
+  box-shadow: 0 0.3em 0.9em rgba(0, 0, 0, 0.4);
+}
 
 /* ---- Money entry (Apple Cash style, bottom popup) ----------------------- */
 .msg-cash-backdrop {
@@ -447,9 +644,113 @@
 }
 .msg-cash__btn--req { background: #1c1c1e; color: #fff; }
 .msg-cash__btn--send { background: #0a84ff; color: #fff; }
+.msg-cash__btn--cancel { background: #2c2c2e; color: #fff; }
 .msg-cash__btn:disabled { opacity: 0.5; }
 
+/* ---- Gallery picker (bottom sheet) -------------------------------------- */
+.msg-gallery {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 25;
+  max-height: 64%;
+  display: flex;
+  flex-direction: column;
+  background: #141416;
+  border-top-left-radius: 1.3em;
+  border-top-right-radius: 1.3em;
+  padding: 0.55em 0.7em calc(var(--safe-bottom) + 0.8em);
+  box-shadow: 0 -0.5em 1.6em rgba(0, 0, 0, 0.55);
+  animation: msg-cash-up 0.24s cubic-bezier(0.32, 0.72, 0, 1) both;
+}
+.msg-gallery__title {
+  flex: 0 0 auto;
+  text-align: center;
+  color: #fff;
+  font-size: 0.9em;
+  font-weight: 600;
+  padding: 0.1em 0 0.6em;
+}
+.msg-gallery__grid {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.25em;
+  scrollbar-width: none;
+}
+.msg-gallery__grid::-webkit-scrollbar { display: none; }
+.msg-gallery__empty {
+  grid-column: 1 / -1;
+  text-align: center;
+  color: #8e8e93;
+  font-size: 0.85em;
+  padding: 2em 0;
+}
+.msg-gallery__cell {
+  position: relative;
+  aspect-ratio: 1;
+  border-radius: 0.4em;
+  overflow: hidden;
+  background: #1c1c1e;
+}
+.msg-gallery__cell img,
+.msg-gallery__cell video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.msg-gallery__cell:active { opacity: 0.7; }
+.msg-gallery__vid {
+  position: absolute;
+  bottom: 0.25em;
+  right: 0.3em;
+  color: #fff;
+  font-size: 0.7em;
+  text-shadow: 0 0 0.3em rgba(0, 0, 0, 0.8);
+}
+
 /* ---- Composer bar ------------------------------------------------------- */
+.msg-input-wrap {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+}
+/* Pending attachment preview (above the input row). */
+.msg-draft {
+  padding: 0.5em 0.7em 0;
+}
+.msg-draft__thumb {
+  position: relative;
+  width: 4.6em;
+  height: 4.6em;
+  border-radius: 0.8em;
+  overflow: hidden;
+  background: #1c1c1e;
+}
+.msg-draft__thumb img,
+.msg-draft__thumb video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.msg-draft__x {
+  position: absolute;
+  top: 0.2em;
+  right: 0.2em;
+  width: 1.4em;
+  height: 1.4em;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  font-size: 0.7em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 .msg-input {
   flex: 0 0 auto;
   display: flex;
@@ -562,3 +863,49 @@
 .msg-new__sugname { font-size: 0.95em; font-weight: 500; }
 .msg-new__sugnum { font-size: 0.8em; color: #8e8e93; }
 .msg-new__spacer { flex: 1 1 auto; }
+
+/* ---- Fullscreen media viewer (tap a photo/video bubble) ----------------- */
+.msg-viewer {
+  position: absolute;
+  inset: 0;
+  z-index: 40;
+  background: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+.msg-viewer__close {
+  position: absolute;
+  top: calc(var(--safe-top) + 0.3em);
+  right: 0.7em;
+  z-index: 2;
+  width: 1.9em;
+  height: 1.9em;
+  border-radius: 50%;
+  background: rgba(60, 60, 67, 0.6);
+  color: #fff;
+  font-size: 0.95em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.msg-viewer__stage {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  touch-action: none;
+}
+.msg-viewer__img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  user-select: none;
+  will-change: transform;
+}
+/* Lift the video control bar off the bottom edge (above the home indicator). */
+.msg-viewer .ph-vp__bar {
+  bottom: calc(var(--safe-bottom) + 1em);
+}
