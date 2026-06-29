@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import './PhotosApp.css';
 
@@ -25,13 +25,17 @@ export default function PhotosApp() {
   const [selected, setSelected] = useState(() => new Set());
   const [viewerId, setViewerId] = useState(null);
 
+  const scrollRef = useRef(null);
+  const didInitScroll = useRef(false);
+
   // Always refresh when the app opens so new photos (command / DB / camera) show up.
   useEffect(() => {
     dispatch(loadPhotos());
   }, [dispatch]);
 
+  // Chronological order: oldest first, newest LAST (like the iPhone grid).
   const list = useMemo(() => {
-    let arr = [...items].sort((a, b) => (b.ts || 0) - (a.ts || 0));
+    let arr = [...items].sort((a, b) => (a.ts || 0) - (b.ts || 0));
     if (tab === 'favorites') arr = arr.filter((p) => p.favorite);
     const q = search.query.trim().toLowerCase();
     if (q) {
@@ -41,6 +45,14 @@ export default function PhotosApp() {
     }
     return arr;
   }, [items, tab, search.query]);
+
+  // Start at the newest (bottom) once the photos first load, like iPhone.
+  useEffect(() => {
+    if (!didInitScroll.current && list.length > 0 && scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+      didInitScroll.current = true;
+    }
+  }, [list]);
 
   const title = tab === 'favorites' ? 'Favorites' : 'Library';
 
@@ -81,7 +93,7 @@ export default function PhotosApp() {
         )}
       </div>
 
-      <div className="photos__scroll">
+      <div className="photos__scroll" ref={scrollRef}>
         <PhotoGrid
           items={list}
           selectMode={selectMode}

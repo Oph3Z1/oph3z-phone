@@ -41,6 +41,19 @@ export const ChevronLeftIcon = (p) => (
   </svg>
 );
 
+export const ChevronRightIcon = (p) => (
+  <svg {...base} fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" {...p}>
+    <path d="M9 5l7 7-7 7" />
+  </svg>
+);
+
+export const PauseIcon = (p) => (
+  <svg {...base} fill="currentColor" {...p}>
+    <rect x="6" y="5" width="4" height="14" rx="1" />
+    <rect x="14" y="5" width="4" height="14" rx="1" />
+  </svg>
+);
+
 export const CheckIcon = (p) => (
   <svg {...base} fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" {...p}>
     <path d="M5 12l5 5L20 6" />

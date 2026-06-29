@@ -97,8 +97,19 @@ First **modular app** (per-app folder, both Lua sides). iOS-18 style.
 
 - **Library / Favorites** tabs in a floating liquid-glass nav; a **search** button that
   **expands** the bar into a search field (filters by date label / type for now).
-- **Grid** of square thumbnails (3-col), newest-first; videos show a play badge and play
-  in the viewer. **Fullscreen viewer**: swipe between items, favorite, delete.
+- **Grid** of square thumbnails (3-col), **chronological (newest LAST**, like iPhone;
+  auto-scrolls to the newest on open). Videos show their **duration** (e.g. `0:02`)
+  bottom-right instead of a play icon.
+- **Fullscreen viewer** (iPhone-style): back + centered **date/time** header, the photo,
+  **prev/next arrows**, a **filmstrip** of all items (current one enlarged + outlined, tap
+  to jump), and **favorite + delete** at the bottom. Swipe left/right too. No share/3-dots.
+- **Custom video player** (`VideoPlayer.jsx`): tap to play/pause, big center play when
+  paused, a glass control bar with play/pause + scrubber + time labels (not the browser's
+  default controls).
+- **Video duration**: recorded with the clip (`photo.duration`, from the record timer) and
+  shown in the grid + player. Old clips with no stored duration are read from the file —
+  MediaRecorder webm reports `Infinity` until forced to seek (`readDuration` in
+  `duration.js`), which is why they used to show `0:00`.
 - **Select mode** (`Select`): multi-select → bulk Favorite / Delete.
 - **Storage**: `doc.photos.items[]` per citizenid. Add via Camera later, the `/addphoto
   <url> [image|video]` dev command, or by hand-editing the JSON (fields auto-normalise).
@@ -145,13 +156,17 @@ to the NUI by the `phone:camera:enter` callback.
   → live thumbnail + gallery update. No screen-hiding needed (canvas = clean view).
 - **Video:** tap shutter to start (red, REC timer), tap to stop → upload webm →
   saved as `type:video`. Recorded entirely in the NUI from the canvas stream.
-- **View:** PHOTO = native phone camera (framed POV; **flip** rear ↔ front native
-  selfie via `CellFrontCamActivate`; selfie shifts crop left). VIDEO = first-person
-  gameplay cam (`SetFollowPedCamViewMode 4`). The native phone cam ROOTS the player,
-  so video switches off it to allow movement. Flip is photo-only. `applyCameraForMode`.
-- **Input:** keep-input on. PHOTO = **rotate by holding RIGHT MOUSE** (no free
-  mouse-look), zoom via scroll, **no walking**. VIDEO = **free look 360° + walk/run/
-  sprint** (first-person). Client switches cam/controls via `phone:camera:mode`.
+- **View:** PHOTO = native phone camera (framed POV; player rooted; **flip** rear ↔
+  front native selfie via `CellFrontCamActivate`; selfie shifts the crop left).
+  VIDEO = **scripted cam** (`CreateCam` + `RenderScriptCams`) ahead of the head with
+  the held phone model destroyed, so the player can **walk/run** while filming;
+  **flip** moves the cam out front looking back (centred selfie, no crop shift);
+  **scroll zooms** the FOV (`videoFov`, 22–75). (An earlier first-person attempt with
+  the phone model spawned blocked the view = black; the scripted cam avoids that.)
+- **Input:** keep-input on. BOTH modes **rotate only while holding RIGHT MOUSE**
+  (plain mouse = cursor only, no twitch). PHOTO = no walking, scroll zoom (native).
+  VIDEO = walk/run/sprint, scroll zoom (FOV), flip selfie — all usable **while
+  recording**. Mode via `phone:camera:mode`; flip resets the crop-shift on mode change.
 - **Timer:** the REC timer is shown the whole time in video mode (dim `00:00` idle)
   and blinks + counts once recording starts.
 - **On close:** `exitCamera` re-runs `Phone.startAnim()` so the hold pose isn't
@@ -160,6 +175,56 @@ to the NUI by the `phone:camera:enter` callback.
   (flat bottom, height 4.9em) + black bottom controls bar.
 - **Controls:** PHOTO/VIDEO toggle, shutter, flip, gallery thumb (→ opens Photos),
   Esc to exit.
+
+---
+
+## Maps app  (client+server/app/maps/main.lua + web/src/app/maps/)
+
+A **Leaflet** GTA V map (raw Leaflet, not react-leaflet) using the `gta-v-map-leaflet`
+**atlas** tiles. Tiles live in `web/public/mapStyles/styleAtlas/{z}/{x}/{y}.jpg` (served
+to the NUI; globbed in fxmanifest) and load via a **custom CRS** (`L.CRS.Simple` +
+`L.Transformation(scaleX, centerX, -scaleY, centerY)`, values in `MAP` at the top of
+`MapsApp.jsx` — tune if the marker is offset). GTA `(x,y)` → Leaflet `[y, x]`.
+
+- **Live player marker**: client streams `GetEntityCoords` every 500ms while the app is
+  open (`phone:maps:enter`/`exit` → `phone:maps:pos`). Pulsing blue dot. Opens **centered
+  on you and follows**; panning the map stops follow.
+- **Recenter button**: snaps back to you (re-enables follow).
+- **Custom blips (saved places)**: **right-click** the map → a **draggable pin** drops →
+  drag to position → name it → **Save** (persisted per citizenid in `doc.maps.blips`).
+  Tap a saved blip → **Set Waypoint** (real in-game `SetNewWaypoint`) or **Delete**;
+  **hold-drag a saved blip** to reposition it (persists via `phone:maps:move`).
+  Name-only. Left-click closes an open blip sheet.
+- **Zoom/pan limits**: solid `maxBounds` (no panning into the void) + a dynamic `minZoom`
+  (computed from the container so the map always covers the screen — no black bars).
+- Slice: `maps` (blips). Dep: `leaflet` (npm). Server CRUD: `oph3z-phone:server:maps:*`.
+- **Planned (with Messages)**: *Send location* + *Send live location* (with a timer/expiry
+  and the ability to stop sharing). Built later when the Messages app exists.
+
+> ⚠️ New Lua files + fxmanifest tiles → needs `refresh` then `restart`.
+
+---
+
+## Messages app  (client+server/app/messages/main.lua + web/src/app/messages/)
+
+iMessage-style 1-on-1 texting by phone number. **Core text messaging is done**;
+the 4 attachment features are the next phase.
+
+- **Three screens** (match the iPhone Messages UI): **thread list** (large "Messages"
+  title, Filters, compose ✎; rows = avatar + name + preview + time + unread dot),
+  **conversation** (back + centered avatar/name, blue/gray bubbles, link-ify, composer
+  bar with camera/＋/mic/send — **no Spotify bar**), **new message** (To: field with
+  contact suggestions + Cancel).
+- **Storage**: each player keeps their own threads in `doc.messages.threads[otherDigits]
+  = { number, items[], unread }`. Sending writes BOTH sides + live-pushes to the
+  recipient if online (`oph3z-phone:client:messages:incoming` → `phone:messages:incoming`);
+  offline players get it on next load. Blocked sender → recipient copy skipped.
+- Server: `oph3z-phone:server:messages:{threads,open,send}`. Names/avatars resolved from
+  contacts at read time (`DB.ResolveContact`). Slice: `messages`.
+- **Next (features, chosen):** send **money** (bank transfer, qbx_core), send **photo/video**
+  (gallery + new capture), send **location / live location** (tappable card → opens Maps;
+  live has expiry + stop), **voice message** (MediaRecorder + getUserMedia — works only if
+  the build allows mic access; FiveM CEF usually blocks it).
 
 ---
 

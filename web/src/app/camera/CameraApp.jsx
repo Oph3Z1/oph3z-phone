@@ -81,6 +81,7 @@ export default function CameraApp() {
   const cfgRef = useRef(null); // upload provider config (from Lua)
   const recRef = useRef(null); // MediaRecorder
   const chunksRef = useRef([]);
+  const recStartRef = useRef(0); // recording start time (for duration)
 
   // Most recent item for the gallery thumbnail.
   const last = useMemo(
@@ -123,9 +124,10 @@ export default function CameraApp() {
     };
   }, []);
 
-  // Tell Lua the active mode: PHOTO = rotate (hold RMB) only, VIDEO = movement.
+  // Tell Lua the active mode; reset the selfie crop-shift (it's photo-only).
   useEffect(() => {
     fetchNui('phone:camera:mode', { mode }, {});
+    if (window.MainRender && window.MainRender.setShift) window.MainRender.setShift(0);
   }, [mode]);
 
   // Recording timer.
@@ -139,9 +141,9 @@ export default function CameraApp() {
   }, [recording]);
 
   // Save an uploaded URL into the Photos library (server), then show it.
-  const save = async (url, type) => {
+  const save = async (url, type, duration) => {
     if (!url) return;
-    const photo = await fetchNui('phone:camera:save', { url, type }, null);
+    const photo = await fetchNui('phone:camera:save', { url, type, duration }, null);
     if (photo) dispatch(upsertPhoto(photo));
     else console.error('[camera] save returned no photo for', url);
   };
@@ -180,10 +182,12 @@ export default function CameraApp() {
       if (e.data && e.data.size > 0) chunksRef.current.push(e.data);
     };
     rec.onstop = async () => {
+      const duration = Math.round((Date.now() - recStartRef.current) / 1000);
       const blob = new Blob(chunksRef.current, { type: 'video/webm' });
       const url = await uploadToProvider(blob, 'video.webm', cfgRef.current);
-      await save(url, 'video');
+      await save(url, 'video', duration);
     };
+    recStartRef.current = Date.now();
     rec.start();
     recRef.current = rec;
     setRecording(true);
@@ -200,12 +204,13 @@ export default function CameraApp() {
 
   const onShutter = () => (mode === 'photo' ? takePhoto() : toggleVideo());
 
-  // Flip rear/front; in selfie, shift the crop left so the whole character shows.
+  // Flip rear/front. In PHOTO selfie the native cam is off-centre, so shift the
+  // crop left; the VIDEO selfie cam is centred, so no shift there.
   const flip = async () => {
     const res = await fetchNui('phone:camera:flip', {}, { front: false });
     const front = !!(res && res.front);
     if (window.MainRender && window.MainRender.setShift) {
-      window.MainRender.setShift(front ? SELFIE_SHIFT : 0);
+      window.MainRender.setShift(front && mode === 'photo' ? SELFIE_SHIFT : 0);
     }
   };
 
@@ -272,7 +277,6 @@ export default function CameraApp() {
           <button
             className="camera__flip"
             onClick={flip}
-            style={{ visibility: recording || mode === 'video' ? 'hidden' : 'visible' }}
             aria-label="Flip camera"
           >
             <FlipIcon />

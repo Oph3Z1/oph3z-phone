@@ -42,6 +42,8 @@ files {
     'web/build/audio/*.wav',
     -- Live game-view renderer (CfxTexture Three.js) for the Camera viewfinder.
     'web/build/gamerender/**/*',
+    -- GTA V map tiles (Leaflet) for the Maps app.
+    'web/build/mapStyles/**/*',
 }
 
 dependencies {

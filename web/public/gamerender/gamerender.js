@@ -1,15 +1,3 @@
-/* ===========================================================================
-   gamerender.js — live game-view renderer for the phone camera viewfinder.
-
-   Uses FiveM's patched Three.js where `CfxTexture` is backed by the live game
-   backbuffer. We render that texture onto a plane and read the pixels into a
-   target <canvas>. We read back only a CENTERED PORTRAIT STRIP that matches the
-   phone screen's aspect — so the canvas IS exactly what you see in the phone,
-   and capturing it (photo/video) saves the phone view, not a full PC screenshot.
-
-   Only runs inside FiveM's CEF (CfxTexture is a no-op in a normal browser).
-   Adapted from the user's `recordvideo` test script (citizenfx/screenshot-basic).
-   =========================================================================== */
 import {
   OrthographicCamera, Scene, WebGLRenderTarget, LinearFilter, NearestFilter,
   RGBAFormat, UnsignedByteType, CfxTexture, ShaderMaterial, PlaneBufferGeometry,

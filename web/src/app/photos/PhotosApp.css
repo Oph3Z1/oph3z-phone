@@ -80,13 +80,17 @@
   transform: scale(0.86);
   transition: transform 0.1s ease;
 }
-.ph-thumb__video {
+/* Video duration shown bottom-right of the tile (instead of a play icon). */
+.ph-thumb__dur {
   position: absolute;
-  right: 0.35em;
-  bottom: 0.3em;
+  right: 0.45em;
+  bottom: 0.35em;
   color: #fff;
-  font-size: 1em;
-  filter: drop-shadow(0 0.05em 0.2em rgba(0, 0, 0, 0.6));
+  font-size: 0.72em;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-shadow: 0 0.05em 0.25em rgba(0, 0, 0, 0.75);
+  pointer-events: none;
 }
 .ph-thumb__check {
   position: absolute;
@@ -300,15 +304,26 @@
   color: #fff;
   padding: 0.1em;
 }
-.ph-viewer__btn--danger {
-  color: #ff453a;
-  font-size: 1.3em;
+/* Centered date + time in the header. */
+.ph-viewer__when {
+  text-align: center;
+  line-height: 1.15;
 }
-.ph-viewer__count {
-  font-size: 0.85em;
+.ph-viewer__date {
+  font-size: 0.95em;
+  font-weight: 600;
+  color: #fff;
+}
+.ph-viewer__time {
+  font-size: 0.72em;
   color: #c7c7cc;
 }
+.ph-viewer__spacer {
+  width: 1.5em; /* mirrors the back button so the date stays centered */
+  pointer-events: none;
+}
 .ph-viewer__stage {
+  position: relative;
   flex: 1 1 auto;
   min-height: 0;
   display: flex;
@@ -316,6 +331,33 @@
   justify-content: center;
   overflow: hidden;
 }
+
+/* Prev / next arrows over the stage. */
+.ph-viewer__nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 2em;
+  height: 2em;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.38);
+  backdrop-filter: blur(0.5em);
+  -webkit-backdrop-filter: blur(0.5em);
+  border: 0.5px solid rgba(255, 255, 255, 0.2);
+  color: #fff;
+  font-size: 1.05em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 4;
+  transition: transform 0.12s ease, background 0.12s ease;
+}
+.ph-viewer__nav:active {
+  transform: translateY(-50%) scale(0.9);
+  background: rgba(0, 0, 0, 0.55);
+}
+.ph-viewer__nav--prev { left: 0.6em; }
+.ph-viewer__nav--next { right: 0.6em; }
 .ph-viewer__media {
   max-width: 100%;
   max-height: 100%;
@@ -325,17 +367,147 @@
 .ph-viewer__media--zoom {
   cursor: zoom-in;
 }
+/* Filmstrip of all items (current one larger + outlined), like iPhone. */
+.ph-viewer__strip {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 0.3em;
+  overflow-x: auto;
+  padding: 0.5em 0.7em;
+}
+.ph-viewer__strip::-webkit-scrollbar {
+  display: none;
+}
+.ph-viewer__frame {
+  flex: 0 0 auto;
+  width: 1.8em;
+  height: 2.4em;
+  border-radius: 0.35em;
+  overflow: hidden;
+  opacity: 0.55;
+  border: 0.12em solid transparent;
+  transition: width 0.16s ease, opacity 0.16s ease;
+}
+.ph-viewer__frame img,
+.ph-viewer__frame video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  pointer-events: none;
+}
+.ph-viewer__frame.is-active {
+  width: 2.6em;
+  opacity: 1;
+  border-color: #fff;
+}
+
 .ph-viewer__actions {
   flex: 0 0 auto;
   display: flex;
-  justify-content: center;
-  padding: 0.6em 0 calc(var(--safe-bottom) + 0.8em);
+  justify-content: space-around;
+  align-items: center;
+  padding: 0.4em 2em calc(var(--safe-bottom) + 0.8em);
 }
-.ph-viewer__fav {
-  font-size: 1.6em;
+.ph-viewer__act {
+  font-size: 1.55em;
   color: #fff;
-  padding: 0.2em 0.6em;
+  padding: 0.15em 0.5em;
 }
-.ph-viewer__fav.is-on {
+.ph-viewer__act.is-fav {
   color: #ff375f;
+}
+.ph-viewer__act--danger {
+  color: #ff453a;
+}
+
+/* ---- Custom video player (in the viewer) -------------------------------- */
+.ph-vp {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.ph-vp__video {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+/* Big center play button while paused. */
+.ph-vp__big {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 3.2em;
+  height: 3.2em;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(0.6em);
+  -webkit-backdrop-filter: blur(0.6em);
+  color: #fff;
+  font-size: 1.2em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-left: 0.12em; /* optically centre the triangle */
+  z-index: 2;
+}
+/* Glass control bar pinned to the bottom of the video. */
+.ph-vp__bar {
+  position: absolute;
+  left: 0.7em;
+  right: 0.7em;
+  bottom: 0.7em;
+  display: flex;
+  align-items: center;
+  gap: 0.55em;
+  padding: 0.45em 0.85em;
+  border-radius: 1.4em;
+  background: rgba(20, 20, 22, 0.5);
+  backdrop-filter: blur(1.4em) saturate(180%);
+  -webkit-backdrop-filter: blur(1.4em) saturate(180%);
+  border: 0.5px solid rgba(255, 255, 255, 0.16);
+  z-index: 3;
+}
+.ph-vp__play {
+  flex: 0 0 auto;
+  color: #fff;
+  font-size: 1.05em;
+  display: flex;
+}
+.ph-vp__time {
+  flex: 0 0 auto;
+  font-size: 0.68em;
+  color: #e6e6ea;
+  font-variant-numeric: tabular-nums;
+  min-width: 2.4em;
+  text-align: center;
+}
+/* Scrubber: thin track with a filled portion + small round thumb. */
+.ph-vp__seek {
+  flex: 1 1 auto;
+  -webkit-appearance: none;
+  appearance: none;
+  height: 0.25em;
+  border-radius: 0.2em;
+  background: linear-gradient(
+    to right,
+    #fff var(--p, 0%),
+    rgba(255, 255, 255, 0.25) var(--p, 0%)
+  );
+  outline: none;
+  cursor: pointer;
+}
+.ph-vp__seek::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 0.85em;
+  height: 0.85em;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 0.05em 0.2em rgba(0, 0, 0, 0.5);
 }

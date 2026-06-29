@@ -1,0 +1,208 @@
+/* ===========================================================================
+   Maps app — Leaflet GTA V map with a live player marker + saved-place blips.
+   =========================================================================== */
+.maps {
+  position: absolute;
+  inset: 0;
+  background: #0b0b0d;
+  overflow: hidden;
+}
+
+.maps__map {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+/* Leaflet container styling inside the phone. */
+.maps .leaflet-container {
+  width: 100%;
+  height: 100%;
+  background: #0b0b0d;
+  font-family: inherit;
+  outline: none;
+}
+.maps .leaflet-tile-pane {
+  filter: saturate(1.02);
+}
+
+/* ---- Player marker (pulsing blue dot) ---------------------------------- */
+.maps-player {
+  position: relative;
+}
+.maps-player__dot {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 0.85em;
+  height: 0.85em;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: #0a84ff;
+  border: 0.14em solid #fff;
+  box-shadow: 0 0.08em 0.3em rgba(0, 0, 0, 0.5);
+}
+.maps-player__pulse {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 1.4em;
+  height: 1.4em;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: rgba(10, 132, 255, 0.35);
+  animation: maps-pulse 2s ease-out infinite;
+}
+@keyframes maps-pulse {
+  0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0.8; }
+  100% { transform: translate(-50%, -50%) scale(2.4); opacity: 0; }
+}
+
+/* ---- Blip pin ----------------------------------------------------------- */
+.maps-blip__pin {
+  display: block;
+  width: 1.1em;
+  height: 1.1em;
+  border-radius: 50% 50% 50% 0;
+  background: #ff3b30;
+  border: 0.12em solid #fff;
+  transform: rotate(-45deg);
+  box-shadow: 0 0.12em 0.3em rgba(0, 0, 0, 0.5);
+}
+.maps-blip--pending .maps-blip__pin {
+  background: #0a84ff;
+}
+
+/* ---- Mini info hint (top) ----------------------------------------------- */
+.maps__tip {
+  position: absolute;
+  top: calc(var(--safe-top) + 1.5em);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 500;
+  max-width: 92%;
+  text-align: center;
+  white-space: nowrap;
+  font-size: 0.66em;
+  color: #e6e6ea;
+  padding: 0.4em 0.9em;
+  border-radius: 1em;
+  background: rgba(28, 28, 30, 0.78);
+  backdrop-filter: blur(1em) saturate(180%);
+  -webkit-backdrop-filter: blur(1em) saturate(180%);
+  border: 0.5px solid rgba(255, 255, 255, 0.14);
+  box-shadow: 0 0.3em 0.9em rgba(0, 0, 0, 0.4);
+  pointer-events: none;
+}
+.maps__tip b {
+  color: #fff;
+  font-weight: 700;
+}
+
+/* ---- Recenter button ---------------------------------------------------- */
+.maps__locate {
+  position: absolute;
+  right: 0.8em;
+  bottom: calc(var(--safe-bottom) + 1em);
+  z-index: 500;
+  width: 2.7em;
+  height: 2.7em;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2em;
+  color: #0a84ff;
+  background: rgba(28, 28, 30, 0.82);
+  backdrop-filter: blur(1.2em) saturate(180%);
+  -webkit-backdrop-filter: blur(1.2em) saturate(180%);
+  border: 0.5px solid rgba(255, 255, 255, 0.16);
+  box-shadow: 0 0.4em 1.2em rgba(0, 0, 0, 0.45);
+  transition: transform 0.12s ease;
+}
+.maps__locate:active {
+  transform: scale(0.92);
+}
+
+/* ---- Bottom sheet (add / blip actions) ---------------------------------- */
+.maps__sheet {
+  position: absolute;
+  left: 0.7em;
+  right: 0.7em;
+  bottom: calc(var(--safe-bottom) + 0.6em);
+  z-index: 600;
+  display: flex;
+  flex-direction: column;
+  gap: 0.7em;
+  padding: 0.9em 1em calc(0.9em);
+  border-radius: 1.4em;
+  color: #fff;
+  background: rgba(28, 28, 30, 0.9);
+  backdrop-filter: blur(2em) saturate(200%);
+  -webkit-backdrop-filter: blur(2em) saturate(200%);
+  border: 0.5px solid rgba(255, 255, 255, 0.16);
+  box-shadow: 0 0.6em 1.8em rgba(0, 0, 0, 0.5);
+  animation: maps-sheet-in 0.22s cubic-bezier(0.32, 0.72, 0, 1) both;
+}
+@keyframes maps-sheet-in {
+  from { transform: translateY(0.8em); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+.maps__sheet-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.maps__sheet-title {
+  font-size: 1.05em;
+  font-weight: 600;
+}
+.maps__hint {
+  font-size: 0.78em;
+  color: #8e8e93;
+  margin-top: -0.3em;
+}
+.maps__close {
+  color: #8e8e93;
+  font-size: 0.9em;
+  padding: 0.2em 0.4em;
+}
+.maps__input {
+  width: 100%;
+  background: rgba(118, 118, 128, 0.24);
+  border: none;
+  outline: none;
+  border-radius: 0.7em;
+  padding: 0.6em 0.8em;
+  color: #fff;
+  font-size: 0.95em;
+}
+.maps__input::placeholder {
+  color: #8e8e93;
+}
+.maps__row {
+  display: flex;
+  gap: 0.6em;
+}
+.maps__btn {
+  flex: 1;
+  padding: 0.65em 0;
+  border-radius: 0.8em;
+  font-size: 0.92em;
+  font-weight: 600;
+  text-align: center;
+}
+.maps__btn--primary {
+  background: #0a84ff;
+  color: #fff;
+}
+.maps__btn--ghost {
+  background: rgba(118, 118, 128, 0.24);
+  color: #fff;
+}
+.maps__btn--danger {
+  background: rgba(255, 59, 48, 0.16);
+  color: #ff453a;
+}
+.maps__btn:active {
+  filter: brightness(0.9);
+}

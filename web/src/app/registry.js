@@ -16,16 +16,18 @@ import appstoreIcon from '../assets/icons/apps/appstore.png';
 import PhoneApp from './phone/PhoneApp';
 import PhotosApp from './photos/PhotosApp';
 import CameraApp from './camera/CameraApp';
+import MapsApp from './maps/MapsApp';
+import MessagesApp from './messages/MessagesApp';
 
 /** @typedef {{ id:string, name:string, icon:string, component:(React.ComponentType|null) }} AppDef */
 
 /** @type {Record<string, AppDef>} */
 export const APPS = {
   call:       { id: 'call',       name: 'Phone',      icon: callIcon,       component: PhoneApp },
-  message:    { id: 'message',    name: 'Messages',   icon: messageIcon,    component: null },
+  message:    { id: 'message',    name: 'Messages',   icon: messageIcon,    component: MessagesApp },
   camera:     { id: 'camera',     name: 'Camera',     icon: cameraIcon,     component: CameraApp },
   photos:     { id: 'photos',     name: 'Photos',     icon: photosIcon,     component: PhotosApp },
-  maps:       { id: 'maps',       name: 'Maps',       icon: mapsIcon,       component: null },
+  maps:       { id: 'maps',       name: 'Maps',       icon: mapsIcon,       component: MapsApp },
   clock:      { id: 'clock',      name: 'Clock',      icon: clockIcon,      component: null },
   settings:   { id: 'settings',   name: 'Settings',   icon: settingsIcon,   component: null },
   calculator: { id: 'calculator', name: 'Calculator', icon: calculatorIcon, component: null },

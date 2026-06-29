@@ -1,103 +1,227 @@
 {
-    "updatedAt": 1782539617,
-    "citizenid": "C7E3021X",
-    "phone": {
-        "number": "555-8944",
-        "numberRaw": "5558944",
-        "recents": [
-            {
-                "number": "555-3873",
-                "direction": "out",
-                "id": 12,
-                "missed": false,
-                "ts": 1782539617
-            },
-            {
-                "number": "555-3873",
-                "direction": "in",
-                "id": 11,
-                "missed": false,
-                "ts": 1782539499
-            },
-            {
-                "number": "555-3873",
-                "direction": "in",
-                "id": 10,
-                "missed": false,
-                "ts": 1782539357
-            },
-            {
-                "missed": false,
-                "direction": "in",
-                "id": 9,
-                "number": "555-3873",
-                "ts": 1782538658
-            },
-            {
-                "missed": false,
-                "direction": "in",
-                "id": 8,
-                "number": "555-3873",
-                "ts": 1782538579
-            },
-            {
-                "missed": false,
-                "direction": "in",
-                "id": 7,
-                "number": "555-3873",
-                "ts": 1782538509
-            },
-            {
-                "missed": false,
-                "direction": "in",
-                "id": 6,
-                "number": "555-3873",
-                "ts": 1782538426
-            },
-            {
-                "missed": false,
-                "direction": "in",
-                "id": 5,
-                "number": "555-3873",
-                "ts": 1782538153
-            },
-            {
-                "missed": false,
-                "direction": "in",
-                "id": 4,
-                "number": "555-3873",
-                "ts": 1782538103
-            },
-            {
-                "missed": false,
-                "direction": "in",
-                "id": 3,
-                "number": "555-3873",
-                "ts": 1782538030
-            },
-            {
-                "missed": false,
-                "direction": "in",
-                "id": 2,
-                "number": "555-3873",
-                "ts": 1782537657
-            },
-            {
-                "missed": false,
-                "direction": "in",
-                "id": 1,
-                "number": "555-3873",
-                "ts": 1782537498
+    "messages": {
+        "threads": {
+            "5553873": {
+                "number": "5553873",
+                "unread": 0,
+                "items": [
+                    {
+                        "read": true,
+                        "body": "naber lo",
+                        "id": "17827577538669",
+                        "ts": 1782757753,
+                        "type": "text",
+                        "dir": "in"
+                    },
+                    {
+                        "read": true,
+                        "body": "iyidir lo",
+                        "id": "17827577718354",
+                        "ts": 1782757771,
+                        "type": "text",
+                        "dir": "out"
+                    },
+                    {
+                        "read": true,
+                        "body": "senden naber",
+                        "id": "17827577745451",
+                        "ts": 1782757774,
+                        "type": "text",
+                        "dir": "out"
+                    },
+                    {
+                        "read": true,
+                        "body": "asdasd",
+                        "id": "17827577806511",
+                        "ts": 1782757780,
+                        "type": "text",
+                        "dir": "out"
+                    },
+                    {
+                        "read": true,
+                        "body": "asdasd",
+                        "id": "17827577835381",
+                        "ts": 1782757783,
+                        "type": "text",
+                        "dir": "in"
+                    },
+                    {
+                        "read": true,
+                        "body": "asd",
+                        "id": "17827579049788",
+                        "ts": 1782757904,
+                        "type": "text",
+                        "dir": "in"
+                    },
+                    {
+                        "read": true,
+                        "body": "asd",
+                        "id": "17827579089521",
+                        "ts": 1782757908,
+                        "type": "text",
+                        "dir": "out"
+                    },
+                    {
+                        "read": true,
+                        "body": "asd",
+                        "id": "17827590279863",
+                        "ts": 1782759027,
+                        "type": "text",
+                        "dir": "in"
+                    },
+                    {
+                        "read": true,
+                        "body": "asdsadasd",
+                        "id": "17827590339694",
+                        "ts": 1782759033,
+                        "type": "text",
+                        "dir": "out"
+                    },
+                    {
+                        "read": true,
+                        "body": "selömdöl amsölkdm lökasmd lökamsdlköm lakösmdl kmaslödm lasdm asöda msdlök maslkdm ölkmasd",
+                        "id": "17827590447226",
+                        "ts": 1782759044,
+                        "type": "text",
+                        "dir": "in"
+                    },
+                    {
+                        "read": true,
+                        "body": "100",
+                        "id": "17827596629072",
+                        "meta": {
+                            "amount": 100
+                        },
+                        "ts": 1782759662,
+                        "type": "money",
+                        "dir": "in"
+                    },
+                    {
+                        "read": true,
+                        "body": "10",
+                        "id": "17827607156361",
+                        "meta": {
+                            "amount": 10
+                        },
+                        "ts": 1782760715,
+                        "type": "request",
+                        "dir": "in"
+                    },
+                    {
+                        "read": true,
+                        "body": "10",
+                        "id": "17827607266641",
+                        "meta": {
+                            "amount": 10
+                        },
+                        "ts": 1782760726,
+                        "type": "money",
+                        "dir": "out"
+                    }
+                ]
             }
-        ],
-        "nextRecentId": 13,
-        "contacts": [],
-        "nextContactId": 1
+        }
     },
+    "updatedAt": 1782760726,
     "settings": {
         "locked": true,
         "wallpaper": "default",
         "brightness": 100
     },
-    "createdAt": 1782537349
+    "citizenid": "C7E3021X",
+    "createdAt": 1782537349,
+    "phone": {
+        "nextContactId": 1,
+        "contacts": [],
+        "numberRaw": "5558944",
+        "recents": [
+            {
+                "number": "555-3873",
+                "id": 12,
+                "ts": 1782539617,
+                "direction": "out",
+                "missed": false
+            },
+            {
+                "number": "555-3873",
+                "id": 11,
+                "ts": 1782539499,
+                "direction": "in",
+                "missed": false
+            },
+            {
+                "number": "555-3873",
+                "id": 10,
+                "ts": 1782539357,
+                "direction": "in",
+                "missed": false
+            },
+            {
+                "number": "555-3873",
+                "id": 9,
+                "ts": 1782538658,
+                "direction": "in",
+                "missed": false
+            },
+            {
+                "number": "555-3873",
+                "id": 8,
+                "ts": 1782538579,
+                "direction": "in",
+                "missed": false
+            },
+            {
+                "number": "555-3873",
+                "id": 7,
+                "ts": 1782538509,
+                "direction": "in",
+                "missed": false
+            },
+            {
+                "number": "555-3873",
+                "id": 6,
+                "ts": 1782538426,
+                "direction": "in",
+                "missed": false
+            },
+            {
+                "number": "555-3873",
+                "id": 5,
+                "ts": 1782538153,
+                "direction": "in",
+                "missed": false
+            },
+            {
+                "number": "555-3873",
+                "id": 4,
+                "ts": 1782538103,
+                "direction": "in",
+                "missed": false
+            },
+            {
+                "number": "555-3873",
+                "id": 3,
+                "ts": 1782538030,
+                "direction": "in",
+                "missed": false
+            },
+            {
+                "number": "555-3873",
+                "id": 2,
+                "ts": 1782537657,
+                "direction": "in",
+                "missed": false
+            },
+            {
+                "number": "555-3873",
+                "id": 1,
+                "ts": 1782537498,
+                "direction": "in",
+                "missed": false
+            }
+        ],
+        "blocked": [],
+        "number": "555-8944",
+        "nextRecentId": 13
+    }
 }

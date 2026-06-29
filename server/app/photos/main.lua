@@ -62,6 +62,7 @@ function Photos.Add(citizenid, input)
         url      = tostring(input.url),
         type     = (input.type == 'video') and 'video' or 'image',
         thumb    = input.thumb and tostring(input.thumb) or nil,
+        duration = tonumber(input.duration) or nil,
         favorite = false,
         ts       = os.time(),
     }

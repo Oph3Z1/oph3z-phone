@@ -1,15 +1,27 @@
 import { useEffect, useRef, useState } from 'react';
 import { useDispatch } from 'react-redux';
-import { ChevronLeftIcon, HeartIcon, HeartFillIcon, TrashIcon } from './icons';
+import { ChevronLeftIcon, ChevronRightIcon, HeartIcon, HeartFillIcon, TrashIcon } from './icons';
 import { togglePhotoFavorite, deletePhotos, setLightbox } from '../../../store/slices/photosSlice';
+import VideoPlayer from './VideoPlayer';
 
 const SWIPE = 50; // px to move between items
 
-// Fullscreen photo/video viewer with swipe navigation.
+function dateLine(ts) {
+  if (!ts) return '';
+  return new Date(ts * 1000).toLocaleDateString(undefined, { month: 'long', day: '2-digit' });
+}
+function timeLine(ts) {
+  if (!ts) return '';
+  return new Date(ts * 1000).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', hour12: false });
+}
+
+// Fullscreen photo/video viewer — iPhone-style: back + date/time header, the
+// photo, a filmstrip of all items, and favorite + delete at the bottom.
 export default function PhotoViewer({ items, startId, onClose }) {
   const dispatch = useDispatch();
   const [index, setIndex] = useState(() => Math.max(0, items.findIndex((p) => p.id === startId)));
   const startX = useRef(null);
+  const activeFrame = useRef(null);
 
   // Keep the index valid as items change (e.g. after a delete).
   useEffect(() => {
@@ -17,12 +29,17 @@ export default function PhotoViewer({ items, startId, onClose }) {
     else if (index > items.length - 1) setIndex(items.length - 1);
   }, [items, index, onClose]);
 
+  // Keep the current filmstrip frame scrolled into view.
+  useEffect(() => {
+    if (activeFrame.current) {
+      activeFrame.current.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+    }
+  }, [index]);
+
   const photo = items[index];
   if (!photo) return null;
 
-  const go = (dir) => {
-    setIndex((i) => Math.min(items.length - 1, Math.max(0, i + dir)));
-  };
+  const go = (dir) => setIndex((i) => Math.min(items.length - 1, Math.max(0, i + dir)));
 
   const onPointerDown = (e) => (startX.current = e.clientX);
   const onPointerUp = (e) => {
@@ -36,26 +53,21 @@ export default function PhotoViewer({ items, startId, onClose }) {
   const remove = () => dispatch(deletePhotos([photo.id]));
 
   return (
-    <div className="ph-viewer" onPointerDown={onPointerDown} onPointerUp={onPointerUp}>
+    <div className="ph-viewer">
       <div className="ph-viewer__bar">
-        <button className="ph-viewer__btn" onClick={onClose}>
+        <button className="ph-viewer__btn" onClick={onClose} aria-label="Back">
           <ChevronLeftIcon />
         </button>
-        <span className="ph-viewer__count">
-          {index + 1} of {items.length}
-        </span>
-        <button
-          className="ph-viewer__btn ph-viewer__btn--danger"
-          onClick={remove}
-          aria-label="Delete"
-        >
-          <TrashIcon />
-        </button>
+        <div className="ph-viewer__when">
+          <div className="ph-viewer__date">{dateLine(photo.ts)}</div>
+          <div className="ph-viewer__time">{timeLine(photo.ts)}</div>
+        </div>
+        <div className="ph-viewer__btn ph-viewer__spacer" />
       </div>
 
-      <div className="ph-viewer__stage">
+      <div className="ph-viewer__stage" onPointerDown={onPointerDown} onPointerUp={onPointerUp}>
         {photo.type === 'video' ? (
-          <video className="ph-viewer__media" src={photo.url} controls autoPlay />
+          <VideoPlayer key={photo.id} src={photo.url} />
         ) : (
           <img
             className="ph-viewer__media ph-viewer__media--zoom"
@@ -64,15 +76,59 @@ export default function PhotoViewer({ items, startId, onClose }) {
             onClick={() => dispatch(setLightbox(photo.url))}
           />
         )}
+
+        {index > 0 && (
+          <button
+            className="ph-viewer__nav ph-viewer__nav--prev"
+            onClick={() => go(-1)}
+            aria-label="Previous"
+          >
+            <ChevronLeftIcon />
+          </button>
+        )}
+        {index < items.length - 1 && (
+          <button
+            className="ph-viewer__nav ph-viewer__nav--next"
+            onClick={() => go(1)}
+            aria-label="Next"
+          >
+            <ChevronRightIcon />
+          </button>
+        )}
+      </div>
+
+      <div className="ph-viewer__strip">
+        {items.map((p, i) => (
+          <button
+            key={p.id}
+            ref={i === index ? activeFrame : null}
+            className={`ph-viewer__frame${i === index ? ' is-active' : ''}`}
+            onClick={() => setIndex(i)}
+            aria-label="Open item"
+          >
+            {p.type === 'video' ? (
+              <video src={p.url} muted preload="metadata" />
+            ) : (
+              <img src={p.thumb || p.url} alt="" />
+            )}
+          </button>
+        ))}
       </div>
 
       <div className="ph-viewer__actions">
         <button
-          className={`ph-viewer__fav${photo.favorite ? ' is-on' : ''}`}
+          className={`ph-viewer__act${photo.favorite ? ' is-fav' : ''}`}
           onClick={() => dispatch(togglePhotoFavorite(photo.id, !photo.favorite))}
           aria-label="Favorite"
         >
           {photo.favorite ? <HeartFillIcon /> : <HeartIcon />}
+        </button>
+        <button
+          className="ph-viewer__act ph-viewer__act--danger"
+          onClick={remove}
+          aria-label="Delete"
+        >
+          <TrashIcon />
         </button>
       </div>
     </div>
