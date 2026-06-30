@@ -187,7 +187,10 @@
   flex-direction: column;
   align-items: center;
   gap: 0.15em;
+  padding: 0;
+  cursor: pointer;
 }
+.msg-conv__who:active { opacity: 0.6; }
 .msg-conv__name {
   font-size: 0.76em;
   font-weight: 600;
@@ -371,6 +374,164 @@
   border-radius: 50% 50% 50% 0;
   transform: rotate(-45deg);
   box-shadow: 0 0.1em 0.3em rgba(0, 0, 0, 0.5);
+}
+
+/* ---- Voice note bubble -------------------------------------------------- */
+.msg-voice {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  max-width: 75%;
+  padding: 0.4em 0.7em 0.4em 0.5em;
+  border-radius: 1.15em;
+}
+.msg-voice.is-out { background: #0a84ff; color: #fff; border-bottom-right-radius: 0.35em; }
+.msg-voice.is-in { background: #262629; color: #fff; border-bottom-left-radius: 0.35em; }
+.msg-voice__play {
+  flex: 0 0 auto;
+  width: 2em;
+  height: 2em;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9em;
+  background: rgba(255, 255, 255, 0.18);
+  color: #fff;
+}
+.msg-voice__bars {
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  gap: 0.12em;
+  height: 1.8em;
+  min-width: 5em;
+  cursor: pointer;
+  touch-action: none;
+}
+.msg-voice__bars span {
+  flex: 1 1 0;
+  border-radius: 0.1em;
+  background: rgba(255, 255, 255, 0.35);
+  transition: background 0.1s ease;
+}
+.msg-voice__bars span.is-on { background: #fff; }
+.msg-voice__time {
+  flex: 0 0 auto;
+  font-size: 0.72em;
+  font-variant-numeric: tabular-nums;
+  opacity: 0.85;
+}
+
+/* ---- Voice recording bar (replaces the composer while recording) -------- */
+.msg-voicerec {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 0.45em;
+  padding: 0.5em 0.6em calc(var(--safe-bottom) + 0.5em);
+}
+.msg-voicerec__cancel {
+  flex: 0 0 auto;
+  width: 2.1em;
+  height: 2.1em;
+  border-radius: 50%;
+  background: #2c2c2e;
+  color: #fff;
+  font-size: 0.9em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.msg-voicerec__live {
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  height: 2.4em;
+  padding: 0 0.9em;
+  border-radius: 1.3em;
+  background: #1c1c1e;
+}
+.msg-voicerec__dot {
+  flex: 0 0 auto;
+  width: 0.6em;
+  height: 0.6em;
+  border-radius: 50%;
+  background: #ff453a;
+  animation: msg-loc-pulse 1.2s ease-in-out infinite;
+}
+/* Paused: freeze the wave + dim the indicator. */
+.msg-voicerec__live.is-paused .msg-voicerec__dot {
+  animation: none;
+  background: #8e8e93;
+}
+.msg-voicerec__live.is-paused .msg-voicerec__bars span {
+  animation-play-state: paused;
+  background: #8e8e93;
+}
+.msg-voicerec__bars {
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  gap: 0.14em;
+  height: 1.4em;
+}
+.msg-voicerec__bars span {
+  flex: 1 1 0;
+  height: 30%;
+  border-radius: 0.1em;
+  background: #ff453a;
+  animation: msg-voicewave 0.9s ease-in-out infinite;
+}
+@keyframes msg-voicewave {
+  0%, 100% { height: 25%; opacity: 0.6; }
+  50% { height: 100%; opacity: 1; }
+}
+.msg-voicerec__time {
+  flex: 0 0 auto;
+  font-size: 0.78em;
+  color: #c7c7cc;
+  font-variant-numeric: tabular-nums;
+  min-width: 2.6em;
+  text-align: right;
+}
+.msg-voicerec__pause {
+  flex: 0 0 auto;
+  width: 2.1em;
+  height: 2.1em;
+  border-radius: 50%;
+  background: #2c2c2e;
+  color: #fff;
+  font-size: 1em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.msg-voicerec__pause:disabled { opacity: 0.5; }
+.msg-voicerec__send {
+  flex: 0 0 auto;
+  width: 2.1em;
+  height: 2.1em;
+  border-radius: 50%;
+  background: #0a84ff;
+  color: #fff;
+  font-size: 1em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.msg-voicerec__send:disabled { opacity: 0.6; }
+.msg-voicerec__spin {
+  width: 1em;
+  height: 1em;
+  border-radius: 50%;
+  border: 0.16em solid rgba(255, 255, 255, 0.4);
+  border-top-color: #fff;
+  animation: msg-spin 0.7s linear infinite;
+}
+@keyframes msg-spin {
+  to { transform: rotate(360deg); }
 }
 
 /* ---- Money / request bubble (Apple-Pay style) --------------------------- */

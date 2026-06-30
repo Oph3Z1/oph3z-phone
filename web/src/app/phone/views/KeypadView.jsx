@@ -25,14 +25,13 @@ export default function KeypadView({ onAddContact }) {
   const [value, setValue] = useState('');
 
   const typedDigits = digitsOnly(value);
-  // Contact whose number contains the typed digits -> shown as a suggestion.
+  // Show a contact's name only when the typed number EXACTLY matches theirs
+  // (so "12" doesn't surface a contact saved as "123").
   const match =
-    typedDigits.length >= 2
-      ? contacts.find((c) => digitsOnly(c.number).includes(typedDigits))
+    typedDigits.length > 0
+      ? contacts.find((c) => digitsOnly(c.number) === typedDigits)
       : null;
-  // Does the typed number EXACTLY belong to a saved contact?
-  const exists =
-    typedDigits.length > 0 && contacts.some((c) => digitsOnly(c.number) === typedDigits);
+  const exists = !!match;
 
   const press = (d) => setValue((v) => (v.length < 18 ? v + d : v));
   const backspace = () => setValue((v) => v.slice(0, -1));

@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import Phone from './components/Phone/Phone';
 import Lightbox from './components/Lightbox/Lightbox';
+import PhonePeek from './components/Notifications/PhonePeek';
 import { useNuiEvent } from './hooks/useNuiEvent';
 import { fetchNui } from './utils/fetchNui';
 import { isEnvBrowser } from './utils/misc';
@@ -10,12 +11,27 @@ import { hydrate } from './store/slices/settingsSlice';
 import { applyCall } from './store/slices/callSlice';
 import { loadPhoneState } from './store/slices/contactsSlice';
 import { upsertPhoto, setLightbox } from './store/slices/photosSlice';
+import { presentNotification, loadNotifications, setPeek } from './store/slices/notificationsSlice';
 
 export default function App() {
   const dispatch = useDispatch();
   const visible = useSelector((s) => s.phone.visible);
   const activeApp = useSelector((s) => s.phone.activeApp);
   const lightbox = useSelector((s) => s.photos.lightbox);
+  const peek = useSelector((s) => s.notifications.peek);
+
+  // Notification sound (notify.wav in web/public/audio/).
+  const notifAudio = useRef(null);
+  const playNotify = () => {
+    try {
+      if (!notifAudio.current) notifAudio.current = new Audio('./audio/notify.wav');
+      notifAudio.current.currentTime = 0;
+      const p = notifAudio.current.play();
+      if (p && p.catch) p.catch(() => {});
+    } catch (e) {
+      /* no audio available */
+    }
+  };
 
   // While the Camera takes a photo, the whole phone is hidden for one frame so
   // the screenshot is clean (kept mounted via visibility, not unmounted).
@@ -28,11 +44,25 @@ export default function App() {
       if (data.settings) dispatch(hydrate(data.settings));
       if (data.time) dispatch(setTime(data.time));
       dispatch(setVisible(true));
+      dispatch(loadNotifications()); // refresh the lock screen / center on open
     } else {
       dispatch(setVisible(false));
       dispatch(setLightbox(null));
     }
   });
+
+  // Live notification arrived: store it, play the sound, and present it (peek if
+  // the phone is closed, banner if open & unlocked, else it's on the lock screen).
+  useNuiEvent('phone:notify', (item) => {
+    if (!item) return;
+    const shown = dispatch(presentNotification(item));
+    if (shown) playNotify();
+  });
+
+  // Opening the phone ends any active peek (it becomes the lock-screen list).
+  useEffect(() => {
+    if (visible) dispatch(setPeek(null));
+  }, [visible, dispatch]);
 
   // Lua -> live clock / weather stream.
   useNuiEvent('phone:time', (data) => {
@@ -53,8 +83,9 @@ export default function App() {
   useNuiEvent('phone:call', (data) => {
     if (!data) return;
     dispatch(applyCall(data));
-    // Refresh contacts/recents after a call so new history shows up.
-    if (data.type === 'ended') dispatch(loadPhoneState());
+    // Refresh contacts/recents after a call so new history shows up (a failed call
+    // to an offline number still logs an outgoing entry server-side).
+    if (data.type === 'ended' || data.type === 'failed') dispatch(loadPhoneState());
   });
 
   // Tell Lua to close the phone (and release NUI focus).
@@ -91,13 +122,15 @@ export default function App() {
     }
   }, [dispatch]);
 
-  if (!visible) return null;
+  // Render while open OR while a closed-phone peek is showing.
+  if (!visible && !peek) return null;
 
   // Hidden (not unmounted) during a photo capture so the shot is clean.
   return (
     <div style={{ width: '100%', height: '100%', visibility: captureHidden ? 'hidden' : 'visible' }}>
-      <Phone />
-      <Lightbox />
+      {visible && <Phone />}
+      {visible && <Lightbox />}
+      {!visible && peek && <PhonePeek key={peek.id} notif={peek} onDone={() => dispatch(setPeek(null))} />}
     </div>
   );
 }

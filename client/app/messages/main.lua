@@ -5,6 +5,11 @@
     into the NUI (works whether or not the Messages app is currently open).
 --]]
 
+-- Upload provider config (for client-side voice-note uploads — same as camera).
+RegisterNUICallback('phone:media:config', function(_, cb)
+    cb(Config.Camera or {})
+end)
+
 RegisterNUICallback('phone:messages:threads', function(_, cb)
     cb(lib.callback.await('oph3z-phone:server:messages:threads', false) or {})
 end)

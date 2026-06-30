@@ -9,6 +9,8 @@ import {
   unblockNumber,
   digitsOf,
 } from '../../../store/slices/contactsSlice';
+import { setResumeThread, setReturnProfile } from '../../../store/slices/messagesSlice';
+import { openApp } from '../../../store/slices/phoneSlice';
 import { fetchNui } from '../../../utils/fetchNui';
 
 // Small inline message glyph (chat bubble).
@@ -18,7 +20,7 @@ const MessageGlyph = (p) => (
   </svg>
 );
 
-export default function ContactDetail({ id, onBack, onEdit }) {
+export default function ContactDetail({ id, onBack, onEdit, backLabel = 'Contacts' }) {
   const dispatch = useDispatch();
   const contact = useSelector((s) => s.contacts.contacts.find((c) => c.id === id));
   const blocked = useSelector((s) => s.contacts.blocked);
@@ -36,11 +38,20 @@ export default function ContactDetail({ id, onBack, onEdit }) {
     onBack();
   };
 
+  // Open (or start) the Messages conversation with this contact. Backing out of
+  // that conversation returns here (to this profile), not to the thread list.
+  const openMessages = () => {
+    const digits = digitsOf(contact.number);
+    dispatch(setResumeThread(digits));
+    dispatch(setReturnProfile(digits));
+    dispatch(openApp('message'));
+  };
+
   return (
     <div className="pa-detail">
       <div className="pa-detail__nav">
         <button className="pa-actionbtn" onClick={onBack}>
-          <ChevronLeftIcon /> Contacts
+          <ChevronLeftIcon /> {backLabel}
         </button>
         <button className="pa-actionbtn" onClick={() => onEdit(contact)}>
           Edit
@@ -54,7 +65,7 @@ export default function ContactDetail({ id, onBack, onEdit }) {
 
       {/* Call / Message are visual for now (call screen comes later). */}
       <div className="pa-detail__actions">
-        <button className="pa-quick">
+        <button className="pa-quick" onClick={openMessages}>
           <span className="pa-quick__circle">
             <MessageGlyph />
           </span>

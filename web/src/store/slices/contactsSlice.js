@@ -20,6 +20,7 @@ const initialState = {
   contacts: [],
   recents: [],
   blocked: {}, // map: numberDigits -> { number, name, ts }
+  focus: null, // { number, returnTo } — open this contact's profile in the Phone app
 };
 
 const contactsSlice = createSlice({
@@ -51,10 +52,13 @@ const contactsSlice = createSlice({
       const c = state.contacts.find((x) => x.id === id);
       if (c) c.favorite = favorite;
     },
+    setContactFocus(state, action) {
+      state.focus = action.payload;
+    },
   },
 });
 
-export const { hydrate, upsertContact, removeContact, setFavoriteLocal, setBlocked } =
+export const { hydrate, upsertContact, removeContact, setFavoriteLocal, setBlocked, setContactFocus } =
   contactsSlice.actions;
 
 // ---- Thunks (talk to Lua, then update local state) ------------------------

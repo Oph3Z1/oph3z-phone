@@ -15,6 +15,7 @@ const initialState = {
   active: null, // number of the thread currently being viewed
   shareTo: null, // number the Camera should attach its next capture to
   resumeThread: null, // number MessagesApp should reopen on mount (after a capture)
+  returnProfile: null, // number whose conversation, when backed out of, returns to its Phone profile
   draftAttach: {}, // { [number]: { type, url } } pending media in the composer
 };
 
@@ -44,6 +45,9 @@ const messagesSlice = createSlice({
     },
     setResumeThread(state, action) {
       state.resumeThread = action.payload;
+    },
+    setReturnProfile(state, action) {
+      state.returnProfile = action.payload;
     },
     setDraftAttach(state, action) {
       const { number, attach } = action.payload;
@@ -124,6 +128,7 @@ export const {
   setActive,
   setShareTo,
   setResumeThread,
+  setReturnProfile,
   setDraftAttach,
   markReadLocal,
   appendMessage,

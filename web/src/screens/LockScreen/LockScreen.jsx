@@ -6,6 +6,8 @@ import flashlightIcon from '../../assets/icons/lockscreen/flashlight.png';
 import lockCameraIcon from '../../assets/icons/lockscreen/camera.png';
 
 import { unlock, setFlashlight } from '../../store/slices/phoneSlice';
+import { openRoute, clearNotification } from '../../store/slices/notificationsSlice';
+import NotificationList from '../../components/Notifications/NotificationList';
 import { fetchNui } from '../../utils/fetchNui';
 import { pad2 } from '../../utils/misc';
 import { weekdayName, weatherGlyph } from '../../utils/datetime';
@@ -17,6 +19,7 @@ export default function LockScreen({ exiting = false, onExited }) {
   const dispatch = useDispatch();
   const time = useSelector((s) => s.phone.time);
   const flashlightOn = useSelector((s) => s.phone.flashlightOn);
+  const notifs = useSelector((s) => s.notifications.items);
 
   const startY = useRef(null);
 
@@ -66,6 +69,30 @@ export default function LockScreen({ exiting = false, onExited }) {
         </div>
         <div className="lockscreen__clock">{clock}</div>
       </div>
+
+      {/* Waiting notifications. Stop pointer propagation so scrolling/swiping the
+          list doesn't trigger the swipe-to-unlock gesture on the lock screen. */}
+      {notifs.length > 0 && (
+        <div
+          className="lockscreen__notifs"
+          onPointerDown={(e) => e.stopPropagation()}
+          onPointerMove={(e) => e.stopPropagation()}
+        >
+          <div className="lockscreen__notifhead">
+            <span className="lockscreen__notiftitle">Notification Center</span>
+            <button className="lockscreen__notifclear" onClick={() => dispatch(clearNotification())}>
+              Clear
+            </button>
+          </div>
+          <div className="lockscreen__notifscroll">
+            <NotificationList
+              items={notifs}
+              onOpen={(n) => dispatch(openRoute(n.route, n.id))}
+              onRemove={(id) => dispatch(clearNotification(id))}
+            />
+          </div>
+        </div>
+      )}
 
       {/* Flashlight + camera quick actions (icons already include their bg). */}
       <div className="lockscreen__quickrow">

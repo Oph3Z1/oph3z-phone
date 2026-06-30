@@ -131,6 +131,17 @@ lib.callback.register('oph3z-phone:server:messages:read', function(src, input)
     return true
 end)
 
+-- Short human-readable preview of a message for notifications / previews.
+local function notifBody(mtype, body, meta)
+    if mtype == 'image' then return '📷 Photo'
+    elseif mtype == 'video' then return '📹 Video'
+    elseif mtype == 'voice' then return '🎤 Voice message'
+    elseif mtype == 'location' then return '📍 Location'
+    elseif mtype == 'money' then return ('You received $%s'):format(meta and meta.amount or body)
+    elseif mtype == 'request' then return ('Requested $%s'):format(meta and meta.amount or body)
+    else return body end
+end
+
 -- Write a message to BOTH the sender's and recipient's docs, push live to an
 -- online recipient, and return the sender's outgoing copy.
 local function deliver(senderCid, toDigits, mtype, body, meta)
@@ -150,14 +161,28 @@ local function deliver(senderCid, toDigits, mtype, body, meta)
             appendToThread(recipDoc, senderNumber, inMsg, true)
             DB.Save(recipCid, recipDoc)
 
+            local contact = DB.ResolveContact(recipCid, senderNumber)
+            local senderName = contact and contact.name or DB.FormatNumber(senderNumber)
+
             local recipPlayer = exports.qbx_core:GetPlayerByCitizenId(recipCid)
             if recipPlayer then
-                local contact = DB.ResolveContact(recipCid, senderNumber)
                 TriggerClientEvent('oph3z-phone:client:messages:incoming', recipPlayer.PlayerData.source, {
                     from   = senderNumber,
-                    name   = contact and contact.name or DB.FormatNumber(senderNumber),
+                    name   = senderName,
                     avatar = contact and contact.img or nil,
                     msg    = inMsg,
+                })
+            end
+
+            -- Notification (persisted; live-pushed if online). Status updates from
+            -- negotiate (paid/declined) reuse deliver and shouldn't notify, but
+            -- those are fresh 'request' messages so a notification is fine.
+            if Notif then
+                Notif.Push(recipCid, {
+                    app   = 'message',
+                    title = senderName,
+                    body  = notifBody(mtype, body, meta),
+                    route = { app = 'message', number = senderNumber },
                 })
             end
         end

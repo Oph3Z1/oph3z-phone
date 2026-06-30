@@ -264,6 +264,15 @@ local function endCall(callId, reason)
         direction = 'in', missed = not connected, ts = ts,
     })
 
+    if not connected and Notif then
+        Notif.Push(call.calleeCid, {
+            app   = 'call',
+            title = call.callerNameSeen or DB.FormatNumber(call.callerNumber),
+            body  = 'Missed Call',
+            route = { app = 'call', tab = 'recents' },
+        })
+    end
+
     TriggerClientEvent('oph3z-phone:call:ended', call.caller, { callId = callId, reason = reason })
     TriggerClientEvent('oph3z-phone:call:ended', call.callee, { callId = callId, reason = reason })
 end
@@ -290,6 +299,33 @@ RegisterNetEvent('oph3z-phone:call:start', function(rawNumber)
     local calleePlayer = calleeCid and exports.qbx_core:GetPlayerByCitizenId(calleeCid) or nil
     local calleeSrc = calleePlayer and calleePlayer.PlayerData.source or nil
     if not calleeSrc then
+        -- Callee is offline: still record a missed call for them (and an outgoing
+        -- for the caller), unless they've blocked the caller. They'll see it on
+        -- their next phone load.
+        if calleeCid then
+            local calleeDocOff = DB.EnsurePhone(calleeCid, DB.LoadOrCreate(calleeCid))
+            if not DB.IsBlocked(calleeDocOff, callerPhone.numberRaw) then
+                local ts = os.time()
+                local callerSeesCallee = displayFor(callerCid, calleeDigits, calleeDocOff.phone.number)
+                local calleeSeesCaller = displayFor(calleeCid, callerPhone.numberRaw, callerPhone.number)
+                DB.LogRecent(callerCid, {
+                    number = callerSeesCallee.number, name = callerSeesCallee.name, img = callerSeesCallee.img,
+                    direction = 'out', missed = false, ts = ts,
+                })
+                DB.LogRecent(calleeCid, {
+                    number = calleeSeesCaller.number, name = calleeSeesCaller.name, img = calleeSeesCaller.img,
+                    direction = 'in', missed = true, ts = ts,
+                })
+                if Notif then
+                    Notif.Push(calleeCid, {
+                        app   = 'call',
+                        title = calleeSeesCaller.name or DB.FormatNumber(callerPhone.numberRaw),
+                        body  = 'Missed Call',
+                        route = { app = 'call', tab = 'recents' },
+                    })
+                end
+            end
+        end
         TriggerClientEvent('oph3z-phone:call:failed', src, { reason = 'unavailable' })
         return
     end

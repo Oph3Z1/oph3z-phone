@@ -1,4 +1,5 @@
 import LocationCard from './LocationCard';
+import VoiceBubble from './VoiceBubble';
 
 const PayMark = () => (
   <svg width="1em" height="1em" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
@@ -15,6 +16,14 @@ export default function Bubble({ msg, selfNumber, onSettle, onDecline, onOpenMed
     return (
       <div className={`msg-brow ${out ? 'is-out' : 'is-in'}`}>
         <LocationCard msg={msg} out={out} onOpen={onOpenLocation} onStopLive={onStopLive} />
+      </div>
+    );
+  }
+
+  if (msg.type === 'voice') {
+    return (
+      <div className={`msg-brow ${out ? 'is-out' : 'is-in'}`}>
+        <VoiceBubble msg={msg} out={out} />
       </div>
     );
   }

@@ -11,6 +11,7 @@ import LockScreen from '../../screens/LockScreen/LockScreen';
 import HomeScreen from '../../screens/HomeScreen/HomeScreen';
 import AppScreen from '../../screens/AppScreen/AppScreen';
 import CallOverlay from '../../app/phone/call/CallOverlay';
+import NotificationBanner from '../Notifications/NotificationBanner';
 
 export default function Phone() {
   const locked = useSelector((s) => s.phone.locked);
@@ -79,6 +80,9 @@ export default function Phone() {
         {/* Floating overlays (status bar sits on the camera's black top bar). */}
         <StatusBar />
         {showHomeBar && <HomeBar />}
+
+        {/* Transient notification banner (phone open & unlocked). */}
+        {!locked && !inCall && <NotificationBanner />}
 
         {/* Call UI (incoming island / calling / in-call) on top of everything. */}
         <CallOverlay />

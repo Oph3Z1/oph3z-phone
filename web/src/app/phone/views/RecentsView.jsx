@@ -20,17 +20,18 @@ function formatTime(ts) {
   return `${d.getMonth() + 1}/${d.getDate()}`;
 }
 
-export default function RecentsView({ onOpen }) {
+export default function RecentsView({ onProfile }) {
   const recents = useSelector((s) => s.contacts.recents);
   const contacts = useSelector((s) => s.contacts.contacts);
   const [filter, setFilter] = useState('all'); // 'all' | 'missed'
 
   const list = filter === 'missed' ? recents.filter((r) => r.missed) : recents;
 
-  const contactIdFor = (number) => {
-    const d = digitsOnly(number);
-    const c = contacts.find((x) => digitsOnly(x.number) === d);
-    return c ? c.id : null;
+  // Resolve the name/avatar live from contacts so a recent shows the contact's
+  // name immediately after they're saved (its stored snapshot may be just a number).
+  const resolve = (r) => {
+    const c = contacts.find((x) => digitsOnly(x.number) === digitsOnly(r.number));
+    return { name: (c && c.name) || r.name || '', img: (c && c.img) || r.img || '' };
   };
 
   const call = (number) => fetchNui('phone:call:start', { number }, {});
@@ -68,13 +69,13 @@ export default function RecentsView({ onOpen }) {
         ) : (
           <div className="pa-list">
             {list.map((r) => {
-            const cid = contactIdFor(r.number);
-            return (
+              const who = resolve(r);
+              return (
               <button key={r.id} className="pa-row" onClick={() => call(r.number)}>
-                <Avatar name={r.name || ''} img={r.img} />
+                <Avatar name={who.name} img={who.img} />
                 <span className="pa-row__main">
                   <span className={`pa-row__name${r.missed ? ' pa-row__name--missed' : ''}`}>
-                    {r.name || r.number}
+                    {who.name || r.number}
                   </span>
                   <span className="pa-row__sub">
                     {r.direction === 'out' ? '↗ outgoing' : r.missed ? '↙ missed' : '↙ incoming'}
@@ -85,14 +86,14 @@ export default function RecentsView({ onOpen }) {
                   className="pa-row__info"
                   onClick={(e) => {
                     e.stopPropagation();
-                    if (cid) onOpen(cid);
+                    onProfile(r.number);
                   }}
                 >
                   <InfoIcon />
                 </span>
               </button>
-            );
-          })}
+              );
+            })}
           </div>
         )}
       </div>

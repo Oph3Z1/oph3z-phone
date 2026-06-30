@@ -6,6 +6,7 @@ import callReducer from './slices/callSlice';
 import photosReducer from './slices/photosSlice';
 import mapsReducer from './slices/mapsSlice';
 import messagesReducer from './slices/messagesSlice';
+import notificationsReducer from './slices/notificationsSlice';
 
 export const store = configureStore({
   reducer: {
@@ -16,5 +17,6 @@ export const store = configureStore({
     photos: photosReducer,
     maps: mapsReducer,
     messages: messagesReducer,
+    notifications: notificationsReducer,
   },
 });

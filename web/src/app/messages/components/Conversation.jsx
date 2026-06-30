@@ -4,7 +4,7 @@ import Avatar from './Avatar';
 import Bubble from './Bubble';
 import MessageInput from './MessageInput';
 import { ChevronLeftIcon, ChevronRightIcon } from './icons';
-import { digitsOf } from '../../../store/slices/contactsSlice';
+import { digitsOf, setContactFocus } from '../../../store/slices/contactsSlice';
 import {
   openThread,
   sendMessage,
@@ -15,13 +15,16 @@ import {
   setActive,
   setShareTo,
   setDraftAttach,
+  setReturnProfile,
   sendLocation,
   stopLive,
 } from '../../../store/slices/messagesSlice';
 import { openApp } from '../../../store/slices/phoneSlice';
 import { loadPhotos } from '../../../store/slices/photosSlice';
 import { setFocus } from '../../../store/slices/mapsSlice';
+import { markNotifRead } from '../../../store/slices/notificationsSlice';
 import MediaViewer from './MediaViewer';
+import VoiceComposer from './VoiceComposer';
 
 const MONEY_ERR = {
   funds: 'Not enough bank balance.',
@@ -55,10 +58,15 @@ export default function Conversation({ number, onBack }) {
   const selfNumber = digitsOf(useSelector((s) => s.contacts.number));
   const gallery = useSelector((s) => s.photos.items);
   const draft = useSelector((s) => s.messages.draftAttach[number]);
+  const returnProfile = useSelector((s) => s.messages.returnProfile);
   const scrollRef = useRef(null);
+
+  // If we arrived here from a contact's profile, back returns there (captured once).
+  const [backToProfile] = useState(() => returnProfile === number);
 
   const [attach, setAttach] = useState(null); // null | 'menu' | 'money' | 'gallery'
   const [viewer, setViewer] = useState(null); // media message being viewed fullscreen
+  const [recording, setRecording] = useState(false); // voice note in progress
   const [moneyMode, setMoneyMode] = useState('send'); // 'send' | 'request'
   const [amount, setAmount] = useState(0);
   const [showKeypad, setShowKeypad] = useState(false);
@@ -69,8 +77,24 @@ export default function Conversation({ number, onBack }) {
   useEffect(() => {
     dispatch(openThread(number));
     dispatch(setActive(number));
+    dispatch(markNotifRead({ number })); // clear this chat's notifications + badge
     return () => dispatch(setActive(null));
   }, [number, dispatch]);
+
+  // Consume the one-shot profile-return flag so it doesn't linger for later visits.
+  useEffect(() => {
+    if (returnProfile === number) dispatch(setReturnProfile(null));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const handleBack = () => {
+    if (backToProfile) {
+      dispatch(setContactFocus({ number }));
+      dispatch(openApp('call'));
+    } else {
+      onBack();
+    }
+  };
 
   const items = conv?.items || [];
   // Pin to the newest message. Re-pin as images/videos finish loading, since
@@ -153,6 +177,18 @@ export default function Conversation({ number, onBack }) {
     dispatch(stopLive(number, msg.meta && msg.meta.sid, msg.id));
   };
 
+  // Voice notes.
+  const sendVoice = (url, duration) => {
+    dispatch(sendMessage(number, { type: 'voice', body: url, meta: { duration } }));
+    setRecording(false);
+  };
+
+  // Tap the header → open this person's profile in the Phone app (back returns here).
+  const openProfile = () => {
+    dispatch(setContactFocus({ number, returnTo: number }));
+    dispatch(openApp('call'));
+  };
+
   const openMoney = (mode = 'send') => {
     setMoneyMode(mode);
     setAmount(0);
@@ -193,16 +229,16 @@ export default function Conversation({ number, onBack }) {
   return (
     <div className="msg msg--conv">
       <div className="msg-conv__bar">
-        <button className="msg-conv__back" onClick={onBack} aria-label="Back">
+        <button className="msg-conv__back" onClick={handleBack} aria-label="Back">
           <ChevronLeftIcon />
         </button>
-        <div className="msg-conv__who">
+        <button className="msg-conv__who" onClick={openProfile}>
           <Avatar name={name} src={conv?.avatar} className="msg-avatar--md" />
           <div className="msg-conv__name">
             {name}
             <ChevronRightIcon className="msg-conv__namechev" />
           </div>
-        </div>
+        </button>
         <div className="msg-conv__spacer" />
       </div>
 
@@ -223,13 +259,22 @@ export default function Conversation({ number, onBack }) {
         ))}
       </div>
 
-      <MessageInput
-        onSend={send}
-        onCamera={openCamera}
-        onPlus={() => setAttach('menu')}
-        attachment={draft}
-        onRemoveAttachment={removeDraft}
-      />
+      {recording ? (
+        <VoiceComposer
+          onComplete={sendVoice}
+          onCancel={() => setRecording(false)}
+          onError={() => showNotice('Microphone unavailable.')}
+        />
+      ) : (
+        <MessageInput
+          onSend={send}
+          onCamera={openCamera}
+          onPlus={() => setAttach('menu')}
+          onMic={() => setRecording(true)}
+          attachment={draft}
+          onRemoveAttachment={removeDraft}
+        />
+      )}
 
       {attach === 'menu' && (
         <div className="msg-attach" onClick={closeAttach}>
