@@ -210,6 +210,11 @@ function Phone.open()
     end
 
     Phone.isOpen = true
+    Phone.identity = {
+        number    = data.number,
+        numberRaw = data.numberRaw,
+        citizenid = data.citizenid,
+    }
     SetNuiFocus(true, true)
     SendNUIMessage({
         action = 'phone:setVisible',
@@ -217,8 +222,11 @@ function Phone.open()
             visible  = true,
             settings = data.settings,
             time     = Phone.getTimeData(),
+            apps     = Config.Apps,     -- built-in app layout (config-driven)
+            identity = Phone.identity,  -- shared with third-party app iframes
         },
     })
+    if PhoneApps then PhoneApps.sync() end -- hand the NUI any registered third-party apps
     startTimeLoop()
     Phone.startAnim()
     startScreenGlow()
@@ -279,10 +287,20 @@ local function showPhoneForCall()
     Phone.openedByCall = true
     SetNuiFocus(true, true)
     local data = lib.callback.await('oph3z-phone:server:getData', false)
+    if data then
+        Phone.identity = { number = data.number, numberRaw = data.numberRaw, citizenid = data.citizenid }
+    end
     SendNUIMessage({
         action = 'phone:setVisible',
-        data = { visible = true, settings = data and data.settings, time = Phone.getTimeData() },
+        data = {
+            visible  = true,
+            settings = data and data.settings,
+            time     = Phone.getTimeData(),
+            apps     = Config.Apps,
+            identity = Phone.identity,
+        },
     })
+    if PhoneApps then PhoneApps.sync() end
     startTimeLoop()
     Phone.startAnim()
     startScreenGlow()

@@ -6,7 +6,8 @@ import PhonePeek from './components/Notifications/PhonePeek';
 import { useNuiEvent } from './hooks/useNuiEvent';
 import { fetchNui } from './utils/fetchNui';
 import { isEnvBrowser } from './utils/misc';
-import { setVisible, setTime, closeApp } from './store/slices/phoneSlice';
+import { setVisible, setTime, closeApp, openApp, unlock, setIdentity } from './store/slices/phoneSlice';
+import { setLayout, setExternalApps } from './store/slices/appsSlice';
 import { hydrate } from './store/slices/settingsSlice';
 import { applyCall } from './store/slices/callSlice';
 import { loadPhoneState } from './store/slices/contactsSlice';
@@ -43,12 +44,24 @@ export default function App() {
     if (data?.visible) {
       if (data.settings) dispatch(hydrate(data.settings));
       if (data.time) dispatch(setTime(data.time));
+      if (data.apps) dispatch(setLayout(data.apps)); // built-in app layout (Config.Apps)
+      if (data.identity) dispatch(setIdentity(data.identity)); // shared with app iframes
       dispatch(setVisible(true));
       dispatch(loadNotifications()); // refresh the lock screen / center on open
     } else {
       dispatch(setVisible(false));
       dispatch(setLightbox(null));
     }
+  });
+
+  // Lua -> the set of registered third-party apps changed (resource start/stop).
+  useNuiEvent('phone:apps:external', (list) => dispatch(setExternalApps(list || [])));
+
+  // Lua -> open a specific app (exports.OpenApp from another resource).
+  useNuiEvent('phone:openApp', (d) => {
+    if (!d || !d.id) return;
+    dispatch(unlock());
+    dispatch(openApp(d.id));
   });
 
   // Live notification arrived: store it, play the sound, and present it (peek if

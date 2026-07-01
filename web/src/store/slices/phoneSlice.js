@@ -7,6 +7,7 @@ const initialState = {
   activeApp: null,     // id of the open app, or null for the home screen
   flashlightOn: false, // in-game flashlight beam toggle
   launchTab: null,     // a tab the next-opened app should jump to (e.g. Phone -> Recents)
+  identity: { number: '', numberRaw: '', citizenid: '' }, // shared with third-party app iframes
   // Live clock / weather pushed from the game.
   time: {
     useGameTime: true,
@@ -54,12 +55,15 @@ const phoneSlice = createSlice({
     setLaunchTab(state, action) {
       state.launchTab = action.payload;
     },
+    setIdentity(state, action) {
+      state.identity = { ...state.identity, ...(action.payload || {}) };
+    },
     setTime(state, action) {
       state.time = { ...state.time, ...action.payload };
     },
   },
 });
 
-export const { setVisible, lock, unlock, openApp, closeApp, setTime, setFlashlight, setLaunchTab } =
+export const { setVisible, lock, unlock, openApp, closeApp, setTime, setFlashlight, setLaunchTab, setIdentity } =
   phoneSlice.actions;
 export default phoneSlice.reducer;

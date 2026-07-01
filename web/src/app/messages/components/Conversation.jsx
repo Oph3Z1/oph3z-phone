@@ -22,9 +22,10 @@ import {
 import { openApp } from '../../../store/slices/phoneSlice';
 import { loadPhotos } from '../../../store/slices/photosSlice';
 import { setFocus } from '../../../store/slices/mapsSlice';
-import { markNotifRead } from '../../../store/slices/notificationsSlice';
+import { clearNotifsFor } from '../../../store/slices/notificationsSlice';
 import MediaViewer from './MediaViewer';
 import VoiceComposer from './VoiceComposer';
+import GifPicker from './GifPicker';
 
 const MONEY_ERR = {
   funds: 'Not enough bank balance.',
@@ -66,6 +67,7 @@ export default function Conversation({ number, onBack }) {
 
   const [attach, setAttach] = useState(null); // null | 'menu' | 'money' | 'gallery'
   const [viewer, setViewer] = useState(null); // media message being viewed fullscreen
+  const [showGif, setShowGif] = useState(false); // GIF picker sheet
   const [recording, setRecording] = useState(false); // voice note in progress
   const [moneyMode, setMoneyMode] = useState('send'); // 'send' | 'request'
   const [amount, setAmount] = useState(0);
@@ -77,7 +79,7 @@ export default function Conversation({ number, onBack }) {
   useEffect(() => {
     dispatch(openThread(number));
     dispatch(setActive(number));
-    dispatch(markNotifRead({ number })); // clear this chat's notifications + badge
+    dispatch(clearNotifsFor({ number })); // remove this chat's notifications + badge
     return () => dispatch(setActive(null));
   }, [number, dispatch]);
 
@@ -177,6 +179,12 @@ export default function Conversation({ number, onBack }) {
     dispatch(stopLive(number, msg.meta && msg.meta.sid, msg.id));
   };
 
+  // GIFs (sent immediately on tap, like iMessage).
+  const sendGif = (url) => {
+    dispatch(sendMessage(number, { type: 'gif', body: url }));
+    setShowGif(false);
+  };
+
   // Voice notes.
   const sendVoice = (url, duration) => {
     dispatch(sendMessage(number, { type: 'voice', body: url, meta: { duration } }));
@@ -270,11 +278,14 @@ export default function Conversation({ number, onBack }) {
           onSend={send}
           onCamera={openCamera}
           onPlus={() => setAttach('menu')}
+          onGif={() => setShowGif(true)}
           onMic={() => setRecording(true)}
           attachment={draft}
           onRemoveAttachment={removeDraft}
         />
       )}
+
+      {showGif && <GifPicker onClose={() => setShowGif(false)} onSelect={sendGif} />}
 
       {attach === 'menu' && (
         <div className="msg-attach" onClick={closeAttach}>

@@ -42,3 +42,18 @@ export const SendIcon = (p) => (
     <path d="M12 4l7 7h-4v9h-6v-9H5l7-7z" />
   </svg>
 );
+export const GifIcon = (p) => (
+  <svg {...base} viewBox="0 0 28 24" fill="none" {...p}>
+    <rect x="1.5" y="3.5" width="25" height="17" rx="4" stroke="currentColor" strokeWidth="2" />
+    <text x="14" y="16.4" textAnchor="middle" fontSize="9.5" fontWeight="700" fill="currentColor" fontFamily="sans-serif">
+      GIF
+    </text>
+  </svg>
+);
+export const GroupAddIcon = (p) => (
+  <svg {...base} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}>
+    <circle cx="9" cy="8" r="3.2" />
+    <path d="M3.5 19a5.5 5.5 0 0111 0" />
+    <path d="M17 7v6M14 10h6" />
+  </svg>
+);

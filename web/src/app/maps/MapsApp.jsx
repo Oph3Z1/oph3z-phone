@@ -9,6 +9,7 @@ import { useNuiEvent } from '../../hooks/useNuiEvent';
 import { loadBlips, addBlip, moveBlip, deleteBlip } from '../../store/slices/mapsSlice';
 import { setFocus } from '../../store/slices/mapsSlice';
 import { setResumeThread } from '../../store/slices/messagesSlice';
+import { setResumeGroup } from '../../store/slices/groupsSlice';
 import { openApp } from '../../store/slices/phoneSlice';
 import { MAP, CUSTOM_CRS, toLatLng, MAP_BOUNDS, tileUrl } from './crs';
 
@@ -237,7 +238,10 @@ export default function MapsApp() {
   };
   // Back to the conversation that opened this location.
   const backToChat = () => {
-    if (returnTo) dispatch(setResumeThread(returnTo));
+    if (returnTo) {
+      if (String(returnTo).startsWith('g:')) dispatch(setResumeGroup(String(returnTo).slice(2)));
+      else dispatch(setResumeThread(returnTo));
+    }
     dispatch(openApp('message'));
   };
   const waypointShared = () => {

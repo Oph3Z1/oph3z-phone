@@ -7,59 +7,57 @@ const PayMark = () => (
   </svg>
 );
 
-// A message bubble: text, money (Apple-Pay style), and money requests/offers.
-export default function Bubble({ msg, selfNumber, onSettle, onDecline, onOpenMedia, onOpenLocation, onStopLive }) {
-  const out = msg.dir === 'out';
+// The inner content of a message (no row wrapper / alignment). Shared by 1-on-1
+// bubbles and group bubbles so every message type renders identically. Money /
+// request only ever appear in 1-on-1 chats.
+export function BubbleContent({ msg, out, selfNumber, onSettle, onDecline, onOpenMedia, onOpenLocation, onStopLive }) {
   const amt = (msg.meta && msg.meta.amount) || Number(msg.body) || 0;
 
   if (msg.type === 'location') {
-    return (
-      <div className={`msg-brow ${out ? 'is-out' : 'is-in'}`}>
-        <LocationCard msg={msg} out={out} onOpen={onOpenLocation} onStopLive={onStopLive} />
-      </div>
-    );
+    return <LocationCard msg={msg} out={out} onOpen={onOpenLocation} onStopLive={onStopLive} />;
   }
 
   if (msg.type === 'voice') {
+    return <VoiceBubble msg={msg} out={out} />;
+  }
+
+  // GIFs play inline and are NOT openable in the fullscreen viewer.
+  if (msg.type === 'gif') {
     return (
-      <div className={`msg-brow ${out ? 'is-out' : 'is-in'}`}>
-        <VoiceBubble msg={msg} out={out} />
+      <div className={`msg-media msg-media--gif${msg.pending ? ' is-pending' : ''}`}>
+        <img className="msg-media__el" src={msg.body} alt="" />
       </div>
     );
   }
 
   if (msg.type === 'image' || msg.type === 'video') {
     return (
-      <div className={`msg-brow ${out ? 'is-out' : 'is-in'}`}>
-        <button
-          className={`msg-media${msg.pending ? ' is-pending' : ''}`}
-          onClick={() => onOpenMedia && onOpenMedia(msg)}
-        >
-          {msg.type === 'video' ? (
-            <>
-              <video className="msg-media__el" src={msg.body} muted playsInline preload="metadata" />
-              <span className="msg-media__play">▶</span>
-            </>
-          ) : (
-            <img className="msg-media__el" src={msg.body} alt="" />
-          )}
-        </button>
-      </div>
+      <button
+        className={`msg-media${msg.pending ? ' is-pending' : ''}`}
+        onClick={() => onOpenMedia && onOpenMedia(msg)}
+      >
+        {msg.type === 'video' ? (
+          <>
+            <video className="msg-media__el" src={msg.body} muted playsInline preload="metadata" />
+            <span className="msg-media__play">▶</span>
+          </>
+        ) : (
+          <img className="msg-media__el" src={msg.body} alt="" />
+        )}
+      </button>
     );
   }
 
   if (msg.type === 'money') {
     return (
-      <div className={`msg-brow ${out ? 'is-out' : 'is-in'}`}>
-        <div className="msg-cashmsg">
-          <div className={`msg-cashmsg__card${msg.pending ? ' is-pending' : ''}`}>
-            <div className="msg-cashmsg__hdr">
-              <PayMark /> Pay
-            </div>
-            <div className="msg-cashmsg__amt">${Number(amt).toLocaleString()}</div>
+      <div className="msg-cashmsg">
+        <div className={`msg-cashmsg__card${msg.pending ? ' is-pending' : ''}`}>
+          <div className="msg-cashmsg__hdr">
+            <PayMark /> Pay
           </div>
-          <div className="msg-cashmsg__status">{out ? 'Sent' : 'Received'}</div>
+          <div className="msg-cashmsg__amt">${Number(amt).toLocaleString()}</div>
         </div>
+        <div className="msg-cashmsg__status">{out ? 'Sent' : 'Received'}</div>
       </div>
     );
   }
@@ -81,46 +79,55 @@ export default function Bubble({ msg, selfNumber, onSettle, onDecline, onOpenMed
         : 'Offering you';
 
     return (
-      <div className={`msg-brow ${out ? 'is-out' : 'is-in'}`}>
-        <div className="msg-cashmsg">
-          <div className={`msg-cashmsg__card is-request${done ? ' is-done' : ''}`}>
-            <div className="msg-cashmsg__hdr">
-              <PayMark /> Pay
-            </div>
-            <div className="msg-cashmsg__amt">${Number(amt).toLocaleString()}</div>
-            <div className="msg-cashmsg__req">{sub}</div>
-            {showBtns && (
-              <div className="msg-cashmsg__btns">
-                <button
-                  className="msg-cashmsg__btn msg-cashmsg__btn--pay"
-                  onClick={() => onSettle && onSettle(msg.id)}
-                >
-                  {iPay ? 'Pay' : 'Accept'}
-                </button>
-                <button
-                  className="msg-cashmsg__btn msg-cashmsg__btn--decline"
-                  onClick={() => onDecline && onDecline(msg.id)}
-                >
-                  Decline
-                </button>
-              </div>
-            )}
+      <div className="msg-cashmsg">
+        <div className={`msg-cashmsg__card is-request${done ? ' is-done' : ''}`}>
+          <div className="msg-cashmsg__hdr">
+            <PayMark /> Pay
           </div>
+          <div className="msg-cashmsg__amt">${Number(amt).toLocaleString()}</div>
+          <div className="msg-cashmsg__req">{sub}</div>
+          {showBtns && (
+            <div className="msg-cashmsg__btns">
+              <button className="msg-cashmsg__btn msg-cashmsg__btn--pay" onClick={() => onSettle && onSettle(msg.id)}>
+                {iPay ? 'Pay' : 'Accept'}
+              </button>
+              <button className="msg-cashmsg__btn msg-cashmsg__btn--decline" onClick={() => onDecline && onDecline(msg.id)}>
+                Decline
+              </button>
+            </div>
+          )}
         </div>
       </div>
     );
   }
 
   return (
-    <div className={`msg-brow ${out ? 'is-out' : 'is-in'}`}>
-      <div className={`msg-bubble ${out ? 'is-out' : 'is-in'}${msg.pending ? ' is-pending' : ''}`}>
-        {linkify(msg.body)}
-      </div>
+    <div className={`msg-bubble ${out ? 'is-out' : 'is-in'}${msg.pending ? ' is-pending' : ''}`}>
+      {linkify(msg.body)}
     </div>
   );
 }
 
-function linkify(text) {
+// A 1-on-1 message row: aligns the content left/right by direction.
+export default function Bubble({ msg, selfNumber, onSettle, onDecline, onOpenMedia, onOpenLocation, onStopLive }) {
+  const out = msg.dir === 'out';
+  return (
+    <div className={`msg-brow ${out ? 'is-out' : 'is-in'}`}>
+      <BubbleContent
+        msg={msg}
+        out={out}
+        selfNumber={selfNumber}
+        onSettle={onSettle}
+        onDecline={onDecline}
+        onOpenMedia={onOpenMedia}
+        onOpenLocation={onOpenLocation}
+        onStopLive={onStopLive}
+      />
+    </div>
+  );
+}
+
+export function linkify(text) {
   if (!text) return null;
   const parts = String(text).split(/(https?:\/\/[^\s]+)/g);
   return parts.map((p, i) =>

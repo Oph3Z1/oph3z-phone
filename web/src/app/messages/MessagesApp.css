@@ -252,6 +252,7 @@
   cursor: pointer;
 }
 .msg-media.is-pending { opacity: 0.55; }
+.msg-media--gif { cursor: default; }
 .msg-media__el {
   display: block;
   width: 100%;
@@ -1070,3 +1071,325 @@
 .msg-viewer .ph-vp__bar {
   bottom: calc(var(--safe-bottom) + 1em);
 }
+
+/* ===========================================================================
+   Group chats
+   =========================================================================== */
+.msg-avatar--xs { width: 1.4em; height: 1.4em; font-size: 0.62em; }
+.msg-avatar--lg { width: 5em; height: 5em; font-size: 1.5em; }
+.msg-avatar--xl { width: 6.4em; height: 6.4em; font-size: 2em; }
+
+/* The people glyph sits centered in a colored circle. */
+.gmsg-gavatar { color: #fff; }
+
+/* Thread-list topbar holds two compose actions for groups. */
+.msg-topbar__actions { display: flex; align-items: center; gap: 0.35em; }
+.msg-sel.is-disabled { opacity: 0.25; }
+
+/* ---- Group conversation header ------------------------------------------ */
+.gconv__title { font-size: 1em; font-weight: 600; }
+.gconv__sub { font-size: 0.62em; color: #8e8e93; margin-top: 0.05em; }
+
+/* ---- Group message rows ------------------------------------------------- */
+.gmsg { display: flex; align-items: flex-end; gap: 0.4em; }
+.gmsg.is-out { justify-content: flex-end; }
+.gmsg.is-in { justify-content: flex-start; }
+.gmsg__avatar { align-self: flex-end; margin-bottom: 0.05em; }
+.gmsg__col { display: flex; flex-direction: column; min-width: 0; max-width: 80%; }
+.gmsg.is-out .gmsg__col { align-items: flex-end; }
+.gmsg.is-in .gmsg__col { align-items: flex-start; }
+.gmsg__name {
+  font-size: 0.66em;
+  color: #8e8e93;
+  margin: 0 0 0.15em 0.8em;
+  font-weight: 500;
+}
+.gmsg__hold { position: relative; }
+/* The column already caps width at 80%; a second percentage cap on the bubble
+   here would resolve against its shrink-to-fit parent and collapse short messages
+   to one letter per line. Let the column be the only width authority. */
+.gmsg .msg-bubble,
+.gmsg .msg-media { max-width: 100%; }
+
+/* System lines (created / added / left / renamed). */
+.gmsg-sys {
+  align-self: center;
+  text-align: center;
+  color: #8e8e93;
+  font-size: 0.7em;
+  padding: 0.45em 1.2em;
+}
+
+/* Tapback reactions overlapping the bubble's top corner. */
+.gmsg__reacts {
+  position: absolute;
+  top: -0.65em;
+  display: flex;
+  gap: 0.12em;
+  z-index: 2;
+}
+.gmsg__reacts.is-in { right: -0.25em; }
+.gmsg__reacts.is-out { left: -0.25em; }
+.gmsg__react {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.12em;
+  background: #2c2c2e;
+  border: 1.5px solid #000;
+  border-radius: 1em;
+  padding: 0.05em 0.3em;
+  font-size: 0.72em;
+  line-height: 1;
+}
+.gmsg__react b { font-weight: 700; font-size: 0.85em; }
+
+/* Press-and-hold reaction picker. */
+.gmsg__pickdim { position: fixed; inset: 0; z-index: 30; }
+.gmsg__picker {
+  position: absolute;
+  bottom: 100%;
+  margin-bottom: 0.35em;
+  z-index: 31;
+  display: flex;
+  gap: 0.1em;
+  background: #1c1c1e;
+  border: 0.5px solid rgba(255, 255, 255, 0.16);
+  border-radius: 1.5em;
+  padding: 0.25em 0.45em;
+  box-shadow: 0 0.5em 1.4em rgba(0, 0, 0, 0.55);
+}
+.gmsg__picker.is-in { left: 0; }
+.gmsg__picker.is-out { right: 0; }
+.gmsg__pickbtn {
+  font-size: 1.2em;
+  padding: 0.1em 0.18em;
+  transition: transform 0.1s;
+}
+.gmsg__pickbtn:active { transform: scale(1.35); }
+
+/* ---- New-group / add bar (Cancel | title | Create) ---------------------- */
+.msg-new__bar--3 { justify-content: space-between; }
+.msg-new__bar--3 .msg-new__cancel { position: static; right: auto; }
+.msg-new__done { color: #0a84ff; font-size: 0.95em; font-weight: 600; }
+.msg-new__done:disabled { color: #5a5a5e; }
+
+/* ---- New group head ----------------------------------------------------- */
+.gnew__head {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6em;
+  padding: 1em 0.9em;
+  border-bottom: 0.5px solid rgba(255, 255, 255, 0.1);
+}
+.gnew__photo { position: relative; }
+.gnew__photo img {
+  width: 5em;
+  height: 5em;
+  border-radius: 50%;
+  object-fit: cover;
+}
+.gnew__photoedit,
+.ginfo__photoedit {
+  position: absolute;
+  bottom: -0.1em;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.6);
+  color: #0a84ff;
+  font-size: 0.62em;
+  padding: 0.1em 0.5em;
+  border-radius: 1em;
+}
+.gnew__nameinput {
+  width: 80%;
+  text-align: center;
+  background: none;
+  border: none;
+  outline: none;
+  color: #fff;
+  font-size: 1.1em;
+  font-weight: 600;
+}
+.gnew__nameinput::placeholder { color: #5a5a5e; }
+.gnew__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35em;
+  padding: 0.6em 0.9em;
+}
+.gnew__hint {
+  color: #8e8e93;
+  font-size: 0.85em;
+  text-align: center;
+  padding: 2em 2.5em;
+}
+
+/* ---- Group info --------------------------------------------------------- */
+.ginfo__bartitle { flex: 1 1 auto; text-align: center; font-size: 0.95em; font-weight: 600; }
+.ginfo__scroll { flex: 1 1 auto; min-height: 0; overflow-y: auto; }
+.ginfo__scroll::-webkit-scrollbar { display: none; }
+.ginfo__hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4em;
+  padding: 1.4em 1em 1.2em;
+}
+.ginfo__photo { position: relative; }
+.ginfo__name {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15em;
+  font-size: 1.35em;
+  font-weight: 700;
+  color: #fff;
+}
+.ginfo__rename { font-size: 0.5em; font-weight: 500; color: #0a84ff; }
+.ginfo__nameinput {
+  text-align: center;
+  background: #1c1c1e;
+  border: none;
+  outline: none;
+  border-radius: 0.6em;
+  color: #fff;
+  font-size: 1.2em;
+  font-weight: 700;
+  padding: 0.2em 0.6em;
+}
+.ginfo__count { font-size: 0.8em; color: #8e8e93; }
+
+.ginfo__section { padding: 0.5em 0 0; }
+.ginfo__sechead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.4em 1em;
+  color: #8e8e93;
+  font-size: 0.8em;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+.ginfo__add { color: #0a84ff; font-size: 1em; text-transform: none; letter-spacing: 0; }
+.ginfo__member {
+  display: flex;
+  align-items: center;
+  gap: 0.7em;
+  padding: 0.5em 1em;
+  border-top: 0.5px solid rgba(255, 255, 255, 0.07);
+}
+.ginfo__memtext { flex: 1 1 auto; min-width: 0; }
+.ginfo__memname {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  font-size: 0.95em;
+  font-weight: 500;
+}
+.ginfo__ownerbadge {
+  font-size: 0.66em;
+  font-weight: 600;
+  color: #8e8e93;
+  background: rgba(120, 120, 128, 0.3);
+  padding: 0.1em 0.45em;
+  border-radius: 0.7em;
+}
+.ginfo__memnum { font-size: 0.78em; color: #8e8e93; }
+.ginfo__remove {
+  flex: 0 0 auto;
+  width: 1.7em;
+  height: 1.7em;
+  border-radius: 50%;
+  background: rgba(255, 59, 48, 0.18);
+  color: #ff3b30;
+  font-size: 0.85em;
+}
+.ginfo__actions { padding: 1.2em 1em 2em; display: flex; flex-direction: column; gap: 0.7em; }
+.ginfo__danger {
+  width: 100%;
+  padding: 0.8em;
+  border-radius: 0.9em;
+  background: #1c1c1e;
+  color: #ff3b30;
+  font-size: 0.95em;
+  font-weight: 500;
+}
+.ginfo__addsheet {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  background: #000;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ---- GIF button + picker ------------------------------------------------ */
+.msg-input__gif {
+  flex: 0 0 auto;
+  height: 1.7em;
+  padding: 0 0.3em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #8e8e93;
+  font-size: 1em;
+}
+.msg-input__gif svg { height: 1.15em; width: auto; }
+.msg-input__gif:active { opacity: 0.6; }
+
+.msg-gifs {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 25;
+  max-height: 64%;
+  display: flex;
+  flex-direction: column;
+  background: #141416;
+  border-top-left-radius: 1.3em;
+  border-top-right-radius: 1.3em;
+  padding: 0 0.6em calc(var(--safe-bottom) + 0.5em);
+}
+.msg-gifs__searchrow { flex: 0 0 auto; padding: 0 0.1em 0.5em; }
+.msg-gifs__search {
+  width: 100%;
+  background: #1c1c1e;
+  border: none;
+  outline: none;
+  border-radius: 1em;
+  color: #fff;
+  font-size: 0.9em;
+  padding: 0.5em 0.9em;
+}
+.msg-gifs__search::placeholder { color: #6a6a6e; }
+.msg-gifs__note {
+  text-align: center;
+  color: #8e8e93;
+  font-size: 0.85em;
+  line-height: 1.4;
+  padding: 2.5em 1.5em;
+}
+.msg-gifs__note b { color: #c7c7cc; font-weight: 600; }
+.msg-gifs__grid {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  column-count: 2;
+  column-gap: 0.35em;
+  scrollbar-width: none;
+}
+.msg-gifs__grid::-webkit-scrollbar { display: none; }
+.msg-gifs__cell {
+  display: block;
+  width: 100%;
+  margin-bottom: 0.35em;
+  border-radius: 0.5em;
+  overflow: hidden;
+  background: #1c1c1e;
+  line-height: 0;
+  break-inside: avoid;
+}
+.msg-gifs__cell img { width: 100%; display: block; }
+.msg-gifs__cell:active { opacity: 0.7; }

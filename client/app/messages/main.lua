@@ -10,6 +10,11 @@ RegisterNUICallback('phone:media:config', function(_, cb)
     cb(Config.Camera or {})
 end)
 
+-- GIF provider config (Tenor key) for the Messages GIF picker.
+RegisterNUICallback('phone:gif:config', function(_, cb)
+    cb(Config.Gif or {})
+end)
+
 RegisterNUICallback('phone:messages:threads', function(_, cb)
     cb(lib.callback.await('oph3z-phone:server:messages:threads', false) or {})
 end)

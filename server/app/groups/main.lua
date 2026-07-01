@@ -144,6 +144,7 @@ end
 local function broadcast(group, item)
     local preview = item.body or ''
     if item.type == 'image' then preview = '📷 Photo'
+    elseif item.type == 'gif' then preview = '🎞️ GIF'
     elseif item.type == 'video' then preview = '📹 Video'
     elseif item.type == 'voice' then preview = '🎤 Voice message'
     elseif item.type == 'location' then preview = '📍 Location'
@@ -196,6 +197,26 @@ end
 
 -- ---- Per-viewer serialisation -------------------------------------------
 
+-- Active live-location shares, keyed by share id. Latest position lives here and
+-- is only persisted to the item when the share ends — so a group opened mid-share
+-- must overlay the current position (declared up here so the serializer can read it).
+local groupShares = {} -- [sid] = { gid, senderNumber, senderSrc, id, lastX, lastY, lastLabel }
+
+local function applyGroupLive(items)
+    for _, m in ipairs(items) do
+        if m.type == 'location' and m.meta and m.meta.sid then
+            local sh = groupShares[m.meta.sid]
+            if sh then
+                m.meta.x = sh.lastX
+                m.meta.y = sh.lastY
+                m.meta.label = sh.lastLabel or m.meta.label
+                m.meta.live = true
+            end
+        end
+    end
+    return items
+end
+
 local function serializeMembers(group, viewerCid)
     local out = {}
     for _, m in ipairs(group.members) do
@@ -212,6 +233,7 @@ local function serializeMembers(group, viewerCid)
 end
 
 local function serializeItems(group, viewerCid, myNumber)
+    applyGroupLive(group.items)
     local out = {}
     for _, m in ipairs(group.items) do
         local senderName, senderAvatar
@@ -571,9 +593,8 @@ end)
 
 -- ---- Group location / live location -------------------------------------
 -- A live share streams the sender's position to every group member. The latest
--- position lives in memory and is only persisted to the item when the share ends.
-
-local groupShares = {} -- [sid] = { gid, senderNumber, senderSrc, id, lastX, lastY, lastLabel }
+-- position lives in `groupShares` (declared above) and is only persisted to the
+-- item when the share ends.
 
 local function pushGroupLoc(group, data)
     for _, m in ipairs(group.members) do

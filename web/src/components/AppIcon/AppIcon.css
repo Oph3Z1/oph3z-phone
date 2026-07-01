@@ -34,6 +34,20 @@
   border-radius: 0.95em;
 }
 
+/* Fallback tile when a (mis-configured) app has no icon. */
+.appicon__fallback {
+  width: 100%;
+  height: 100%;
+  border-radius: 0.95em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(160deg, #3a3a3c, #1c1c1e);
+  color: #fff;
+  font-size: 1.6em;
+  font-weight: 700;
+}
+
 /* Unread-count badge (top-right, overflows the icon like iOS). */
 .appicon__badge {
   position: absolute;

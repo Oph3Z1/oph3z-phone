@@ -55,7 +55,9 @@ const messagesSlice = createSlice({
       else delete state.draftAttach[number];
     },
     markReadLocal(state, action) {
-      const th = state.threads.find((t) => t.number === action.payload);
+      // payload is a DM number, or a group key "g:<gid>".
+      const key = action.payload;
+      const th = state.threads.find((t) => (t.isGroup ? `g:${t.gid}` === key : t.number === key));
       if (th) th.unread = 0;
     },
     appendMessage(state, action) {

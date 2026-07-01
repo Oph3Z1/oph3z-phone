@@ -58,7 +58,8 @@ lib.callback.register('oph3z-phone:server:notifications:get', function(src)
     return out
 end)
 
--- Mark notifications read: { all } | { id } | { app } | { number } (route.number).
+-- Mark notifications read: { all } | { id } | { app } | { number } | { gid }
+-- (number / gid match against route.number / route.gid).
 lib.callback.register('oph3z-phone:server:notifications:read', function(src, input)
     local cid = DB.GetCitizenId(src)
     if not cid or type(input) ~= 'table' then return false end
@@ -67,7 +68,8 @@ lib.callback.register('oph3z-phone:server:notifications:read', function(src, inp
         if input.all
             or (input.id and it.id == input.id)
             or (input.app and it.app == input.app)
-            or (input.number and it.route and it.route.number == input.number) then
+            or (input.number and it.route and it.route.number == input.number)
+            or (input.gid and it.route and it.route.gid == input.gid) then
             it.read = true
         end
     end
@@ -75,15 +77,25 @@ lib.callback.register('oph3z-phone:server:notifications:read', function(src, inp
     return true
 end)
 
--- Clear notifications: { id } removes one, otherwise clears all.
+-- Clear (REMOVE) notifications: { id } removes one; { number } | { gid } | { app }
+-- removes all matching that conversation/app; otherwise clears everything.
 lib.callback.register('oph3z-phone:server:notifications:clear', function(src, input)
     local cid = DB.GetCitizenId(src)
     if not cid then return false end
     local doc = ensureNotifs(DB.LoadOrCreate(cid))
+    local items = doc.notifications.items
+
     if input and input.id then
-        for i = #doc.notifications.items, 1, -1 do
-            if doc.notifications.items[i].id == input.id then
-                table.remove(doc.notifications.items, i)
+        for i = #items, 1, -1 do
+            if items[i].id == input.id then table.remove(items, i) end
+        end
+    elseif input and (input.number or input.gid or input.app) then
+        for i = #items, 1, -1 do
+            local it = items[i]
+            if (input.number and it.route and it.route.number == input.number)
+                or (input.gid and it.route and it.route.gid == input.gid)
+                or (input.app and it.app == input.app) then
+                table.remove(items, i)
             end
         end
     else

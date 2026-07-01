@@ -74,6 +74,13 @@ lib.callback.register('oph3z-phone:server:messages:threads', function(src)
             unread   = t.unread or 0,
         }
     end
+    -- Merge in the player's group chats (they share the same thread list).
+    if Groups then
+        for _, row in ipairs(Groups.ListForThreads(cid)) do
+            out[#out + 1] = row
+        end
+    end
+
     table.sort(out, function(a, b) return (a.lastTs or 0) > (b.lastTs or 0) end)
     return out
 end)
@@ -134,6 +141,7 @@ end)
 -- Short human-readable preview of a message for notifications / previews.
 local function notifBody(mtype, body, meta)
     if mtype == 'image' then return '📷 Photo'
+    elseif mtype == 'gif' then return '🎞️ GIF'
     elseif mtype == 'video' then return '📹 Video'
     elseif mtype == 'voice' then return '🎤 Voice message'
     elseif mtype == 'location' then return '📍 Location'
@@ -189,6 +197,17 @@ local function deliver(senderCid, toDigits, mtype, body, meta)
     end
 
     return { id = id, dir = 'out', type = mtype, body = body, meta = meta, ts = ts, read = true }
+end
+
+-- Expose 1-on-1 message sending to the export API (server/api.lua). Sends a
+-- message FROM a citizen TO a number (digits), writing both sides + live push.
+Messages = Messages or {}
+function Messages.Send(senderCid, toNumber, mtype, body, meta)
+    if not senderCid then return nil end
+    local toDigits = DB.Digits(toNumber)
+    if toDigits == '' then return nil end
+    return deliver(senderCid, toDigits, tostring(mtype or 'text'), tostring(body or ''),
+        type(meta) == 'table' and meta or nil)
 end
 
 -- Send a message (text or attachment). Writes both sides + live push.

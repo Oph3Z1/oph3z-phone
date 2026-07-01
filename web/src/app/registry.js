@@ -1,7 +1,9 @@
-// Central registry of every app on the phone.
+// Registry of BUILT-IN apps: maps an app id to its bundled icon + screen.
 //
-// Phase 1: every app opens the generic placeholder screen (component: null).
-// Phase 2: give an app its own `component` and it renders instead of the stub.
+// The LAYOUT (which apps show, their labels, order and dock/grid placement) is
+// NOT here anymore — it comes from Config.Apps in config.lua and is delivered to
+// the UI at runtime (see appsSlice). This file only knows how to *render* a
+// built-in app id. Third-party apps render via an iframe instead (see AppScreen).
 
 import callIcon from '../assets/icons/apps/call.png';
 import messageIcon from '../assets/icons/apps/message.png';
@@ -21,7 +23,7 @@ import MessagesApp from './messages/MessagesApp';
 
 /** @typedef {{ id:string, name:string, icon:string, component:(React.ComponentType|null) }} AppDef */
 
-/** @type {Record<string, AppDef>} */
+/** @type {Record<string, AppDef>} Built-in id -> bundled icon + default name + screen. */
 export const APPS = {
   call:       { id: 'call',       name: 'Phone',      icon: callIcon,       component: PhoneApp },
   message:    { id: 'message',    name: 'Messages',   icon: messageIcon,    component: MessagesApp },
@@ -33,11 +35,5 @@ export const APPS = {
   calculator: { id: 'calculator', name: 'Calculator', icon: calculatorIcon, component: null },
   appstore:   { id: 'appstore',   name: 'App Store',  icon: appstoreIcon,   component: null },
 };
-
-// Apps shown in the home-screen grid, in order.
-export const HOME_GRID = ['maps', 'clock', 'settings', 'calculator', 'appstore'];
-
-// Apps pinned to the bottom dock, in order (max 4).
-export const DOCK = ['call', 'message', 'camera', 'photos'];
 
 export const getApp = (id) => APPS[id] || null;

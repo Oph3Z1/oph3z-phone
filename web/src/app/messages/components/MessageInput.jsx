@@ -1,9 +1,8 @@
 import { useState } from 'react';
-import { CameraIcon, PlusIcon, MicIcon, SendIcon } from './icons';
+import { CameraIcon, PlusIcon, MicIcon, SendIcon, GifIcon } from './icons';
 
-// Bottom composer bar. Camera/+ (attachments) and mic (voice) are wired in the
-// feature phase; for now they're present and Send/text works.
-export default function MessageInput({ onSend, onCamera, onPlus, onMic, attachment, onRemoveAttachment }) {
+// Bottom composer bar. Camera/+ (attachments), GIF picker and mic (voice).
+export default function MessageInput({ onSend, onCamera, onPlus, onGif, onMic, attachment, onRemoveAttachment }) {
   const [text, setText] = useState('');
   const hasText = text.trim().length > 0;
   const canSend = hasText || !!attachment;
@@ -57,9 +56,16 @@ export default function MessageInput({ onSend, onCamera, onPlus, onMic, attachme
               <SendIcon />
             </button>
           ) : (
-            <button className="msg-input__mic" onClick={onMic} aria-label="Voice message">
-              <MicIcon />
-            </button>
+            <>
+              {onGif && (
+                <button className="msg-input__gif" onClick={onGif} aria-label="GIF">
+                  <GifIcon />
+                </button>
+              )}
+              <button className="msg-input__mic" onClick={onMic} aria-label="Voice message">
+                <MicIcon />
+              </button>
+            </>
           )}
         </div>
       </div>

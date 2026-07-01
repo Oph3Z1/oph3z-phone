@@ -1,17 +1,29 @@
 import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import Avatar from './Avatar';
-import { ChevronRightIcon, ComposeIcon, CheckIcon } from './icons';
+import GroupAvatar from './GroupAvatar';
+import { ChevronRightIcon, ComposeIcon, CheckIcon, GroupAddIcon } from './icons';
 import { deleteThreads } from '../../../store/slices/messagesSlice';
 
 function preview(t) {
+  if (t.isGroup) {
+    const who = t.lastDir === 'out' ? 'You' : t.lastSender;
+    const body = mediaLabel(t) ?? t.lastBody ?? '';
+    if (t.lastType === 'system') return body;
+    return who ? `${who}: ${body}` : body;
+  }
+  return mediaLabel(t) ?? t.lastBody ?? '';
+}
+
+function mediaLabel(t) {
   switch (t.lastType) {
     case 'image': return 'Photo';
     case 'video': return 'Video';
+    case 'gif': return 'GIF';
     case 'location': return 'Location';
     case 'money': return 'Money';
     case 'voice': return 'Voice message';
-    default: return t.lastBody || '';
+    default: return null;
   }
 }
 
@@ -27,7 +39,7 @@ function timeLabel(ts) {
   return d.toLocaleDateString(undefined, { month: 'numeric', day: 'numeric' });
 }
 
-export default function ThreadList({ onOpen, onCompose }) {
+export default function ThreadList({ onOpen, onCompose, onNewGroup }) {
   const dispatch = useDispatch();
   const threads = useSelector((s) => s.messages.threads);
 
@@ -51,23 +63,27 @@ export default function ThreadList({ onOpen, onCompose }) {
     exitEdit();
   };
 
+  const keyOf = (t) => (t.isGroup ? `g:${t.gid}` : t.number);
+
   return (
     <div className={`msg${edit ? ' is-editing' : ''}`}>
       <div className="msg-topbar">
         {threads.length > 0 ? (
-          <button
-            className="msg-topbar__edit"
-            onClick={() => (edit ? exitEdit() : setEdit(true))}
-          >
+          <button className="msg-topbar__edit" onClick={() => (edit ? exitEdit() : setEdit(true))}>
             {edit ? 'Done' : 'Edit'}
           </button>
         ) : (
           <span />
         )}
         {!edit && (
-          <button className="msg-topbar__compose" onClick={onCompose} aria-label="New message">
-            <ComposeIcon />
-          </button>
+          <div className="msg-topbar__actions">
+            <button className="msg-topbar__compose" onClick={onNewGroup} aria-label="New group">
+              <GroupAddIcon />
+            </button>
+            <button className="msg-topbar__compose" onClick={onCompose} aria-label="New message">
+              <ComposeIcon />
+            </button>
+          </div>
         )}
       </div>
 
@@ -77,18 +93,21 @@ export default function ThreadList({ onOpen, onCompose }) {
         {threads.length === 0 && <div className="msg-empty">No messages yet. Tap ✎ to start.</div>}
 
         {threads.map((t) => {
+          const selectable = edit && !t.isGroup; // groups are left via Group Info
           const isSel = selected.has(t.number);
           return (
             <button
-              key={t.number}
+              key={keyOf(t)}
               className="msg-row"
-              onClick={() => (edit ? toggleSelect(t.number) : onOpen(t.number))}
+              onClick={() => (selectable ? toggleSelect(t.number) : edit ? null : onOpen(t))}
             >
               {edit && (
-                <span className={`msg-sel${isSel ? ' is-on' : ''}`}>{isSel && <CheckIcon />}</span>
+                <span className={`msg-sel${isSel ? ' is-on' : ''}${t.isGroup ? ' is-disabled' : ''}`}>
+                  {isSel && <CheckIcon />}
+                </span>
               )}
               {!edit && <span className={`msg-row__dot${t.unread > 0 ? ' is-on' : ''}`} />}
-              <Avatar name={t.name} src={t.avatar} />
+              {t.isGroup ? <GroupAvatar group={t} /> : <Avatar name={t.name} src={t.avatar} />}
               <div className="msg-row__body">
                 <div className="msg-row__top">
                   <span className="msg-row__name">{t.name}</span>
@@ -104,11 +123,7 @@ export default function ThreadList({ onOpen, onCompose }) {
 
       {edit && (
         <div className="msg-deletebar">
-          <button
-            className="msg-deletebar__btn"
-            disabled={selected.size === 0}
-            onClick={removeSelected}
-          >
+          <button className="msg-deletebar__btn" disabled={selected.size === 0} onClick={removeSelected}>
             Delete{selected.size ? ` (${selected.size})` : ''}
           </button>
         </div>

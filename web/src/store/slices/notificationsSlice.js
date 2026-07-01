@@ -2,6 +2,7 @@ import { createSlice } from '@reduxjs/toolkit';
 import { fetchNui } from '../../utils/fetchNui';
 import { openApp, unlock, setLaunchTab } from './phoneSlice';
 import { setResumeThread } from './messagesSlice';
+import { setResumeGroup } from './groupsSlice';
 
 const now = Math.floor(Date.now() / 1000);
 const MOCK = [
@@ -32,13 +33,14 @@ const notificationsSlice = createSlice({
       if (!state.items.some((x) => x.id === n.id)) state.items.unshift(n);
     },
     markReadLocal(state, action) {
-      const { id, app, number, all } = action.payload || {};
+      const { id, app, number, gid, all } = action.payload || {};
       state.items.forEach((n) => {
         if (
           all ||
           (id != null && n.id === id) ||
           (app && n.app === app) ||
-          (number && n.route && n.route.number === number)
+          (number && n.route && n.route.number === number) ||
+          (gid && n.route && n.route.gid === gid)
         ) {
           n.read = true;
         }
@@ -46,6 +48,15 @@ const notificationsSlice = createSlice({
     },
     removeNotifLocal(state, action) {
       state.items = state.items.filter((n) => n.id !== action.payload);
+    },
+    removeNotifsMatching(state, action) {
+      const { number, gid, app } = action.payload || {};
+      state.items = state.items.filter((n) => {
+        if (number && n.route && n.route.number === number) return false;
+        if (gid && n.route && n.route.gid === gid) return false;
+        if (app && n.app === app) return false;
+        return true;
+      });
     },
     clearAllLocal(state) {
       state.items = [];
@@ -67,6 +78,7 @@ export const {
   addNotif,
   markReadLocal,
   removeNotifLocal,
+  removeNotifsMatching,
   clearAllLocal,
   setCenterOpen,
   setBanner,
@@ -86,18 +98,19 @@ export const loadNotifications = () => async (dispatch) => {
 export const presentNotification = (item) => (dispatch, getState) => {
   const state = getState();
   const route = item.route || {};
+  const activeKey = route.gid ? `g:${route.gid}` : route.number;
   const viewingThisChat =
     state.phone.visible &&
     !state.phone.locked &&
     state.phone.activeApp === 'message' &&
     route.app === 'message' &&
-    route.number &&
-    state.messages.active === route.number;
+    activeKey &&
+    state.messages.active === activeKey;
 
   if (viewingThisChat) {
-    // Already in this chat — store it as read, no banner, no sound.
-    dispatch(addNotif({ ...item, read: true }));
-    fetchNui('phone:notifications:read', { id: item.id }, true);
+    // Already in this chat — drop it entirely (a read conversation keeps no
+    // notifications in the center), no banner, no sound.
+    fetchNui('phone:notifications:clear', { id: item.id }, true);
     return false;
   }
 
@@ -110,6 +123,13 @@ export const presentNotification = (item) => (dispatch, getState) => {
 export const markNotifRead = (payload) => async (dispatch) => {
   dispatch(markReadLocal(payload)); // optimistic
   await fetchNui('phone:notifications:read', payload, true);
+};
+
+// Remove a conversation's / app's notifications from the center entirely (used
+// when a chat is opened: a read conversation should leave nothing behind).
+export const clearNotifsFor = (filter) => async (dispatch) => {
+  dispatch(removeNotifsMatching(filter)); // optimistic
+  await fetchNui('phone:notifications:clear', filter, true);
 };
 
 export const clearNotification = (id) => async (dispatch) => {
@@ -126,7 +146,10 @@ export const openRoute = (route, notifId) => (dispatch) => {
   if (notifId != null) dispatch(markNotifRead({ id: notifId }));
   if (!route) return;
   dispatch(unlock());
-  if (route.app === 'message' && route.number) {
+  if (route.app === 'message' && route.gid) {
+    dispatch(setResumeGroup(route.gid));
+    dispatch(openApp('message'));
+  } else if (route.app === 'message' && route.number) {
     dispatch(setResumeThread(route.number));
     dispatch(openApp('message'));
   } else if (route.app === 'call') {

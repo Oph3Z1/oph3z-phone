@@ -8,6 +8,7 @@ import { uploadToProvider, dataURLtoBlob } from '../../utils/upload';
 import { openApp } from '../../store/slices/phoneSlice';
 import { loadPhotos, upsertPhoto } from '../../store/slices/photosSlice';
 import { setShareTo, setResumeThread, setDraftAttach } from '../../store/slices/messagesSlice';
+import { setResumeGroup, setGroupDraft } from '../../store/slices/groupsSlice';
 import { FlipIcon } from './components/icons';
 
 const fmt = (s) => `${pad2(Math.floor(s / 60))}:${pad2(s % 60)}`;
@@ -106,8 +107,14 @@ export default function CameraApp() {
     const to = shareToRef.current;
     if (to) {
       dispatch(setShareTo(null));
-      dispatch(setDraftAttach({ number: to, attach: { type, url } }));
-      dispatch(setResumeThread(to));
+      if (String(to).startsWith('g:')) {
+        const gid = String(to).slice(2);
+        dispatch(setGroupDraft({ gid, attach: { type, url } }));
+        dispatch(setResumeGroup(gid));
+      } else {
+        dispatch(setDraftAttach({ number: to, attach: { type, url } }));
+        dispatch(setResumeThread(to));
+      }
       dispatch(openApp('message'));
     }
   };
@@ -172,7 +179,10 @@ export default function CameraApp() {
   const backToChat = () => {
     const to = shareToRef.current;
     dispatch(setShareTo(null));
-    if (to) dispatch(setResumeThread(to));
+    if (to) {
+      if (String(to).startsWith('g:')) dispatch(setResumeGroup(String(to).slice(2)));
+      else dispatch(setResumeThread(to));
+    }
     dispatch(openApp('message'));
   };
 

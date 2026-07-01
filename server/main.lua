@@ -25,6 +25,8 @@ lib.callback.register('oph3z-phone:server:getData', function(source)
     return {
         citizenid = citizenid,
         settings  = doc.settings,
+        number    = doc.phone.number,                  -- formatted (e.g. 555-0142)
+        numberRaw = DB.Digits(doc.phone.numberRaw),     -- digits only
     }
 end)
 
@@ -277,8 +279,9 @@ local function endCall(callId, reason)
     TriggerClientEvent('oph3z-phone:call:ended', call.callee, { callId = callId, reason = reason })
 end
 
-RegisterNetEvent('oph3z-phone:call:start', function(rawNumber)
-    local src = source
+-- Place a call from `src` to a number. Used by the call:start net event and by
+-- the exported PlaceCall API.
+local function startCall(src, rawNumber)
     local callerCid = getCitizenId(src)
     if not callerCid or playerCall[src] then return end
 
@@ -377,7 +380,16 @@ RegisterNetEvent('oph3z-phone:call:start', function(rawNumber)
         local c = activeCalls[callId]
         if c and c.state == 'ringing' then endCall(callId, 'noanswer') end
     end)
+    return callId
+end
+
+RegisterNetEvent('oph3z-phone:call:start', function(rawNumber)
+    startCall(source, rawNumber)
 end)
+
+-- Expose call placement to the export API (server/api.lua).
+PhoneCall = PhoneCall or {}
+PhoneCall.Start = startCall
 
 RegisterNetEvent('oph3z-phone:call:accept', function(callId)
     local src = source

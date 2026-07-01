@@ -5,6 +5,8 @@ import VideoPlayer from '../../photos/components/VideoPlayer';
 // Images support wheel/double-tap zoom + drag-to-pan; videos use the iOS player.
 export default function MediaViewer({ item, onClose }) {
   const isVideo = item.type === 'video';
+  // GIFs render as an image but must NOT be zoomable/pannable (just play in place).
+  const noZoom = isVideo || item.type === 'gif';
   const [scale, setScale] = useState(1);
   const [pos, setPos] = useState({ x: 0, y: 0 });
   const [dragging, setDragging] = useState(false);
@@ -26,7 +28,7 @@ export default function MediaViewer({ item, onClose }) {
   };
 
   const onWheel = (e) => {
-    if (isVideo) return;
+    if (noZoom) return;
     setScale((s) => {
       const next = Math.min(5, Math.max(1, s - e.deltaY * 0.0025));
       setPos((p) => (next === 1 ? { x: 0, y: 0 } : clamp(p.x, p.y, next)));
@@ -34,7 +36,7 @@ export default function MediaViewer({ item, onClose }) {
     });
   };
   const onPointerDown = (e) => {
-    if (isVideo || scale === 1) return;
+    if (noZoom || scale === 1) return;
     drag.current = { x: e.clientX, y: e.clientY, ox: pos.x, oy: pos.y };
     setDragging(true);
   };
@@ -47,6 +49,7 @@ export default function MediaViewer({ item, onClose }) {
     setDragging(false);
   };
   const onDouble = () => {
+    if (noZoom) return;
     setScale((s) => (s > 1 ? 1 : 2.5));
     setPos({ x: 0, y: 0 });
   };
@@ -77,7 +80,7 @@ export default function MediaViewer({ item, onClose }) {
             onDoubleClick={onDouble}
             style={{
               transform: `translate(${pos.x}px, ${pos.y}px) scale(${scale})`,
-              cursor: dragging ? 'grabbing' : scale > 1 ? 'grab' : 'zoom-in',
+              cursor: noZoom ? 'default' : dragging ? 'grabbing' : scale > 1 ? 'grab' : 'zoom-in',
             }}
           />
         )}

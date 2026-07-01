@@ -35,6 +35,29 @@ Config.DefaultSettings = {
     airplane   = false,                    -- airplane mode (unreachable + can't call)
 }
 
+-- Home screen apps ----------------------------------------------------------
+-- The name, placement and order of every BUILT-IN app live here so you can edit
+-- them without touching the UI code. Order in this list = display order.
+--   id       must match the app's id in the UI (don't rename built-ins).
+--   label    the name shown under the icon (rename freely).
+--   place    'dock'  -> bottom bar (max 4)
+--            'grid'  -> home-screen grid
+--            'hidden'-> registered but not shown
+--   enabled  set false to remove the app entirely.
+-- Third-party apps are NOT listed here — they add themselves at runtime via
+-- exports['oph3z-phone']:RegisterApp{...} (see docs/THIRD_PARTY_APPS.md).
+Config.Apps = {
+    { id = 'call',       label = 'Phone',      place = 'dock' },
+    { id = 'message',    label = 'Messages',   place = 'dock' },
+    { id = 'camera',     label = 'Camera',     place = 'dock' },
+    { id = 'photos',     label = 'Photos',     place = 'dock' },
+    { id = 'maps',       label = 'Maps',       place = 'grid' },
+    { id = 'clock',      label = 'Clock',      place = 'grid' },
+    { id = 'settings',   label = 'Settings',   place = 'grid' },
+    { id = 'calculator', label = 'Calculator', place = 'grid' },
+    { id = 'appstore',   label = 'App Store',  place = 'grid' },
+}
+
 -- Phone prop ----------------------------------------------------------------
 Config.UseProp   = true                    -- attach a phone prop + play hand animation
 Config.PropModel = 'prop_amb_phone'        -- prop model to put in the player's hand
@@ -69,6 +92,14 @@ Config.Camera = {
         apiKey = 'MaUggIdxK7oGR98qa7HjRWcFqveBP1pp',
         url    = 'https://api.fivemanage.com/api/v3/file',
     },
+}
+
+-- GIFs (Messages) -----------------------------------------------------------
+-- The GIF button in the Messages composer searches GIPHY. Get a free API key at
+-- https://developers.giphy.com/ (create an app) and paste it below. Without a key
+-- the picker shows a friendly "set up your key" notice.
+Config.Gif = {
+    apiKey = 'fbkCoWNVgakEayeG0G9hDALim5pwNWr8',   -- <-- paste your GIPHY API key here
 }
 
 -- Lock screen / time --------------------------------------------------------
