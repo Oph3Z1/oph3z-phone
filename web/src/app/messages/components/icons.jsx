@@ -42,6 +42,14 @@ export const SendIcon = (p) => (
     <path d="M12 4l7 7h-4v9h-6v-9H5l7-7z" />
   </svg>
 );
+export const EmojiIcon = (p) => (
+  <svg {...base} fill="none" stroke="currentColor" strokeWidth="2" {...p}>
+    <circle cx="12" cy="12" r="9" />
+    <path d="M8.5 14a4 4 0 007 0" strokeLinecap="round" />
+    <circle cx="9" cy="10" r="1.15" fill="currentColor" stroke="none" />
+    <circle cx="15" cy="10" r="1.15" fill="currentColor" stroke="none" />
+  </svg>
+);
 export const GifIcon = (p) => (
   <svg {...base} viewBox="0 0 28 24" fill="none" {...p}>
     <rect x="1.5" y="3.5" width="25" height="17" rx="4" stroke="currentColor" strokeWidth="2" />

@@ -35,14 +35,6 @@
 .lockscreen__date {
   font-size: 1.35em;
   font-weight: 600;
-  display: flex;
-  align-items: center;
-  gap: 0.5em;
-}
-
-.lockscreen__weather {
-  font-weight: 500;
-  opacity: 0.95;
 }
 
 .lockscreen__clock {

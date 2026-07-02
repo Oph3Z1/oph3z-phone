@@ -19,6 +19,7 @@
   font-size: 1em;
   letter-spacing: 0.02em;
   min-width: 4.5em;
+  padding-left: 0.7em;
   text-shadow: 0 0.06em 0.2em rgba(0, 0, 0, 0.35);
 }
 
@@ -39,6 +40,34 @@
 
 .statusbar__battery {
   height: 0.95em;
+}
+
+/* Signal/wifi/battery group -> opens the Control Center. */
+.statusbar__cc {
+  display: flex;
+  align-items: center;
+  gap: 0.4em;
+  pointer-events: auto;
+  cursor: pointer;
+  padding: 0.5em 0;
+  margin: -0.5em 0;
+}
+.statusbar__cc .statusbar__icon {
+  color: #fff; /* airplane glyph uses currentColor */
+}
+
+/* Home-screen edit mode: "Done" in place of the right-side icons. */
+.statusbar__done {
+  color: #fff;
+  font-size: 0.82em;
+  font-weight: 600;
+  cursor: pointer;
+  pointer-events: auto;
+  padding: 0.25em 0.8em;
+  border-radius: 1em;
+  background: rgba(255, 255, 255, 0.22);
+  backdrop-filter: blur(0.6em);
+  -webkit-backdrop-filter: blur(0.6em);
 }
 
 /* Dynamic Island pill, centred in the status bar.

@@ -17,17 +17,17 @@ in `resources/[phone]/oph3z-phone-app-template`.
 local resource = GetCurrentResourceName()
 
 local APP = {
-    id        = 'myapp',                                    -- unique id
-    label     = 'My App',                                   -- name under the icon
-    developer = 'your-name',                                -- shown in the App Store
-    place     = 'grid',                                     -- 'grid' (home) or 'dock' (bottom bar)
-    icon      = ('nui://%s/ui/icon.svg'):format(resource),  -- any image url
-    ui        = ('nui://%s/ui/index.html'):format(resource),-- the iframe page
+    id          = 'myapp',                                    -- unique id
+    label       = 'My App',                                   -- name under the icon
+    developer   = 'your-name',                                -- shown in the App Store
+    description = 'What my app does.',                         -- App Store description
+    place       = 'grid',                                     -- where it lands once installed: 'grid'/'dock'
+    icon        = ('nui://%s/ui/icon.svg'):format(resource),  -- icon (home + store)
+    ui          = ('nui://%s/ui/index.html'):format(resource),-- the iframe page
 
-    -- App Store (optional; used later by the App Store app)
-    addAppStore = false,
+    -- App Store page (optional)
     headerImage = ('nui://%s/ui/header.webp'):format(resource),
-    swiperItems = {},                                       -- screenshot urls
+    swiperItems = {},                                         -- screenshot urls
 }
 
 local function register()
@@ -39,9 +39,14 @@ CreateThread(function() Wait(1000) register() end)         -- on our start
 AddEventHandler('oph3z-phone:requestApps', register)        -- when the phone (re)starts
 ```
 
-Registration fields: `id`, `label`, `developer`, `place` (`'grid'`/`'dock'`),
-`icon` (image url), `ui` (the iframe page). The App Store fields (`addAppStore`,
-`headerImage`, `swiperItems`) are optional and reserved for the upcoming store.
+**Third-party apps are always listed in the phone's App Store.** They do NOT
+auto-appear on the home screen — the player installs them from the App Store (a
+"Get" download), then they land on the home screen (in `place`). If the player
+deletes your app, it stays in the App Store to reinstall.
+
+Registration fields: `id`, `label`, `developer`, `description`, `place`
+(`'grid'`/`'dock'`), `icon` (image url), `ui` (the iframe page), and the optional
+App Store page media `headerImage` + `swiperItems` (screenshot urls).
 
 Expose your page + icon in your `fxmanifest.lua`:
 
@@ -62,7 +67,7 @@ The phone automatically **removes** your app when your resource stops.
 
 | Export | Description |
 |---|---|
-| `RegisterApp(def)` | Add/replace your app. `def = { id, label, developer?, icon, ui, place, addAppStore?, headerImage?, swiperItems? }`. Returns `true` on success. |
+| `RegisterApp(def)` | Add/replace your app. `def = { id, label, developer?, description?, icon, ui, place, deletable?, headerImage?, swiperItems? }`. Returns `true` on success. |
 | `UnregisterApp(id)` | Remove an app you registered. |
 | `OpenApp(id)` | Open the phone (if closed) and jump to an app (yours or built-in). |
 | `IsOpen()` | Is the phone currently open? |
@@ -80,6 +85,8 @@ Your page runs inside an iframe. The phone talks to it with `postMessage`:
 | phone → app | `{ type:'oph3z:init', identity:{ number, numberRaw, citizenid }, app:{ id, label } }` | Sent on load; the player's identity. |
 | app → phone | `{ type:'oph3z:ready' }` | Ask the phone to (re)send `oph3z:init`. |
 | app → phone | `{ type:'oph3z:close' }` | Send the player back to the home screen. |
+| app → phone | `{ type:'oph3z:confirm', id, title, message, confirmText?, cancelText?, destructive? }` | Show a native yes/no confirm; reply `{ type:'oph3z:confirm:result', id, confirmed }`. |
+| app → phone | `{ type:'oph3z:alert', id, title, message, buttons:[{ text, style?, value? }] }` | Show a native dialog with custom buttons; reply `{ type:'oph3z:alert:result', id, value }`. |
 
 ```js
 window.addEventListener('message', (e) => {
@@ -90,6 +97,35 @@ window.addEventListener('message', (e) => {
 });
 window.parent.postMessage({ type: 'oph3z:ready' }, '*'); // request identity
 ```
+
+### Native confirm / alert dialog
+
+Use the phone's built-in iOS-style dialog instead of `window.confirm`. Send a
+request with a unique `id` and await the matching reply:
+
+```js
+function phoneConfirm(opts) {
+  return new Promise((resolve) => {
+    const id = 'c' + Math.random().toString(36).slice(2);
+    function onResult(e) {
+      if (e.data?.type === 'oph3z:confirm:result' && e.data.id === id) {
+        window.removeEventListener('message', onResult);
+        resolve(e.data.confirmed);
+      }
+    }
+    window.addEventListener('message', onResult);
+    window.parent.postMessage({ type: 'oph3z:confirm', id, ...opts }, '*');
+  });
+}
+
+// usage
+if (await phoneConfirm({ title: 'Delete post?', message: 'This cannot be undone.',
+                         confirmText: 'Delete', destructive: true })) {
+  // ...they confirmed
+}
+```
+
+`style` for `oph3z:alert` buttons is `'default'` | `'cancel'` | `'destructive'`.
 
 **Layout note:** your iframe fills the whole phone screen. The phone's status bar
 floats at the top and the home indicator at the bottom — keep ~3.2em top padding

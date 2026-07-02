@@ -12,12 +12,18 @@ import HomeScreen from '../../screens/HomeScreen/HomeScreen';
 import AppScreen from '../../screens/AppScreen/AppScreen';
 import CallOverlay from '../../app/phone/call/CallOverlay';
 import NotificationBanner from '../Notifications/NotificationBanner';
+import AlertDialog from '../AlertDialog/AlertDialog';
+import ControlCenter from '../ControlCenter/ControlCenter';
 
 export default function Phone() {
   const locked = useSelector((s) => s.phone.locked);
   const activeApp = useSelector((s) => s.phone.activeApp);
   const wallpaperKey = useSelector((s) => s.settings.wallpaper);
+  const brightness = useSelector((s) => s.settings.brightness);
   const inCall = useSelector((s) => !!s.call.state);
+
+  // Brightness dims the screen with a black veil (min 20% -> never fully dark).
+  const dim = Math.max(0, Math.min(0.72, ((100 - brightness) / 100) * 0.9));
 
   const screenRef = useRef(null);
 
@@ -81,11 +87,21 @@ export default function Phone() {
         <StatusBar />
         {showHomeBar && <HomeBar />}
 
+        {/* Control Center (pull-down from the status bar icons). */}
+        <ControlCenter />
+
         {/* Transient notification banner (phone open & unlocked). */}
         {!locked && !inCall && <NotificationBanner />}
 
         {/* Call UI (incoming island / calling / in-call) on top of everything. */}
         <CallOverlay />
+
+        {/* Reusable confirm / alert dialog (delete confirmation, third-party apps). */}
+        <AlertDialog />
+
+        {/* Brightness veil — over EVERYTHING (status bar, island, apps, Control
+            Center). pointer-events:none so it never blocks interaction. */}
+        {dim > 0 && <div className="phone__dim" style={{ opacity: dim }} />}
       </div>
 
       {/* The physical case / frame. */}

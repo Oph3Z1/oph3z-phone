@@ -9,6 +9,9 @@ import messagesReducer from './slices/messagesSlice';
 import groupsReducer from './slices/groupsSlice';
 import notificationsReducer from './slices/notificationsSlice';
 import appsReducer from './slices/appsSlice';
+import homeReducer from './slices/homeSlice';
+import dialogReducer from './slices/dialogSlice';
+import musicReducer from './slices/musicSlice';
 
 export const store = configureStore({
   reducer: {
@@ -22,5 +25,8 @@ export const store = configureStore({
     groups: groupsReducer,
     notifications: notificationsReducer,
     apps: appsReducer,
+    home: homeReducer,
+    dialog: dialogReducer,
+    music: musicReducer,
   },
 });

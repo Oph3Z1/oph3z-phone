@@ -14,6 +14,11 @@ RegisterNUICallback('phone:saveSettings', function(patch, cb)
     cb({ ok = ok })
 end)
 
+-- Persist the player's custom home-screen layout.
+RegisterNUICallback('phone:home:save', function(layout, cb)
+    cb(lib.callback.await('oph3z-phone:server:home:save', false, layout) or false)
+end)
+
 -- Toggle the in-game flashlight beam.
 RegisterNUICallback('phone:flashlight', function(data, cb)
     Phone.setFlashlight(data and data.on)

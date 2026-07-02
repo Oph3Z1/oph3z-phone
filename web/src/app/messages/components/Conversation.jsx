@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import Avatar from './Avatar';
 import Bubble from './Bubble';
 import MessageInput from './MessageInput';
-import { ChevronLeftIcon, ChevronRightIcon } from './icons';
+import { ChevronLeftIcon, ChevronRightIcon, CameraIcon, GifIcon } from './icons';
 import { digitsOf, setContactFocus } from '../../../store/slices/contactsSlice';
 import {
   openThread,
@@ -276,9 +276,7 @@ export default function Conversation({ number, onBack }) {
       ) : (
         <MessageInput
           onSend={send}
-          onCamera={openCamera}
           onPlus={() => setAttach('menu')}
-          onGif={() => setShowGif(true)}
           onMic={() => setRecording(true)}
           attachment={draft}
           onRemoveAttachment={removeDraft}
@@ -288,36 +286,32 @@ export default function Conversation({ number, onBack }) {
       {showGif && <GifPicker onClose={() => setShowGif(false)} onSelect={sendGif} />}
 
       {attach === 'menu' && (
-        <div className="msg-attach" onClick={closeAttach}>
-          <div className="msg-attach__sheet" onClick={(e) => e.stopPropagation()}>
-            <div className="msg-attach__group">
-              <button className="msg-attach__item" onClick={openGallery}>
-                <span className="msg-attach__ico msg-attach__ico--photos">
-                  <PhotosIcon />
-                </span>
-                <span className="msg-attach__label">Photos</span>
-              </button>
-              <button className="msg-attach__item" onClick={() => setAttach('location')}>
-                <span className="msg-attach__ico msg-attach__ico--loc">
-                  <PinIcon />
-                </span>
-                <span className="msg-attach__label">Location</span>
-              </button>
-              <button className="msg-attach__item" onClick={() => openMoney('send')}>
-                <span className="msg-attach__ico msg-attach__ico--cash">$</span>
-                <span className="msg-attach__label">Send Money</span>
-              </button>
-              <button className="msg-attach__item" onClick={() => openMoney('request')}>
-                <span className="msg-attach__ico msg-attach__ico--req">
-                  <ReqIcon />
-                </span>
-                <span className="msg-attach__label">Request</span>
-              </button>
-            </div>
-            <button className="msg-attach__cancel" onClick={closeAttach}>
-              Cancel
+        <div className="msg-plus" onClick={closeAttach}>
+          <div className="msg-plus__list" onClick={(e) => e.stopPropagation()}>
+            <button className="msg-plus__item" onClick={openCamera}>
+              <span className="msg-plus__ico msg-plus__ico--cam"><CameraIcon /></span>
+              <span className="msg-plus__label">Camera</span>
+            </button>
+            <button className="msg-plus__item" onClick={openGallery}>
+              <span className="msg-plus__ico msg-plus__ico--photos"><PhotosIcon /></span>
+              <span className="msg-plus__label">Gallery</span>
+            </button>
+            <button className="msg-plus__item" onClick={() => { closeAttach(); setShowGif(true); }}>
+              <span className="msg-plus__ico msg-plus__ico--gif"><GifIcon /></span>
+              <span className="msg-plus__label">GIF</span>
+            </button>
+            <button className="msg-plus__item" onClick={() => openMoney('send')}>
+              <span className="msg-plus__ico msg-plus__ico--cash">$</span>
+              <span className="msg-plus__label">Money</span>
+            </button>
+            <button className="msg-plus__item" onClick={() => setAttach('location')}>
+              <span className="msg-plus__ico msg-plus__ico--loc"><PinIcon /></span>
+              <span className="msg-plus__label">Location</span>
             </button>
           </div>
+          <button className="msg-plus__close" onClick={closeAttach} aria-label="Close">
+            <XIcon />
+          </button>
         </div>
       )}
 
@@ -326,6 +320,21 @@ export default function Conversation({ number, onBack }) {
           <div className="msg-cash-backdrop" onClick={closeAttach} />
           <div className="msg-cash">
             <button className="msg-cash__grab" onClick={closeAttach} aria-label="Close" />
+
+            <div className="msg-cash__toggle">
+              <button
+                className={`msg-cash__seg${moneyMode === 'send' ? ' is-on' : ''}`}
+                onClick={() => { setMoneyMode('send'); setMoneyErr(''); }}
+              >
+                Send
+              </button>
+              <button
+                className={`msg-cash__seg${moneyMode === 'request' ? ' is-on' : ''}`}
+                onClick={() => { setMoneyMode('request'); setMoneyErr(''); }}
+              >
+                Request
+              </button>
+            </div>
 
             <div className="msg-cash__amountrow">
               <button className="msg-cash__step" onClick={() => setAmount((a) => Math.max(0, a - 1))}>
@@ -460,8 +469,8 @@ const PhotosIcon = () => (
   </svg>
 );
 
-const ReqIcon = () => (
-  <svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M4 9h13l-3-3M20 15H7l3 3" />
+const XIcon = () => (
+  <svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round">
+    <path d="M6 6l12 12M18 6L6 18" />
   </svg>
 );

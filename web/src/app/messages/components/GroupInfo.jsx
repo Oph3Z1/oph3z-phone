@@ -20,21 +20,25 @@ export default function GroupInfo({ gid, onBack, onLeft }) {
   const [query, setQuery] = useState('');
   const [pendingAdd, setPendingAdd] = useState([]); // [{ number, name }]
 
-  if (!group) return null;
-  const isOwner = group.isOwner;
-
-  const existing = (d) => group.members.some((m) => m.number === d) || pendingAdd.some((m) => m.number === d);
-
+  // All hooks must run on every render BEFORE any early return: leaving/deleting
+  // removes the group from state, so `group` can be undefined on a later render.
   const suggestions = useMemo(() => {
+    if (!group) return [];
     const q = query.trim().toLowerCase();
     if (!q) return [];
     const qd = digitsOf(query);
+    const taken = (d) => group.members.some((m) => m.number === d) || pendingAdd.some((m) => m.number === d);
     return contacts
-      .filter((c) => !existing(digitsOf(c.number)))
+      .filter((c) => !taken(digitsOf(c.number)))
       .filter((c) => c.name.toLowerCase().includes(q) || (qd && digitsOf(c.number).includes(qd)))
       .slice(0, 6);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [query, contacts, group, pendingAdd]);
+
+  if (!group) return null;
+  const isOwner = group.isOwner;
+
+  const existing = (d) => group.members.some((m) => m.number === d) || pendingAdd.some((m) => m.number === d);
 
   const saveName = () => {
     const n = nameVal.trim();

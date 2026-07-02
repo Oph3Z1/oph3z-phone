@@ -5,19 +5,19 @@ import './LockScreen.css';
 import flashlightIcon from '../../assets/icons/lockscreen/flashlight.png';
 import lockCameraIcon from '../../assets/icons/lockscreen/camera.png';
 
-import { unlock, setFlashlight } from '../../store/slices/phoneSlice';
+import { unlock, setFlashlight, openApp } from '../../store/slices/phoneSlice';
 import { openRoute, clearNotification } from '../../store/slices/notificationsSlice';
 import NotificationList from '../../components/Notifications/NotificationList';
 import { fetchNui } from '../../utils/fetchNui';
-import { pad2 } from '../../utils/misc';
-import { weekdayName, weatherGlyph } from '../../utils/datetime';
+import { useNow } from '../../hooks/useNow';
+import { formatClock, formatLongDate } from '../../utils/datetime';
 
 // Minimum upward drag (screen px) that counts as an unlock swipe.
 const SWIPE_THRESHOLD = 55;
 
 export default function LockScreen({ exiting = false, onExited }) {
   const dispatch = useDispatch();
-  const time = useSelector((s) => s.phone.time);
+  const now = useNow();
   const flashlightOn = useSelector((s) => s.phone.flashlightOn);
   const notifs = useSelector((s) => s.notifications.items);
 
@@ -27,6 +27,12 @@ export default function LockScreen({ exiting = false, onExited }) {
     const next = !flashlightOn;
     dispatch(setFlashlight(next));
     fetchNui('phone:flashlight', { on: next }, { ok: true });
+  };
+
+  // Camera quick action: unlock and jump straight into the Camera app.
+  const openCamera = () => {
+    dispatch(unlock());
+    dispatch(openApp('camera'));
   };
 
   const onPointerDown = (e) => {
@@ -46,8 +52,8 @@ export default function LockScreen({ exiting = false, onExited }) {
     startY.current = null;
   };
 
-  const clock = `${pad2(time.hours)}:${pad2(time.minutes)}`;
-  const dateLine = `${weekdayName(time.weekday, true)} ${time.day}`;
+  const clock = formatClock(now);
+  const dateLine = formatLongDate(now);
 
   return (
     <div
@@ -61,12 +67,7 @@ export default function LockScreen({ exiting = false, onExited }) {
       }}
     >
       <div className="lockscreen__clockblock">
-        <div className="lockscreen__date">
-          {dateLine}
-          <span className="lockscreen__weather">
-            {weatherGlyph(time.weather)} {time.temperature}°
-          </span>
-        </div>
+        <div className="lockscreen__date">{dateLine}</div>
         <div className="lockscreen__clock">{clock}</div>
       </div>
 
@@ -103,7 +104,7 @@ export default function LockScreen({ exiting = false, onExited }) {
         >
           <img src={flashlightIcon} alt="" />
         </button>
-        <button className="lockscreen__quick" aria-label="Camera">
+        <button className="lockscreen__quick" onClick={openCamera} aria-label="Camera">
           <img src={lockCameraIcon} alt="" />
         </button>
       </div>

@@ -19,44 +19,17 @@ function Phone.hasItem()
     return (count or 0) > 0
 end
 
--- Map GTA weather name hashes to a simple category the UI turns into an icon.
-local WEATHER_CATEGORY = {
-    [`CLEAR`]      = 'clear',
-    [`EXTRASUNNY`] = 'clear',
-    [`NEUTRAL`]    = 'clear',
-    [`CLEARING`]   = 'cloudy',
-    [`CLOUDS`]     = 'cloudy',
-    [`OVERCAST`]   = 'cloudy',
-    [`SMOG`]       = 'fog',
-    [`FOGGY`]      = 'fog',
-    [`RAIN`]       = 'rain',
-    [`THUNDER`]    = 'thunder',
-    [`SNOW`]       = 'snow',
-    [`SNOWLIGHT`]  = 'snow',
-    [`BLIZZARD`]   = 'snow',
-    [`XMAS`]       = 'snow',
-}
-
----Resolve the current weather to a UI category string.
----@return string
-local function getWeatherCategory()
-    if not GetPrevWeatherTypeHashName then return 'clear' end
-    return WEATHER_CATEGORY[GetPrevWeatherTypeHashName()] or 'clear'
-end
-
----Read the current in-game clock + a coarse weather descriptor for the UI.
+---Read the current in-game clock for the UI. (The UI shows real device time on
+---the lock screen / status bar; this remains available for anything that wants
+---the in-game clock.)
 ---@return table
 function Phone.getTimeData()
     return {
-        useGameTime = Config.UseGameTime,
-        hours       = GetClockHours(),
-        minutes     = GetClockMinutes(),
-        day         = GetClockDayOfMonth(),
-        month       = GetClockMonth() + 1,        -- native is 0-indexed
-        weekday     = GetClockDayOfWeek(),        -- 0 = Sunday
-        year        = GetClockYear(),
-        weather     = getWeatherCategory(),       -- 'clear' | 'cloudy' | 'rain' | ...
-        temperature = Config.Temperature,
-        tempUnit    = Config.TempUnit,
+        hours   = GetClockHours(),
+        minutes = GetClockMinutes(),
+        day     = GetClockDayOfMonth(),
+        month   = GetClockMonth() + 1,        -- native is 0-indexed
+        weekday = GetClockDayOfWeek(),        -- 0 = Sunday
+        year    = GetClockYear(),
     }
 end

@@ -6,6 +6,7 @@ const initialState = {
   locked: true,        // lock screen vs home screen
   activeApp: null,     // id of the open app, or null for the home screen
   flashlightOn: false, // in-game flashlight beam toggle
+  controlCenterOpen: false, // Control Center overlay
   launchTab: null,     // a tab the next-opened app should jump to (e.g. Phone -> Recents)
   identity: { number: '', numberRaw: '', citizenid: '' }, // shared with third-party app iframes
   // Live clock / weather pushed from the game.
@@ -34,14 +35,22 @@ const phoneSlice = createSlice({
         state.locked = true;
         state.activeApp = null;
         state.flashlightOn = false; // closing the phone disables the flashlight
+        state.controlCenterOpen = false;
       }
     },
     setFlashlight(state, action) {
       state.flashlightOn = action.payload;
     },
+    setControlCenter(state, action) {
+      state.controlCenterOpen = !!action.payload;
+    },
+    toggleControlCenter(state) {
+      state.controlCenterOpen = !state.controlCenterOpen;
+    },
     lock(state) {
       state.locked = true;
       state.activeApp = null;
+      state.controlCenterOpen = false;
     },
     unlock(state) {
       state.locked = false;
@@ -64,6 +73,17 @@ const phoneSlice = createSlice({
   },
 });
 
-export const { setVisible, lock, unlock, openApp, closeApp, setTime, setFlashlight, setLaunchTab, setIdentity } =
-  phoneSlice.actions;
+export const {
+  setVisible,
+  lock,
+  unlock,
+  openApp,
+  closeApp,
+  setTime,
+  setFlashlight,
+  setControlCenter,
+  toggleControlCenter,
+  setLaunchTab,
+  setIdentity,
+} = phoneSlice.actions;
 export default phoneSlice.reducer;

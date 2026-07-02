@@ -30,7 +30,9 @@ Config.PhoneNumberPrefix = '555'
 -- Default phone settings written on first use for a citizen.
 Config.DefaultSettings = {
     wallpaper  = 'default',                -- key into the web wallpaper map
-    brightness = 100,                      -- reserved for a later Settings app
+    brightness = 100,                      -- screen brightness (Control Center, 20-100)
+    volume     = 70,                       -- media volume (Control Center / Music app)
+    airdrop    = false,                    -- AirDrop receiving toggle (Control Center)
     locked     = true,                     -- start locked when opened
     airplane   = false,                    -- airplane mode (unreachable + can't call)
 }
@@ -44,6 +46,10 @@ Config.DefaultSettings = {
 --            'grid'  -> home-screen grid
 --            'hidden'-> registered but not shown
 --   enabled  set false to remove the app entirely.
+-- These are DEFAULT apps: they can't be uninstalled and are never in the App Store.
+-- `place`/`enabled` here are the DEFAULT layout; once a player rearranges their
+-- home screen their own layout is saved and used instead (new apps drop into the
+-- first free slot).
 -- Third-party apps are NOT listed here — they add themselves at runtime via
 -- exports['oph3z-phone']:RegisterApp{...} (see docs/THIRD_PARTY_APPS.md).
 Config.Apps = {
@@ -55,7 +61,15 @@ Config.Apps = {
     { id = 'clock',      label = 'Clock',      place = 'grid' },
     { id = 'settings',   label = 'Settings',   place = 'grid' },
     { id = 'calculator', label = 'Calculator', place = 'grid' },
-    { id = 'appstore',   label = 'App Store',  place = 'grid' },
+    { id = 'appstore',   label = 'App Store',  place = 'grid' }
+}
+
+-- App Store -----------------------------------------------------------------
+-- Third-party apps (registered via exports.RegisterApp) are always listed in the
+-- App Store and installed with a "Get" download. Default apps above are never in
+-- the store and can't be uninstalled.
+Config.AppStore = {
+    downloadSeconds = 5,   -- how long the fake download takes
 }
 
 -- Phone prop ----------------------------------------------------------------
@@ -102,11 +116,3 @@ Config.Gif = {
     apiKey = 'fbkCoWNVgakEayeG0G9hDALim5pwNWr8',   -- <-- paste your GIPHY API key here
 }
 
--- Lock screen / time --------------------------------------------------------
--- Use the in-game GTA clock for the lock screen time instead of real OS time.
-Config.UseGameTime = true
-
--- Static temperature shown on the lock screen until a weather app exists.
--- (We map GTA weather -> an icon on the UI side.)
-Config.Temperature = 70                    -- degrees shown next to the weather icon
-Config.TempUnit    = 'F'                   -- 'F' or 'C' (display only)

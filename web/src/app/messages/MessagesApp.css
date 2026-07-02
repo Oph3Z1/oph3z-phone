@@ -804,7 +804,7 @@
   font-weight: 600;
   text-align: center;
 }
-.msg-cash__btn--req { background: #1c1c1e; color: #fff; }
+.msg-cash__btn--req { background: #0a84ff; color: #fff; }
 .msg-cash__btn--send { background: #0a84ff; color: #fff; }
 .msg-cash__btn--cancel { background: #2c2c2e; color: #fff; }
 .msg-cash__btn:disabled { opacity: 0.5; }
@@ -839,7 +839,8 @@
   overflow-y: auto;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 0.25em;
+  column-gap: 0.25em;
+  row-gap: 0.7em;
   scrollbar-width: none;
 }
 .msg-gallery__grid::-webkit-scrollbar { display: none; }
@@ -963,6 +964,128 @@
 }
 .msg-input__send { background: #0a84ff; color: #fff; }
 .msg-input__mic { color: #8e8e93; }
+
+/* Emoji button inside the input (left of the mic). */
+.msg-input__emoji {
+  flex: 0 0 auto;
+  width: 1.7em;
+  height: 1.7em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #8e8e93;
+}
+.msg-input__emoji svg { width: 1.35em; height: 1.35em; }
+.msg-input__emoji.is-on { color: #0a84ff; }
+.msg-input__emoji:active { opacity: 0.6; }
+
+/* Always-visible Send button on the right (dims when there's nothing to send). */
+.msg-input__send-btn {
+  flex: 0 0 auto;
+  width: 2.1em;
+  height: 2.1em;
+  border-radius: 50%;
+  background: #0a84ff;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s ease, opacity 0.15s ease;
+}
+.msg-input__send-btn svg { width: 1.2em; height: 1.2em; }
+.msg-input__send-btn:disabled { background: #2a2a2e; color: #6a6a6e; }
+.msg-input__send-btn:not(:disabled):active { opacity: 0.7; }
+
+/* ---- "+" attachment menu (full sheet) ----------------------------------- */
+.msg-plus {
+  position: absolute;
+  inset: 0;
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: flex-start;
+  gap: 0.6em;
+  padding: 1.2em 1.3em calc(var(--safe-bottom) + 1.1em);
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(0.5em);
+  -webkit-backdrop-filter: blur(0.5em);
+  animation: msg-plus-in 0.2s ease both;
+}
+@keyframes msg-plus-in { from { opacity: 0; } to { opacity: 1; } }
+.msg-plus__list {
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+}
+.msg-plus__item {
+  display: flex;
+  align-items: center;
+  gap: 1em;
+  padding: 0.6em 0.2em;
+  color: #fff;
+  text-align: left;
+  opacity: 0;
+  animation: msg-plus-item 0.34s cubic-bezier(0.32, 0.72, 0, 1) both;
+}
+.msg-plus__item:nth-child(1) { animation-delay: 0.03s; }
+.msg-plus__item:nth-child(2) { animation-delay: 0.07s; }
+.msg-plus__item:nth-child(3) { animation-delay: 0.11s; }
+.msg-plus__item:nth-child(4) { animation-delay: 0.15s; }
+.msg-plus__item:nth-child(5) { animation-delay: 0.19s; }
+@keyframes msg-plus-item {
+  from { opacity: 0; transform: translateY(0.7em); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.msg-plus__item:active { opacity: 0.6; }
+.msg-plus__ico {
+  flex: 0 0 auto;
+  width: 2.5em;
+  height: 2.5em;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #2a2a2c;
+  color: #fff;
+  font-size: 1em;
+  font-weight: 700;
+}
+.msg-plus__ico svg { width: 1.3em; height: 1.3em; }
+.msg-plus__ico--loc { background: #0a84ff; }
+.msg-plus__ico--photos { background: linear-gradient(150deg, #ff5e3a, #ff2d55 45%, #ffcc00); }
+.msg-plus__label { font-size: 1.05em; font-weight: 500; }
+.msg-plus__close {
+  flex: 0 0 auto;
+  width: 2.7em;
+  height: 2.7em;
+  border-radius: 50%;
+  background: #2a2a2c;
+  color: #0a84ff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.msg-plus__close svg { width: 1.3em; height: 1.3em; }
+
+/* ---- Money Send/Request toggle ------------------------------------------ */
+.msg-cash__toggle {
+  display: flex;
+  gap: 0.3em;
+  align-self: center;
+  padding: 0.25em;
+  border-radius: 1em;
+  background: rgba(120, 120, 128, 0.24);
+  margin-bottom: 0.3em;
+}
+.msg-cash__seg {
+  padding: 0.4em 1.4em;
+  border-radius: 0.8em;
+  color: #d0d0d4;
+  font-size: 0.92em;
+  font-weight: 600;
+}
+.msg-cash__seg.is-on { background: #0a84ff; color: #fff; }
 
 /* ---- New message -------------------------------------------------------- */
 .msg-new__bar {
@@ -1393,3 +1516,90 @@
 }
 .msg-gifs__cell img { width: 100%; display: block; }
 .msg-gifs__cell:active { opacity: 0.7; }
+
+/* ---- Emoji picker (bottom sheet) ---------------------------------------- */
+.msg-emoji {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 25;
+  height: 62%;
+  display: flex;
+  flex-direction: column;
+  background: #0b0b0d;
+  border-top-left-radius: 1.3em;
+  border-top-right-radius: 1.3em;
+  animation: msg-sheet-in 0.22s cubic-bezier(0.32, 0.72, 0, 1) both;
+}
+.msg-emoji__searchrow {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 0.45em;
+  margin: 0.1em 0.7em 0.5em;
+  padding: 0.5em 0.75em;
+  border-radius: 1.1em;
+  background: rgba(120, 120, 128, 0.24);
+  color: #8e8e93;
+}
+.msg-emoji__searchrow svg { flex: 0 0 auto; width: 1em; height: 1em; }
+.msg-emoji__search {
+  flex: 1 1 auto;
+  background: none;
+  border: none;
+  outline: none;
+  color: #fff;
+  font-size: 0.95em;
+}
+.msg-emoji__search::placeholder { color: #8e8e93; }
+.msg-emoji__empty {
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1em 2em;
+  text-align: center;
+  color: #8e8e93;
+  font-size: 0.95em;
+}
+.msg-emoji__grid {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.1em;
+  padding: 0 0.5em 0.6em;
+  scrollbar-width: none;
+}
+.msg-emoji__grid::-webkit-scrollbar { display: none; }
+.msg-emoji__cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 1;
+  font-size: 1.7em;
+  line-height: 1;
+  border-radius: 0.4em;
+}
+.msg-emoji__cell:active { background: rgba(255, 255, 255, 0.12); }
+.msg-emoji__tabs {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 0.15em;
+  padding: 0.3em 0.35em calc(var(--safe-bottom) + 0.3em);
+  border-top: 0.5px solid rgba(255, 255, 255, 0.1);
+  background: #141416;
+}
+.msg-emoji__tab {
+  flex: 1 1 0;
+  height: 1.9em;
+  border-radius: 0.5em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.05em;
+  opacity: 0.55;
+}
+.msg-emoji__tab.is-on { background: rgba(120, 120, 128, 0.34); opacity: 1; }

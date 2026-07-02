@@ -1,9 +1,12 @@
 import { useState } from 'react';
-import { CameraIcon, PlusIcon, MicIcon, SendIcon, GifIcon } from './icons';
+import { PlusIcon, MicIcon, SendIcon, EmojiIcon } from './icons';
+import EmojiPicker from './EmojiPicker';
 
-// Bottom composer bar. Camera/+ (attachments), GIF picker and mic (voice).
-export default function MessageInput({ onSend, onCamera, onPlus, onGif, onMic, attachment, onRemoveAttachment }) {
+// Bottom composer bar: [ + ] · [ input with emoji + mic inside ] · [ Send ].
+// Camera / Gallery / GIF / Money / Location live in the + menu now.
+export default function MessageInput({ onSend, onPlus, onMic, attachment, onRemoveAttachment }) {
   const [text, setText] = useState('');
+  const [showEmoji, setShowEmoji] = useState(false);
   const hasText = text.trim().length > 0;
   const canSend = hasText || !!attachment;
 
@@ -19,8 +22,12 @@ export default function MessageInput({ onSend, onCamera, onPlus, onGif, onMic, a
     }
   };
 
+  const insertEmoji = (e) => setText((t) => t + e);
+
   return (
     <div className="msg-input-wrap">
+      {showEmoji && <EmojiPicker onClose={() => setShowEmoji(false)} onSelect={insertEmoji} />}
+
       {attachment && (
         <div className="msg-draft">
           <div className="msg-draft__thumb">
@@ -37,9 +44,6 @@ export default function MessageInput({ onSend, onCamera, onPlus, onGif, onMic, a
       )}
 
       <div className="msg-input">
-        <button className="msg-input__round" onClick={onCamera} aria-label="Camera">
-          <CameraIcon />
-        </button>
         <button className="msg-input__round" onClick={onPlus} aria-label="Attach">
           <PlusIcon />
         </button>
@@ -49,25 +53,23 @@ export default function MessageInput({ onSend, onCamera, onPlus, onGif, onMic, a
             value={text}
             onChange={(e) => setText(e.target.value)}
             onKeyDown={onKey}
-            placeholder={attachment ? 'Add a comment' : 'Text Message'}
+            placeholder={attachment ? 'Add a comment' : 'Send your message…'}
           />
-          {canSend ? (
-            <button className="msg-input__send" onClick={submit} aria-label="Send">
-              <SendIcon />
-            </button>
-          ) : (
-            <>
-              {onGif && (
-                <button className="msg-input__gif" onClick={onGif} aria-label="GIF">
-                  <GifIcon />
-                </button>
-              )}
-              <button className="msg-input__mic" onClick={onMic} aria-label="Voice message">
-                <MicIcon />
-              </button>
-            </>
-          )}
+          <button
+            className={`msg-input__emoji${showEmoji ? ' is-on' : ''}`}
+            onClick={() => setShowEmoji((v) => !v)}
+            aria-label="Emoji"
+          >
+            <EmojiIcon />
+          </button>
+          <button className="msg-input__mic" onClick={onMic} aria-label="Voice message">
+            <MicIcon />
+          </button>
         </div>
+
+        <button className="msg-input__send-btn" onClick={submit} disabled={!canSend} aria-label="Send">
+          <SendIcon />
+        </button>
       </div>
     </div>
   );

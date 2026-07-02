@@ -8,6 +8,7 @@ import { fetchNui } from './utils/fetchNui';
 import { isEnvBrowser } from './utils/misc';
 import { setVisible, setTime, closeApp, openApp, unlock, setIdentity } from './store/slices/phoneSlice';
 import { setLayout, setExternalApps } from './store/slices/appsSlice';
+import { setSaved, setDownloadMs } from './store/slices/homeSlice';
 import { hydrate } from './store/slices/settingsSlice';
 import { applyCall } from './store/slices/callSlice';
 import { loadPhoneState } from './store/slices/contactsSlice';
@@ -46,6 +47,9 @@ export default function App() {
       if (data.time) dispatch(setTime(data.time));
       if (data.apps) dispatch(setLayout(data.apps)); // built-in app layout (Config.Apps)
       if (data.identity) dispatch(setIdentity(data.identity)); // shared with app iframes
+      dispatch(setSaved(data.home || null)); // saved home-screen layout (applied on reconcile)
+      if (data.appstore && data.appstore.downloadSeconds)
+        dispatch(setDownloadMs(data.appstore.downloadSeconds * 1000));
       dispatch(setVisible(true));
       dispatch(loadNotifications()); // refresh the lock screen / center on open
     } else {

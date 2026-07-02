@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { closeApp } from '../../store/slices/phoneSlice';
+import { openDialog } from '../../store/slices/dialogSlice';
 import './ExternalApp.css';
 
 // Renders a third-party app inside the phone as an iframe (the dev's own resource
@@ -31,11 +32,39 @@ export default function ExternalApp({ app }) {
     win.postMessage({ type: 'oph3z:init', app: { id: app.id, label: app.label }, identity }, '*');
   };
 
+  const postToApp = (msg) => {
+    const win = frameRef.current && frameRef.current.contentWindow;
+    if (win) win.postMessage(msg, '*');
+  };
+
   useEffect(() => {
     const onMsg = (e) => {
       const d = e.data || {};
       if (d.type === 'oph3z:ready') sendInit();
       else if (d.type === 'oph3z:close') dispatch(closeApp());
+      else if (d.type === 'oph3z:confirm') {
+        // A yes/no confirmation using the phone-native dialog.
+        dispatch(
+          openDialog({
+            title: d.title,
+            message: d.message,
+            buttons: [
+              { text: d.cancelText || 'Cancel', style: 'cancel', value: false },
+              { text: d.confirmText || 'OK', style: d.destructive ? 'destructive' : 'default', value: true },
+            ],
+          })
+        ).then((confirmed) => postToApp({ type: 'oph3z:confirm:result', id: d.id, confirmed }));
+      } else if (d.type === 'oph3z:alert') {
+        // A custom dialog: buttons = [{ text, style?, value? }].
+        const buttons = (d.buttons && d.buttons.length ? d.buttons : [{ text: 'OK' }]).map((b, i) => ({
+          text: b.text,
+          style: b.style,
+          value: b.value !== undefined ? b.value : i,
+        }));
+        dispatch(openDialog({ title: d.title, message: d.message, buttons })).then((value) =>
+          postToApp({ type: 'oph3z:alert:result', id: d.id, value })
+        );
+      }
     };
     window.addEventListener('message', onMsg);
     return () => window.removeEventListener('message', onMsg);

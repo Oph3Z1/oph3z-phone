@@ -6,7 +6,7 @@ import MessageInput from './MessageInput';
 import MediaViewer from './MediaViewer';
 import VoiceComposer from './VoiceComposer';
 import GifPicker from './GifPicker';
-import { ChevronLeftIcon, ChevronRightIcon } from './icons';
+import { ChevronLeftIcon, ChevronRightIcon, CameraIcon, GifIcon } from './icons';
 import {
   openGroup,
   sendGroupMessage,
@@ -173,9 +173,7 @@ export default function GroupConversation({ gid, onBack, onInfo }) {
       ) : (
         <MessageInput
           onSend={send}
-          onCamera={openCamera}
           onPlus={() => setAttach('menu')}
-          onGif={() => setShowGif(true)}
           onMic={() => setRecording(true)}
           attachment={draft}
           onRemoveAttachment={removeDraft}
@@ -185,26 +183,28 @@ export default function GroupConversation({ gid, onBack, onInfo }) {
       {showGif && <GifPicker onClose={() => setShowGif(false)} onSelect={sendGif} />}
 
       {attach === 'menu' && (
-        <div className="msg-attach" onClick={closeAttach}>
-          <div className="msg-attach__sheet" onClick={(e) => e.stopPropagation()}>
-            <div className="msg-attach__group">
-              <button className="msg-attach__item" onClick={openGallery}>
-                <span className="msg-attach__ico msg-attach__ico--photos">
-                  <PhotosIcon />
-                </span>
-                <span className="msg-attach__label">Photos</span>
-              </button>
-              <button className="msg-attach__item" onClick={() => setAttach('location')}>
-                <span className="msg-attach__ico msg-attach__ico--loc">
-                  <PinIcon />
-                </span>
-                <span className="msg-attach__label">Location</span>
-              </button>
-            </div>
-            <button className="msg-attach__cancel" onClick={closeAttach}>
-              Cancel
+        <div className="msg-plus" onClick={closeAttach}>
+          <div className="msg-plus__list" onClick={(e) => e.stopPropagation()}>
+            <button className="msg-plus__item" onClick={openCamera}>
+              <span className="msg-plus__ico msg-plus__ico--cam"><CameraIcon /></span>
+              <span className="msg-plus__label">Camera</span>
+            </button>
+            <button className="msg-plus__item" onClick={openGallery}>
+              <span className="msg-plus__ico msg-plus__ico--photos"><PhotosIcon /></span>
+              <span className="msg-plus__label">Gallery</span>
+            </button>
+            <button className="msg-plus__item" onClick={() => { closeAttach(); setShowGif(true); }}>
+              <span className="msg-plus__ico msg-plus__ico--gif"><GifIcon /></span>
+              <span className="msg-plus__label">GIF</span>
+            </button>
+            <button className="msg-plus__item" onClick={() => setAttach('location')}>
+              <span className="msg-plus__ico msg-plus__ico--loc"><PinIcon /></span>
+              <span className="msg-plus__label">Location</span>
             </button>
           </div>
+          <button className="msg-plus__close" onClick={closeAttach} aria-label="Close">
+            <XIcon />
+          </button>
         </div>
       )}
 
@@ -292,5 +292,10 @@ const PhotosIcon = () => (
     <rect x="3" y="3" width="18" height="18" rx="2.5" />
     <circle cx="8.5" cy="8.5" r="1.6" />
     <path d="M21 16l-5-5L5 21" />
+  </svg>
+);
+const XIcon = () => (
+  <svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round">
+    <path d="M6 6l12 12M18 6L6 18" />
   </svg>
 );

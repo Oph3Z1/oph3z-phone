@@ -1,7 +1,7 @@
 import { useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { pad2 } from '../../utils/misc';
-import { weekdayName } from '../../utils/datetime';
+import { useNow } from '../../hooks/useNow';
+import { formatClock, formatLongDate } from '../../utils/datetime';
 import NotificationList from './NotificationList';
 import { setCenterOpen, openRoute, clearNotification } from '../../store/slices/notificationsSlice';
 
@@ -13,7 +13,7 @@ export default function NotificationCenter() {
   const dispatch = useDispatch();
   const open = useSelector((s) => s.notifications.centerOpen);
   const items = useSelector((s) => s.notifications.items);
-  const time = useSelector((s) => s.phone.time);
+  const now = useNow();
 
   const startY = useRef(null);
   const onDown = (e) => {
@@ -30,8 +30,8 @@ export default function NotificationCenter() {
     startY.current = null;
   };
 
-  const clock = `${pad2(time.hours)}:${pad2(time.minutes)}`;
-  const dateLine = `${weekdayName(time.weekday, false)} ${time.day}`;
+  const clock = formatClock(now);
+  const dateLine = formatLongDate(now);
 
   return (
     <div

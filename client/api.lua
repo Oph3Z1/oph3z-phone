@@ -21,10 +21,10 @@ local function listApps()
     local out = {}
     for _, a in pairs(registered) do
         out[#out + 1] = {
-            id = a.id, label = a.label, developer = a.developer, icon = a.icon,
-            url = a.url, place = a.place,
-            -- App Store metadata (used later by the App Store app).
-            addAppStore = a.addAppStore, headerImage = a.headerImage, swiperItems = a.swiperItems,
+            id = a.id, label = a.label, developer = a.developer, description = a.description,
+            icon = a.icon, url = a.url, place = a.place, deletable = a.deletable,
+            -- App Store metadata (every third-party app is listed in the App Store).
+            headerImage = a.headerImage, swiperItems = a.swiperItems,
         }
     end
     return out
@@ -49,15 +49,16 @@ exports('RegisterApp', function(def)
         return false
     end
     registered[def.id] = {
-        id        = def.id,
-        label     = def.label or def.id,
-        developer = def.developer,
-        icon      = def.icon,
-        url       = page,
-        place     = def.place or 'grid',
-        owner     = GetInvokingResource() or 'unknown',
-        -- App Store metadata (surfaced later by the App Store app).
-        addAppStore = def.addAppStore and true or false,
+        id          = def.id,
+        label       = def.label or def.id,
+        developer   = def.developer,
+        description = def.description,
+        icon        = def.icon,
+        url         = page,
+        place       = def.place or 'grid',
+        deletable   = def.deletable ~= false, -- third-party apps are uninstallable by default
+        owner       = GetInvokingResource() or 'unknown',
+        -- App Store page metadata.
         headerImage = def.headerImage,
         swiperItems = def.swiperItems,
     }

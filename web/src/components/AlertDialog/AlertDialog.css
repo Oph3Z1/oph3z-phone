@@ -1,0 +1,67 @@
+/* iOS-style alert dialog (dark), centred over the whole phone. */
+.alertdlg {
+  position: absolute;
+  inset: 0;
+  z-index: 80;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2em;
+  background: rgba(0, 0, 0, 0.35);
+  animation: alertdlg-fade 0.18s ease both;
+}
+@keyframes alertdlg-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.alertdlg__card {
+  width: 100%;
+  max-width: 16em;
+  border-radius: 1.1em;
+  overflow: hidden;
+  background: rgba(44, 44, 46, 0.86);
+  backdrop-filter: blur(2.2em) saturate(150%);
+  -webkit-backdrop-filter: blur(2.2em) saturate(150%);
+  color: #fff;
+  text-align: center;
+  box-shadow: 0 1em 3em rgba(0, 0, 0, 0.5);
+  animation: alertdlg-pop 0.22s cubic-bezier(0.32, 0.72, 0, 1) both;
+}
+@keyframes alertdlg-pop {
+  from { transform: scale(1.12); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.alertdlg__body { padding: 1.3em 1.2em 1.1em; }
+.alertdlg__title { font-size: 1.05em; font-weight: 700; }
+.alertdlg__msg {
+  font-size: 0.82em;
+  line-height: 1.35;
+  color: rgba(235, 235, 245, 0.85);
+  margin-top: 0.4em;
+}
+
+/* Buttons: a single full-width button, or two side-by-side, split by hairlines. */
+.alertdlg__btns {
+  display: flex;
+  flex-direction: column;
+  border-top: 0.5px solid rgba(255, 255, 255, 0.16);
+}
+.alertdlg__btns.is-row { flex-direction: row; }
+.alertdlg__btn {
+  flex: 1 1 0;
+  padding: 0.8em 0.5em;
+  font-size: 0.95em;
+  color: #0a84ff;
+  cursor: pointer;
+}
+.alertdlg__btns.is-row .alertdlg__btn + .alertdlg__btn {
+  border-left: 0.5px solid rgba(255, 255, 255, 0.16);
+}
+.alertdlg__btns:not(.is-row) .alertdlg__btn + .alertdlg__btn {
+  border-top: 0.5px solid rgba(255, 255, 255, 0.16);
+}
+.alertdlg__btn:active { background: rgba(255, 255, 255, 0.08); }
+.alertdlg__btn--cancel { font-weight: 700; }
+.alertdlg__btn--destructive { color: #ff453a; }

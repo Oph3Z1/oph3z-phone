@@ -1,0 +1,33 @@
+{
+    "gid": "g17829523311716",
+    "items": [
+        {
+            "body": "Group created",
+            "from": "",
+            "ts": 1782952331,
+            "type": "system",
+            "id": "17829523313218"
+        }
+    ],
+    "members": [
+        {
+            "number": "5553873",
+            "joinedAt": 1782952331
+        },
+        {
+            "number": "123213123",
+            "joinedAt": 1782952331
+        },
+        {
+            "number": "055500",
+            "joinedAt": 1782952331
+        }
+    ],
+    "name": "Test hehe",
+    "owner": "5553873",
+    "updatedAt": 1782952331,
+    "reads": {
+        "5553873": "17829523313218"
+    },
+    "createdAt": 1782952331
+}

@@ -27,7 +27,17 @@ lib.callback.register('oph3z-phone:server:getData', function(source)
         settings  = doc.settings,
         number    = doc.phone.number,                  -- formatted (e.g. 555-0142)
         numberRaw = DB.Digits(doc.phone.numberRaw),     -- digits only
+        home      = doc.home,                           -- saved home-screen layout (nil until customised)
     }
+end)
+
+-- Persist the player's custom home-screen layout (pages / dock / folders / removed).
+lib.callback.register('oph3z-phone:server:home:save', function(source, layout)
+    local citizenid = getCitizenId(source)
+    if not citizenid or type(layout) ~= 'table' then return false end
+    local doc = DB.LoadOrCreate(citizenid)
+    doc.home = layout
+    return DB.Save(citizenid, doc)
 end)
 
 -- Persist a partial settings update -----------------------------------------

@@ -3,45 +3,356 @@
   inset: 0;
   display: flex;
   flex-direction: column;
-  /* Top padding clears the floating status bar; bottom is small so the dock
-     sits low on the screen. */
-  padding: calc(var(--safe-top) + 0.6em) 1.6em 0.55em;
+  padding: calc(var(--safe-top) + 0.4em) 1.2em 0.55em;
   animation: home-in 0.32s ease both;
 }
-
-/* Subtle reveal when arriving from the lock screen. */
 @keyframes home-in {
-  from {
-    opacity: 0;
-    transform: scale(1.06);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
+  from { opacity: 0; transform: scale(1.06); }
+  to { opacity: 1; transform: scale(1); }
 }
 
-/* 4-column app grid. */
-.homescreen__grid {
-  flex: 1;
+/* ---- Paged app area ----------------------------------------------------- */
+.hs-pager {
+  flex: 1 1 auto;
+  position: relative;
+  min-height: 0;
+  overflow: hidden;
+}
+.hs-track {
+  display: flex;
+  height: 100%;
+  will-change: transform;
+}
+.hs-page {
+  position: relative;
+  flex: 0 0 100%;
+  height: 100%;
+}
+
+/* ---- Tiles (apps + folders) --------------------------------------------- */
+.hs-tile {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 25%;
+  height: calc(100% / 6);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4em;
+  padding-top: 0.5em;
+  transition: transform 0.25s cubic-bezier(0.32, 0.72, 0, 1);
+  touch-action: none;
+  cursor: pointer;
+}
+.hs-tile.is-dragging { opacity: 0; } /* placeholder gap while its clone follows the finger */
+
+/* Grabbing cursor while an app is being dragged. */
+.homescreen.is-grabbing,
+.homescreen.is-grabbing *,
+.hs-folderview.is-grabbing,
+.hs-folderview.is-grabbing * { cursor: grabbing; }
+.hs-tile.is-foldertarget .hs-tile__img { transform: scale(1.35); filter: brightness(1.15); }
+/* Quick-drop swap candidate: dips down to read as "trade places" (vs. fold's grow). */
+.hs-tile.is-swaptarget .hs-tile__img { transform: scale(0.86); filter: brightness(0.78); }
+
+/* Minimal hover lift (not while editing, to avoid fighting the jiggle). */
+.homescreen:not(.is-editing) .hs-tile:hover .hs-tile__img {
+  transform: translateY(-0.12em) scale(1.05);
+  filter: brightness(1.08);
+}
+.homescreen:not(.is-editing) .hs-tile:active .hs-tile__img {
+  transform: scale(0.92);
+  filter: brightness(0.95);
+}
+
+.hs-tile__inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4em;
+}
+.hs-tile.is-editing .hs-tile__inner { animation: jiggle 0.26s infinite; }
+.hs-tile.is-editing:nth-child(2n) .hs-tile__inner { animation-name: jiggle2; }
+
+@keyframes jiggle {
+  0% { transform: rotate(-1.6deg); }
+  50% { transform: rotate(1.6deg); }
+  100% { transform: rotate(-1.6deg); }
+}
+@keyframes jiggle2 {
+  0% { transform: rotate(1.6deg); }
+  50% { transform: rotate(-1.6deg); }
+  100% { transform: rotate(1.6deg); }
+}
+
+.hs-tile__iconwrap {
+  position: relative;
+  display: inline-block;
+  line-height: 0;
+}
+.hs-tile__img {
+  position: relative;
+  width: 3.4em;
+  height: 3.4em;
+  border-radius: 0.95em;
+  overflow: hidden;
+  box-shadow: 0 0.15em 0.4em rgba(0, 0, 0, 0.3);
+  display: block;
+  transition: transform 0.14s ease, filter 0.14s ease;
+}
+
+/* Download (App Store install) ring on the icon. */
+.hs-tile__img.is-downloading img,
+.hs-tile__img.is-downloading .hs-tile__fallback { opacity: 0.4; }
+.hs-dlring {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 62%;
+  height: 62%;
+  transform: translate(-50%, -50%) rotate(-90deg);
+}
+.hs-dlring__track { fill: none; stroke: rgba(255, 255, 255, 0.3); stroke-width: 2.5; }
+.hs-dlring__bar {
+  fill: none;
+  stroke: #fff;
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.12s linear;
+}
+.hs-dlring__stop { fill: #fff; }
+.hs-badge {
+  position: absolute;
+  top: -0.3em;
+  right: -0.3em;
+  min-width: 1.5em;
+  height: 1.5em;
+  padding: 0 0.32em;
+  box-sizing: border-box;
+  border-radius: 0.85em;
+  background: #ff3b30;
+  color: #fff;
+  font-size: 0.72em;
+  font-weight: 700;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 0 0.13em rgba(0, 0, 0, 0.12);
+}
+.hs-tile__img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.hs-tile__fallback {
+  width: 100%; height: 100%;
+  display: flex; align-items: center; justify-content: center;
+  background: linear-gradient(160deg, #3a3a3c, #1c1c1e);
+  color: #fff; font-size: 1.6em; font-weight: 700;
+}
+.hs-tile__label {
+  font-size: 0.72em;
+  color: #fff;
+  text-shadow: 0 0.06em 0.25em rgba(0, 0, 0, 0.5);
+  white-space: nowrap;
+  max-width: 6.5em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Delete badge (edit mode). */
+/* Sits at the icon's top-left corner (inside the iconwrap, so it jiggles too). */
+.hs-tile__del {
+  position: absolute;
+  top: -0.45em;
+  left: -0.45em;
+  z-index: 3;
+  width: 1.4em;
+  height: 1.4em;
+  border-radius: 50%;
+  background: rgba(235, 235, 240, 0.96);
+  color: #1c1c1e;
+  font-size: 1.05em;
+  font-weight: 800;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0.05em 0.25em rgba(0, 0, 0, 0.35);
+  cursor: pointer;
+}
+
+/* ---- Folder tile preview ------------------------------------------------ */
+.hs-folder {
+  background: rgba(120, 120, 128, 0.28);
+  backdrop-filter: blur(0.8em);
+  -webkit-backdrop-filter: blur(0.8em);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.hs-folder__grid {
+  width: 78%;
+  height: 78%;
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  grid-auto-rows: min-content;
-  row-gap: 1.5em;
-  column-gap: 0.6em;
-  align-content: start;
-  padding-top: 0.8em;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  gap: 0.12em;
 }
+.hs-folder__mini {
+  border-radius: 0.28em;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.08);
+}
+.hs-folder__mini img { width: 100%; height: 100%; object-fit: cover; }
 
-/* Frosted dock pinned to the bottom. */
-.homescreen__dock {
+/* ---- Page dots ---------------------------------------------------------- */
+.hs-dots {
   flex: 0 0 auto;
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  column-gap: 0.6em;
-  padding: 0.9em 0.7em;
+  align-self: center;
+  display: flex;
+  justify-content: center;
+  gap: 0.5em;
+  margin: 0.35em 0 0.5em;
+  padding: 0.45em 0.7em;
+  border-radius: 1em;
+  background: rgba(255, 255, 255, 0.16);
+  backdrop-filter: blur(0.6em);
+  -webkit-backdrop-filter: blur(0.6em);
+}
+.hs-dot {
+  width: 0.5em;
+  height: 0.5em;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.35);
+  transition: background 0.2s;
+  cursor: pointer;
+}
+.hs-dot.is-on { background: #fff; }
+
+/* ---- Dock --------------------------------------------------------------- */
+.hs-dock {
+  flex: 0 0 auto;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  gap: 0.4em;
+  padding: 0.7em 0.9em;
   border-radius: 1.8em;
   background: rgba(255, 255, 255, 0.16);
   backdrop-filter: blur(1.2em);
   -webkit-backdrop-filter: blur(1.2em);
+}
+.hs-tile--dock {
+  position: static;
+  width: auto;
+  height: auto;
+  flex: 0 0 auto;
+  padding: 0;
+}
+.hs-tile--dock .hs-tile__label { display: none; }
+
+/* ---- Done button -------------------------------------------------------- */
+.hs-done {
+  position: absolute;
+  top: calc(var(--safe-top) - 0.4em);
+  right: 1.1em;
+  z-index: 20;
+  color: #fff;
+  font-size: 0.9em;
+  font-weight: 600;
+  padding: 0.25em 0.8em;
+  border-radius: 1em;
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(0.6em);
+}
+
+/* ---- Floating drag clone ------------------------------------------------ */
+/* Positioned inside .homescreen (the phone screen is transform-scaled, so `fixed`
+   would be relative to it anyway) with coords already offset to the screen. */
+.hs-clone {
+  position: absolute;
+  z-index: 60;
+  transform: translate(-50%, -50%) scale(1.12);
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4em;
+  filter: drop-shadow(0 0.6em 1em rgba(0, 0, 0, 0.5));
+}
+.hs-clone .hs-tile__label { display: none; } /* dragging shows only the icon */
+.hs-clone--folder { width: 4.5em; height: 4.5em; }
+
+/* ---- Folder open view --------------------------------------------------- */
+.hs-folderview {
+  position: absolute;
+  inset: 0;
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1em;
+  padding: var(--safe-top) 1.2em 2em;
+  /* Blur the wallpaper behind (the folder card sits on top). */
+  background: rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(1.6em) saturate(130%);
+  -webkit-backdrop-filter: blur(1.6em) saturate(130%);
+  animation: home-in 0.25s ease both;
+}
+.hs-folderview__title,
+.hs-folderview__name {
+  font-size: 1.5em;
+  font-weight: 700;
+  color: #fff;
+  text-align: center;
+  text-shadow: 0 0.06em 0.3em rgba(0, 0, 0, 0.55);
+}
+.hs-folderview__name {
+  background: transparent;
+  border: none;
+  outline: none;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.35);
+  max-width: 8em;
+}
+
+/* The frosted folder card. */
+.hs-folderview__panel {
+  width: 100%;
+  max-width: 18em;
+  padding: 1.1em 0.8em 0.7em;
+  border-radius: 2.2em;
+  background: rgba(60, 60, 67, 0.5);
+  backdrop-filter: blur(2.2em) saturate(160%);
+  -webkit-backdrop-filter: blur(2.2em) saturate(160%);
+  border: 0.5px solid rgba(255, 255, 255, 0.16);
+  box-shadow: 0 1em 2.5em rgba(0, 0, 0, 0.45);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5em;
+  touch-action: none;
+}
+.hs-fpager { overflow: hidden; }
+.hs-ftrack { display: flex; will-change: transform; }
+.hs-fpage {
+  flex: 0 0 100%;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 4.9em);
+  row-gap: 0.3em;
+}
+.hs-fdots {
+  display: flex;
+  justify-content: center;
+  gap: 0.45em;
+  padding-top: 0.2em;
+}
+.hs-folderview .hs-tile {
+  position: static;
+  width: auto;
+  height: auto;
+  padding: 0;
+}
+.hs-folderview .hs-tile:hover .hs-tile__img {
+  transform: translateY(-0.1em) scale(1.05);
+  filter: brightness(1.08);
 }

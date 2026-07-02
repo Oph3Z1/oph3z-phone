@@ -76,6 +76,17 @@
   z-index: 0;
 }
 
+/* Brightness veil: darkens the WHOLE screen — status bar, dynamic island, apps,
+   Control Center, everything. pointer-events:none so it never blocks input. */
+.phone__dim {
+  position: absolute;
+  inset: 0;
+  z-index: 500;
+  background: #000;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+
 /* A fullscreen layer (home / app). Stacks beneath the lock + overlays. */
 .phone__layer {
   position: absolute;

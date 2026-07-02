@@ -224,6 +224,8 @@ function Phone.open()
             time     = Phone.getTimeData(),
             apps     = Config.Apps,     -- built-in app layout (config-driven)
             identity = Phone.identity,  -- shared with third-party app iframes
+            home     = data.home,       -- saved home-screen arrangement
+            appstore = Config.AppStore, -- App Store settings (download duration)
         },
     })
     if PhoneApps then PhoneApps.sync() end -- hand the NUI any registered third-party apps
@@ -298,6 +300,7 @@ local function showPhoneForCall()
             time     = Phone.getTimeData(),
             apps     = Config.Apps,
             identity = Phone.identity,
+            home     = data and data.home,
         },
     })
     if PhoneApps then PhoneApps.sync() end
