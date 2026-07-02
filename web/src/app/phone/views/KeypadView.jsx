@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { PhoneIcon, BackspaceIcon, PersonIcon, PlusIcon } from '../components/icons';
 import { fetchNui } from '../../../utils/fetchNui';
+import { playKeyTone } from '../../../utils/sound';
 
 const KEYS = [
   { d: '1', l: '' },
@@ -33,7 +34,10 @@ export default function KeypadView({ onAddContact }) {
       : null;
   const exists = !!match;
 
-  const press = (d) => setValue((v) => (v.length < 18 ? v + d : v));
+  const press = (d) => {
+    playKeyTone(d);
+    setValue((v) => (v.length < 18 ? v + d : v));
+  };
   const backspace = () => setValue((v) => v.slice(0, -1));
   const callNumber = () => {
     if (value) fetchNui('phone:call:start', { number: value }, {});

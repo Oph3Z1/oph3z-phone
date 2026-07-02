@@ -1,4 +1,298 @@
 {
+    "photos": {
+        "items": [
+            {
+                "ts": 1782856921,
+                "favorite": false,
+                "url": "https://r2.fivemanage.com/QwvYnlNIMcYTc1520iXl0/66Wfidi8iXum.jpg",
+                "type": "image",
+                "id": 1
+            }
+        ],
+        "nextId": 2
+    },
+    "citizenid": "C7E3021X",
+    "notifications": {
+        "items": [
+            {
+                "ts": 1782866028,
+                "read": false,
+                "route": {
+                    "app": "message",
+                    "number": "5553873"
+                },
+                "id": 29,
+                "body": "asd",
+                "title": "555-3873",
+                "app": "message"
+            },
+            {
+                "ts": 1782866028,
+                "read": false,
+                "route": {
+                    "app": "message",
+                    "number": "5553873"
+                },
+                "id": 30,
+                "body": "asd",
+                "title": "555-3873",
+                "app": "message"
+            },
+            {
+                "ts": 1782866029,
+                "read": false,
+                "route": {
+                    "app": "message",
+                    "number": "5553873"
+                },
+                "id": 31,
+                "body": "asd",
+                "title": "555-3873",
+                "app": "message"
+            },
+            {
+                "ts": 1782866031,
+                "read": false,
+                "route": {
+                    "app": "message",
+                    "number": "5553873"
+                },
+                "id": 32,
+                "body": "asdasd",
+                "title": "555-3873",
+                "app": "message"
+            },
+            {
+                "ts": 1782866031,
+                "read": false,
+                "route": {
+                    "app": "message",
+                    "number": "5553873"
+                },
+                "id": 33,
+                "body": "asd",
+                "title": "555-3873",
+                "app": "message"
+            },
+            {
+                "ts": 1782866031,
+                "read": false,
+                "route": {
+                    "app": "message",
+                    "number": "5553873"
+                },
+                "id": 34,
+                "body": "asd",
+                "title": "555-3873",
+                "app": "message"
+            },
+            {
+                "ts": 1782866031,
+                "read": false,
+                "route": {
+                    "app": "message",
+                    "number": "5553873"
+                },
+                "id": 35,
+                "body": "as",
+                "title": "555-3873",
+                "app": "message"
+            },
+            {
+                "ts": 1782866031,
+                "read": false,
+                "route": {
+                    "app": "message",
+                    "number": "5553873"
+                },
+                "id": 36,
+                "body": "d",
+                "title": "555-3873",
+                "app": "message"
+            },
+            {
+                "ts": 1782866031,
+                "read": false,
+                "route": {
+                    "app": "message",
+                    "number": "5553873"
+                },
+                "id": 37,
+                "body": "asd",
+                "title": "555-3873",
+                "app": "message"
+            },
+            {
+                "ts": 1782866032,
+                "read": false,
+                "route": {
+                    "app": "message",
+                    "number": "5553873"
+                },
+                "id": 38,
+                "body": "asd",
+                "title": "555-3873",
+                "app": "message"
+            },
+            {
+                "ts": 1782866032,
+                "read": false,
+                "route": {
+                    "app": "message",
+                    "number": "5553873"
+                },
+                "id": 39,
+                "body": "as",
+                "title": "555-3873",
+                "app": "message"
+            },
+            {
+                "ts": 1782866032,
+                "read": false,
+                "route": {
+                    "app": "message",
+                    "number": "5553873"
+                },
+                "id": 40,
+                "body": "d",
+                "title": "555-3873",
+                "app": "message"
+            },
+            {
+                "ts": 1782866032,
+                "read": false,
+                "route": {
+                    "app": "message",
+                    "number": "5553873"
+                },
+                "id": 41,
+                "body": "as",
+                "title": "555-3873",
+                "app": "message"
+            },
+            {
+                "ts": 1782866032,
+                "read": false,
+                "route": {
+                    "app": "message",
+                    "number": "5553873"
+                },
+                "id": 42,
+                "body": "d",
+                "title": "555-3873",
+                "app": "message"
+            },
+            {
+                "ts": 1782866038,
+                "read": false,
+                "route": {
+                    "app": "call",
+                    "tab": "recents"
+                },
+                "id": 43,
+                "body": "Missed Call",
+                "title": "555-3873",
+                "app": "call"
+            },
+            {
+                "ts": 1782866041,
+                "read": false,
+                "route": {
+                    "app": "call",
+                    "tab": "recents"
+                },
+                "id": 44,
+                "body": "Missed Call",
+                "title": "555-3873",
+                "app": "call"
+            },
+            {
+                "read": false,
+                "ts": 1782951067,
+                "route": {
+                    "app": "message",
+                    "number": "5553873"
+                },
+                "id": 45,
+                "body": "📷 Photo",
+                "title": "555-3873",
+                "app": "message"
+            },
+            {
+                "ts": 1782951153,
+                "read": false,
+                "route": {
+                    "app": "message",
+                    "number": "5553873"
+                },
+                "id": 46,
+                "body": "📷 Photo",
+                "title": "555-3873",
+                "app": "message"
+            },
+            {
+                "read": false,
+                "ts": 1782951156,
+                "route": {
+                    "app": "message",
+                    "number": "5553873"
+                },
+                "id": 47,
+                "body": "🎞️ GIF",
+                "title": "555-3873",
+                "app": "message"
+            },
+            {
+                "ts": 1782951164,
+                "read": false,
+                "route": {
+                    "app": "message",
+                    "number": "5553873"
+                },
+                "id": 48,
+                "body": "📍 Location",
+                "title": "555-3873",
+                "app": "message"
+            },
+            {
+                "read": false,
+                "ts": 1782951192,
+                "route": {
+                    "app": "message",
+                    "number": "5553873"
+                },
+                "id": 49,
+                "body": "🎤 Voice message",
+                "title": "555-3873",
+                "app": "message"
+            },
+            {
+                "read": false,
+                "id": 50,
+                "route": {
+                    "app": "message",
+                    "gid": "g17829517978103"
+                },
+                "ts": 1782951797,
+                "body": "You were added to the group",
+                "title": "Test",
+                "app": "message"
+            },
+            {
+                "id": 51,
+                "read": false,
+                "route": {
+                    "app": "message",
+                    "number": "5553873"
+                },
+                "ts": 1783004431,
+                "body": "😂😂😂",
+                "title": "555-3873",
+                "app": "message"
+            }
+        ],
+        "nextId": 52
+    },
     "messages": {
         "groupIds": [
             "g17829517978103"
@@ -8,1334 +302,1060 @@
                 "items": [
                     {
                         "id": "17827577538669",
-                        "read": true,
                         "dir": "in",
+                        "read": true,
                         "body": "naber lo",
                         "type": "text",
                         "ts": 1782757753
                     },
                     {
                         "id": "17827577718354",
-                        "read": true,
                         "dir": "out",
+                        "read": true,
                         "body": "iyidir lo",
                         "type": "text",
                         "ts": 1782757771
                     },
                     {
                         "id": "17827577745451",
-                        "read": true,
                         "dir": "out",
+                        "read": true,
                         "body": "senden naber",
                         "type": "text",
                         "ts": 1782757774
                     },
                     {
                         "id": "17827577806511",
-                        "read": true,
                         "dir": "out",
+                        "read": true,
                         "body": "asdasd",
                         "type": "text",
                         "ts": 1782757780
                     },
                     {
                         "id": "17827577835381",
-                        "read": true,
                         "dir": "in",
+                        "read": true,
                         "body": "asdasd",
                         "type": "text",
                         "ts": 1782757783
                     },
                     {
                         "id": "17827579049788",
-                        "read": true,
                         "dir": "in",
+                        "read": true,
                         "body": "asd",
                         "type": "text",
                         "ts": 1782757904
                     },
                     {
                         "id": "17827579089521",
-                        "read": true,
                         "dir": "out",
+                        "read": true,
                         "body": "asd",
                         "type": "text",
                         "ts": 1782757908
                     },
                     {
                         "id": "17827590279863",
-                        "read": true,
                         "dir": "in",
+                        "read": true,
                         "body": "asd",
                         "type": "text",
                         "ts": 1782759027
                     },
                     {
                         "id": "17827590339694",
-                        "read": true,
                         "dir": "out",
+                        "read": true,
                         "body": "asdsadasd",
                         "type": "text",
                         "ts": 1782759033
                     },
                     {
                         "id": "17827590447226",
-                        "read": true,
                         "dir": "in",
+                        "read": true,
                         "body": "selömdöl amsölkdm lökasmd lökamsdlköm lakösmdl kmaslödm lasdm asöda msdlök maslkdm ölkmasd",
                         "type": "text",
                         "ts": 1782759044
                     },
                     {
+                        "id": "17827596629072",
+                        "dir": "in",
                         "meta": {
                             "amount": 100
                         },
-                        "id": "17827596629072",
                         "read": true,
-                        "dir": "in",
                         "body": "100",
                         "type": "money",
                         "ts": 1782759662
                     },
                     {
+                        "id": "17827607156361",
+                        "dir": "in",
                         "meta": {
                             "amount": 10
                         },
-                        "id": "17827607156361",
                         "read": true,
-                        "dir": "in",
                         "body": "10",
                         "type": "request",
                         "ts": 1782760715
                     },
                     {
+                        "id": "17827607266641",
+                        "dir": "out",
                         "meta": {
                             "amount": 10
                         },
-                        "id": "17827607266641",
                         "read": true,
-                        "dir": "out",
                         "body": "10",
                         "type": "money",
                         "ts": 1782760726
                     },
                     {
+                        "id": "17827693994122",
+                        "dir": "out",
                         "meta": {
                             "amount": 10
                         },
-                        "id": "17827693994122",
                         "read": true,
-                        "dir": "out",
                         "body": "10",
                         "type": "money",
                         "ts": 1782769399
                     },
                     {
+                        "id": "17827704619185",
+                        "dir": "in",
                         "meta": {
-                            "status": "countered",
-                            "amount": 10,
                             "payee": "5553873",
+                            "amount": 10,
+                            "status": "countered",
                             "payer": "5558944"
                         },
-                        "id": "17827704619185",
                         "read": true,
-                        "dir": "in",
                         "body": "10",
                         "type": "request",
                         "ts": 1782770461
                     },
                     {
+                        "id": "17827704794227",
+                        "dir": "out",
                         "meta": {
-                            "status": "declined",
-                            "amount": 8,
                             "payee": "5553873",
+                            "amount": 8,
+                            "status": "declined",
                             "payer": "5558944"
                         },
-                        "id": "17827704794227",
                         "read": true,
-                        "dir": "out",
                         "body": "8",
                         "type": "request",
                         "ts": 1782770479
                     },
                     {
+                        "id": "17827710418088",
+                        "dir": "in",
                         "meta": {
                             "amount": 10
                         },
-                        "id": "17827710418088",
                         "read": true,
-                        "dir": "in",
                         "body": "10",
                         "type": "money",
                         "ts": 1782771041
                     },
                     {
+                        "id": "17827710569305",
+                        "dir": "in",
                         "meta": {
-                            "status": "paid",
-                            "amount": 6,
                             "payee": "5553873",
+                            "amount": 6,
+                            "status": "paid",
                             "payer": "5558944"
                         },
-                        "id": "17827710569305",
                         "read": true,
-                        "dir": "in",
                         "body": "6",
                         "type": "request",
                         "ts": 1782771056
                     },
                     {
                         "id": "17827710708594",
-                        "read": true,
                         "dir": "in",
+                        "read": true,
                         "body": "asd",
                         "type": "text",
                         "ts": 1782771070
                     },
                     {
                         "id": "17827710712107",
-                        "read": true,
                         "dir": "in",
+                        "read": true,
                         "body": "asd",
                         "type": "text",
                         "ts": 1782771071
                     },
                     {
                         "id": "17827710714012",
-                        "read": true,
                         "dir": "in",
+                        "read": true,
                         "body": "asd",
                         "type": "text",
                         "ts": 1782771071
                     },
                     {
                         "id": "17827710711568",
-                        "read": true,
                         "dir": "in",
+                        "read": true,
                         "body": "asd",
                         "type": "text",
                         "ts": 1782771071
                     },
                     {
                         "id": "17827710710215",
-                        "read": true,
                         "dir": "in",
+                        "read": true,
                         "body": "asd",
                         "type": "text",
                         "ts": 1782771071
                     },
                     {
                         "id": "17827710722398",
-                        "read": true,
                         "dir": "in",
+                        "read": true,
                         "body": "asd",
                         "type": "text",
                         "ts": 1782771072
                     },
                     {
                         "id": "17827710721506",
-                        "read": true,
                         "dir": "in",
+                        "read": true,
                         "body": "asd",
                         "type": "text",
                         "ts": 1782771072
                     },
                     {
                         "id": "17827715904698",
-                        "read": true,
                         "dir": "in",
+                        "read": true,
                         "body": "https://r2.fivemanage.com/QwvYnlNIMcYTc1520iXl0/2yYXZ0GmVrbk.jpg",
                         "type": "image",
                         "ts": 1782771590
                     },
                     {
                         "id": "17827716036432",
-                        "read": true,
                         "dir": "in",
+                        "read": true,
                         "body": "https://r2.fivemanage.com/QwvYnlNIMcYTc1520iXl0/qcd3rgBh3crH.webm",
                         "type": "video",
                         "ts": 1782771603
                     },
                     {
                         "id": "17827723105570",
-                        "read": true,
                         "dir": "in",
+                        "read": true,
                         "body": "https://r2.fivemanage.com/QwvYnlNIMcYTc1520iXl0/Dk7ttHEFTAnJ.jpg",
                         "type": "image",
                         "ts": 1782772310
                     },
                     {
                         "id": "17827723102398",
-                        "read": true,
                         "dir": "in",
+                        "read": true,
                         "body": "Hahahaha",
                         "type": "text",
                         "ts": 1782772310
                     },
                     {
                         "id": "17827729442628",
-                        "read": true,
                         "dir": "in",
+                        "read": true,
                         "body": "https://r2.fivemanage.com/QwvYnlNIMcYTc1520iXl0/1w2kRiORN1Ap.webm",
                         "type": "video",
                         "ts": 1782772944
                     },
                     {
                         "id": "17827738808399",
-                        "read": true,
                         "dir": "in",
+                        "read": true,
                         "body": "https://r2.fivemanage.com/QwvYnlNIMcYTc1520iXl0/29yQi9SXIg5w.jpg",
                         "type": "image",
                         "ts": 1782773880
                     },
                     {
                         "id": "17827739238262",
-                        "read": true,
                         "dir": "in",
+                        "read": true,
                         "body": "https://r2.fivemanage.com/QwvYnlNIMcYTc1520iXl0/O7BWTynVRPsb.jpg",
                         "type": "image",
                         "ts": 1782773923
                     },
                     {
+                        "id": "17827746291955",
+                        "dir": "in",
                         "meta": {
                             "x": -206.26596069335936,
-                            "live": false,
                             "label": "Eclipse Blvd, West Vinewood",
+                            "live": false,
                             "y": 244.98724365234376
                         },
-                        "id": "17827746291955",
                         "read": true,
-                        "dir": "in",
                         "body": "Eclipse Blvd, West Vinewood",
                         "type": "location",
                         "ts": 1782774629
                     },
                     {
+                        "id": "17827748548634",
+                        "dir": "in",
                         "meta": {
                             "sid": "17827748545740",
-                            "live": false,
                             "x": 1015.9879150390624,
                             "label": "Mirror Park Blvd, East Vinewood",
+                            "live": false,
                             "y": -178.44261169433598
                         },
-                        "id": "17827748548634",
                         "read": true,
-                        "dir": "in",
                         "body": "Eclipse Blvd, West Vinewood",
                         "type": "location",
                         "ts": 1782774854
                     },
                     {
+                        "id": "17827760297145",
+                        "dir": "in",
                         "meta": {
                             "sid": "17827760295146",
-                            "live": true,
                             "x": 1011.3014526367188,
                             "label": "Mirror Park Blvd, East Vinewood",
+                            "live": true,
                             "y": -176.52825927734376
                         },
-                        "id": "17827760297145",
                         "read": true,
-                        "dir": "in",
                         "body": "Mirror Park Blvd, East Vinewood",
                         "type": "location",
                         "ts": 1782776029
                     },
                     {
+                        "id": "17827764038273",
+                        "dir": "in",
                         "meta": {
                             "sid": "17827764037741",
-                            "live": true,
                             "x": 194.7139587402344,
                             "label": "San Andreas Ave, Pillbox Hill",
+                            "live": true,
                             "y": -807.0899658203125
                         },
-                        "id": "17827764038273",
                         "read": true,
-                        "dir": "in",
                         "body": "San Andreas Ave, Pillbox Hill",
                         "type": "location",
                         "ts": 1782776403
                     },
                     {
+                        "id": "17827765915768",
+                        "dir": "in",
                         "meta": {
                             "sid": "17827765915791",
-                            "live": true,
                             "x": 194.7139587402344,
                             "label": "San Andreas Ave, Pillbox Hill",
+                            "live": true,
                             "y": -807.0899658203125
                         },
-                        "id": "17827765915768",
                         "read": true,
-                        "dir": "in",
                         "body": "San Andreas Ave, Pillbox Hill",
                         "type": "location",
                         "ts": 1782776591
                     },
                     {
+                        "id": "17827767287132",
+                        "dir": "in",
                         "meta": {
                             "x": 194.7139587402344,
-                            "live": false,
                             "label": "San Andreas Ave, Pillbox Hill",
+                            "live": false,
                             "y": -807.0899658203125
                         },
-                        "id": "17827767287132",
                         "read": true,
-                        "dir": "in",
                         "body": "San Andreas Ave, Pillbox Hill",
                         "type": "location",
                         "ts": 1782776728
                     },
                     {
                         "id": "17827767600534",
-                        "read": true,
                         "dir": "in",
+                        "read": true,
                         "body": "asdasd",
                         "type": "text",
                         "ts": 1782776760
                     },
                     {
+                        "id": "17827767684083",
+                        "dir": "in",
                         "meta": {
                             "x": 194.7139587402344,
-                            "live": false,
                             "label": "San Andreas Ave, Pillbox Hill",
+                            "live": false,
                             "y": -807.0899658203125
                         },
-                        "id": "17827767684083",
                         "read": true,
-                        "dir": "in",
                         "body": "San Andreas Ave, Pillbox Hill",
                         "type": "location",
                         "ts": 1782776768
                     },
                     {
                         "id": "17827772124164",
-                        "read": true,
                         "dir": "out",
+                        "read": true,
                         "body": "ait lil bro i understand",
                         "type": "text",
                         "ts": 1782777212
                     },
                     {
                         "id": "17827772143382",
-                        "read": true,
                         "dir": "out",
+                        "read": true,
                         "body": "fucking hell",
                         "type": "text",
                         "ts": 1782777214
                     },
                     {
+                        "id": "17828245435122",
+                        "dir": "in",
                         "meta": {
                             "sid": "17828245437386",
-                            "live": true,
                             "x": 193.64431762695313,
                             "label": "San Andreas Ave, Pillbox Hill",
+                            "live": true,
                             "y": -811.5775146484375
                         },
-                        "id": "17828245435122",
                         "read": true,
-                        "dir": "in",
                         "body": "San Andreas Ave, Pillbox Hill",
                         "type": "location",
                         "ts": 1782824543
                     },
                     {
+                        "id": "17828249372237",
+                        "dir": "in",
                         "meta": {
                             "duration": 6
                         },
-                        "id": "17828249372237",
                         "read": true,
-                        "dir": "in",
                         "body": "https://r2.fivemanage.com/QwvYnlNIMcYTc1520iXl0/2WQWRFT1Xi2w.webm",
                         "type": "voice",
                         "ts": 1782824937
                     },
                     {
+                        "id": "17828250963123",
+                        "dir": "in",
                         "meta": {
                             "duration": 5
                         },
-                        "id": "17828250963123",
                         "read": true,
-                        "dir": "in",
                         "body": "https://r2.fivemanage.com/QwvYnlNIMcYTc1520iXl0/Aj6E9OyREB1G.webm",
                         "type": "voice",
                         "ts": 1782825096
                     },
                     {
                         "id": "17828300821861",
-                        "read": true,
                         "dir": "in",
+                        "read": true,
                         "body": "hahahhaha",
                         "type": "text",
                         "ts": 1782830082
                     },
                     {
                         "id": "17828300838185",
-                        "read": true,
                         "dir": "in",
+                        "read": true,
                         "body": "hahhahah",
                         "type": "text",
                         "ts": 1782830083
                     },
                     {
                         "id": "17828301864659",
-                        "read": true,
                         "dir": "in",
+                        "read": true,
                         "body": "asdasd",
                         "type": "text",
                         "ts": 1782830186
                     },
                     {
                         "id": "17828301940092",
-                        "read": true,
                         "dir": "in",
+                        "read": true,
                         "body": "asd",
                         "type": "text",
                         "ts": 1782830194
                     },
                     {
                         "id": "17828301943518",
-                        "read": true,
                         "dir": "in",
+                        "read": true,
                         "body": "asd",
                         "type": "text",
                         "ts": 1782830194
                     },
                     {
                         "id": "17828301958147",
-                        "read": true,
                         "dir": "in",
+                        "read": true,
                         "body": "asd",
                         "type": "text",
                         "ts": 1782830195
                     },
                     {
                         "id": "17828301969933",
-                        "read": true,
                         "dir": "in",
+                        "read": true,
                         "body": "asd",
                         "type": "text",
                         "ts": 1782830196
                     },
                     {
                         "id": "17828302001638",
-                        "read": true,
                         "dir": "in",
+                        "read": true,
                         "body": "ghagaga",
                         "type": "text",
                         "ts": 1782830200
                     },
                     {
                         "id": "17828305066931",
-                        "read": true,
                         "dir": "in",
+                        "read": true,
                         "body": "asd",
                         "type": "text",
                         "ts": 1782830506
                     },
                     {
                         "id": "17828305146331",
-                        "read": true,
                         "dir": "in",
+                        "read": true,
                         "body": "asd",
                         "type": "text",
                         "ts": 1782830514
                     },
                     {
                         "id": "17828306474013",
-                        "read": true,
                         "dir": "out",
+                        "read": true,
                         "body": "asdasd",
                         "type": "text",
                         "ts": 1782830647
                     },
                     {
                         "id": "17828306555176",
-                        "read": true,
                         "dir": "out",
+                        "read": true,
                         "body": "asd",
                         "type": "text",
                         "ts": 1782830655
                     },
                     {
                         "id": "17828311427423",
-                        "read": true,
                         "dir": "in",
+                        "read": true,
                         "body": "asd",
                         "type": "text",
                         "ts": 1782831142
                     },
                     {
                         "id": "17828311499379",
-                        "read": true,
                         "dir": "in",
+                        "read": true,
                         "body": "asd",
                         "type": "text",
                         "ts": 1782831149
                     },
                     {
                         "id": "17828320079179",
-                        "read": true,
                         "dir": "out",
+                        "read": true,
                         "body": "asd",
                         "type": "text",
                         "ts": 1782832007
                     },
                     {
                         "id": "17828320089125",
-                        "read": true,
                         "dir": "out",
+                        "read": true,
                         "body": "asd",
                         "type": "text",
                         "ts": 1782832008
                     },
                     {
                         "id": "17828320093211",
-                        "read": true,
                         "dir": "out",
+                        "read": true,
                         "body": "asd",
                         "type": "text",
                         "ts": 1782832009
                     },
                     {
                         "id": "17828320107546",
-                        "read": true,
                         "dir": "out",
+                        "read": true,
                         "body": "asd",
                         "type": "text",
                         "ts": 1782832010
                     },
                     {
                         "id": "17828320113446",
-                        "read": true,
                         "dir": "out",
+                        "read": true,
                         "body": "asd",
                         "type": "text",
                         "ts": 1782832011
                     },
                     {
                         "id": "17828320126621",
-                        "read": true,
                         "dir": "out",
+                        "read": true,
                         "body": "asd",
                         "type": "text",
                         "ts": 1782832012
                     },
                     {
                         "id": "17828324364961",
-                        "read": true,
                         "dir": "out",
+                        "read": true,
                         "body": "asd",
                         "type": "text",
                         "ts": 1782832436
                     },
                     {
                         "id": "17828324378140",
-                        "read": true,
                         "dir": "out",
+                        "read": true,
                         "body": "asd",
                         "type": "text",
                         "ts": 1782832437
                     },
                     {
                         "id": "17828324385622",
-                        "read": true,
                         "dir": "out",
+                        "read": true,
                         "body": "asd",
                         "type": "text",
                         "ts": 1782832438
                     },
                     {
                         "id": "17828324397698",
-                        "read": true,
                         "dir": "out",
+                        "read": true,
                         "body": "asd",
                         "type": "text",
                         "ts": 1782832439
                     },
                     {
                         "id": "17828328861381",
-                        "read": true,
                         "dir": "out",
+                        "read": true,
                         "body": "asd",
                         "type": "text",
                         "ts": 1782832886
                     },
                     {
                         "id": "17828328872887",
-                        "read": true,
                         "dir": "out",
+                        "read": true,
                         "body": "asd",
                         "type": "text",
                         "ts": 1782832887
                     },
                     {
                         "id": "17828328885365",
-                        "read": true,
                         "dir": "out",
+                        "read": true,
                         "body": "asd",
                         "type": "text",
                         "ts": 1782832888
                     },
                     {
                         "id": "17828331702522",
-                        "read": true,
                         "dir": "out",
+                        "read": true,
                         "body": "asd",
                         "type": "text",
                         "ts": 1782833170
                     },
                     {
                         "id": "17828333677546",
-                        "read": true,
                         "dir": "out",
+                        "read": true,
                         "body": "asd",
                         "type": "text",
                         "ts": 1782833367
                     },
                     {
                         "id": "17828333682360",
-                        "read": true,
                         "dir": "out",
+                        "read": true,
                         "body": "asd",
                         "type": "text",
                         "ts": 1782833368
                     },
                     {
                         "id": "17828333699233",
-                        "read": true,
                         "dir": "out",
+                        "read": true,
                         "body": "asd",
                         "type": "text",
                         "ts": 1782833369
                     },
                     {
                         "id": "17828333696881",
-                        "read": true,
                         "dir": "out",
+                        "read": true,
                         "body": "asd",
                         "type": "text",
                         "ts": 1782833369
                     },
                     {
                         "id": "17828553607926",
-                        "read": true,
                         "dir": "in",
+                        "read": true,
                         "body": "asd",
                         "type": "text",
                         "ts": 1782855360
                     },
                     {
                         "id": "17828596356711",
-                        "read": true,
                         "dir": "out",
+                        "read": true,
                         "body": "asdasdasd",
                         "type": "text",
                         "ts": 1782859635
                     },
                     {
                         "id": "17828602488254",
-                        "read": true,
                         "dir": "in",
+                        "read": true,
                         "body": "asd",
                         "type": "text",
                         "ts": 1782860248
                     },
                     {
                         "id": "17828603037155",
-                        "read": true,
                         "dir": "out",
+                        "read": true,
                         "body": "https://media1.giphy.com/media/v1.Y2lkPTRmYTQ2YTdiaWFvcGszdWltMTJjc2cyaHg4aWdibWVzNW5kcHV5OXV1cm9uanJ1MiZlcD12MV9naWZzX3RyZW5kaW5nJmN0PWc/eCTWCtcmzmqGKggbip/giphy.gif",
                         "type": "gif",
                         "ts": 1782860303
                     },
                     {
                         "id": "17828660282536",
-                        "read": false,
                         "dir": "in",
+                        "read": false,
                         "body": "asd",
                         "type": "text",
                         "ts": 1782866028
                     },
                     {
                         "id": "17828660289341",
-                        "read": false,
                         "dir": "in",
+                        "read": false,
                         "body": "asd",
                         "type": "text",
                         "ts": 1782866028
                     },
                     {
                         "id": "17828660299699",
-                        "read": false,
                         "dir": "in",
+                        "read": false,
                         "body": "asd",
                         "type": "text",
                         "ts": 1782866029
                     },
                     {
                         "id": "17828660319837",
-                        "read": false,
                         "dir": "in",
+                        "read": false,
                         "body": "asdasd",
                         "type": "text",
                         "ts": 1782866031
                     },
                     {
                         "id": "17828660312481",
-                        "read": false,
                         "dir": "in",
+                        "read": false,
                         "body": "asd",
                         "type": "text",
                         "ts": 1782866031
                     },
                     {
                         "id": "17828660316033",
-                        "read": false,
                         "dir": "in",
+                        "read": false,
                         "body": "asd",
                         "type": "text",
                         "ts": 1782866031
                     },
                     {
                         "id": "17828660312851",
-                        "read": false,
                         "dir": "in",
+                        "read": false,
                         "body": "as",
                         "type": "text",
                         "ts": 1782866031
                     },
                     {
                         "id": "17828660316833",
-                        "read": false,
                         "dir": "in",
+                        "read": false,
                         "body": "d",
                         "type": "text",
                         "ts": 1782866031
                     },
                     {
                         "id": "17828660319032",
-                        "read": false,
                         "dir": "in",
+                        "read": false,
                         "body": "asd",
                         "type": "text",
                         "ts": 1782866031
                     },
                     {
                         "id": "17828660322717",
-                        "read": false,
                         "dir": "in",
+                        "read": false,
                         "body": "asd",
                         "type": "text",
                         "ts": 1782866032
                     },
                     {
                         "id": "17828660325197",
-                        "read": false,
                         "dir": "in",
+                        "read": false,
                         "body": "as",
                         "type": "text",
                         "ts": 1782866032
                     },
                     {
                         "id": "17828660329631",
-                        "read": false,
                         "dir": "in",
+                        "read": false,
                         "body": "d",
                         "type": "text",
                         "ts": 1782866032
                     },
                     {
                         "id": "17828660323136",
-                        "read": false,
                         "dir": "in",
+                        "read": false,
                         "body": "as",
                         "type": "text",
                         "ts": 1782866032
                     },
                     {
                         "id": "17828660321089",
-                        "read": false,
                         "dir": "in",
+                        "read": false,
                         "body": "d",
                         "type": "text",
                         "ts": 1782866032
                     },
                     {
                         "id": "17829510672460",
-                        "read": false,
                         "dir": "in",
+                        "read": false,
                         "body": "https://r2.fivemanage.com/QwvYnlNIMcYTc1520iXl0/pNqgI6smYnyV.jpg",
                         "type": "image",
                         "ts": 1782951067
                     },
                     {
                         "id": "17829511532871",
-                        "read": false,
                         "dir": "in",
+                        "read": false,
                         "body": "https://r2.fivemanage.com/QwvYnlNIMcYTc1520iXl0/O7BWTynVRPsb.jpg",
                         "type": "image",
                         "ts": 1782951153
                     },
                     {
                         "id": "17829511563216",
-                        "read": false,
                         "dir": "in",
+                        "read": false,
                         "body": "https://media2.giphy.com/media/v1.Y2lkPTRmYTQ2YTdiY2Y2YWFnMWd0N3IxNmhmdzBsNWVsc2s0MGQ0cGYzMzNzbG9reWwwMSZlcD12MV9naWZzX3RyZW5kaW5nJmN0PWc/l4JyLsUXD0p8X5vUI/giphy.gif",
                         "type": "gif",
                         "ts": 1782951156
                     },
                     {
+                        "id": "17829511646881",
+                        "dir": "in",
                         "meta": {
                             "x": 294.5301513671875,
                             "y": -584.7811889648438,
-                            "label": "Elgin Ave, Textile City",
-                            "live": false
+                            "live": false,
+                            "label": "Elgin Ave, Textile City"
                         },
-                        "id": "17829511646881",
                         "read": false,
-                        "dir": "in",
                         "body": "Elgin Ave, Textile City",
                         "type": "location",
                         "ts": 1782951164
                     },
                     {
+                        "id": "17829511923089",
+                        "dir": "in",
                         "meta": {
                             "duration": 3
                         },
-                        "id": "17829511923089",
                         "read": false,
-                        "dir": "in",
                         "body": "https://r2.fivemanage.com/QwvYnlNIMcYTc1520iXl0/oK8vaxA1ROUA.webm",
                         "type": "voice",
                         "ts": 1782951192
+                    },
+                    {
+                        "id": "17830044315507",
+                        "dir": "in",
+                        "body": "😂😂😂",
+                        "type": "text",
+                        "ts": 1783004431,
+                        "read": false
                     }
                 ],
                 "number": "5553873",
-                "unread": 19
+                "unread": 20
             }
         }
     },
     "phone": {
+        "number": "555-8944",
         "numberRaw": "5558944",
-        "nextRecentId": 19,
-        "contacts": [],
         "recents": [
             {
                 "ts": 1782866041,
-                "id": 18,
-                "direction": "in",
                 "number": "555-3873",
-                "missed": true
+                "direction": "in",
+                "missed": true,
+                "id": 18
             },
             {
                 "ts": 1782866038,
-                "id": 17,
-                "direction": "in",
                 "number": "555-3873",
-                "missed": true
+                "direction": "in",
+                "missed": true,
+                "id": 17
             },
             {
                 "ts": 1782833382,
-                "id": 16,
-                "direction": "out",
                 "number": "555-3873",
-                "missed": false
+                "direction": "out",
+                "missed": false,
+                "id": 16
             },
             {
                 "ts": 1782830074,
-                "id": 15,
-                "direction": "in",
                 "number": "555-3873",
-                "missed": true
+                "direction": "in",
+                "missed": true,
+                "id": 15
             },
             {
                 "ts": 1782830071,
-                "id": 14,
-                "direction": "in",
                 "number": "555-3873",
-                "missed": true
+                "direction": "in",
+                "missed": true,
+                "id": 14
             },
             {
                 "ts": 1782826264,
-                "id": 13,
-                "direction": "in",
                 "number": "555-3873",
-                "missed": true
+                "direction": "in",
+                "missed": true,
+                "id": 13
             },
             {
                 "ts": 1782539617,
-                "id": 12,
-                "direction": "out",
                 "number": "555-3873",
-                "missed": false
+                "direction": "out",
+                "missed": false,
+                "id": 12
             },
             {
                 "ts": 1782539499,
-                "id": 11,
-                "direction": "in",
                 "number": "555-3873",
-                "missed": false
+                "direction": "in",
+                "missed": false,
+                "id": 11
             },
             {
                 "ts": 1782539357,
-                "id": 10,
-                "direction": "in",
                 "number": "555-3873",
-                "missed": false
+                "direction": "in",
+                "missed": false,
+                "id": 10
             },
             {
                 "ts": 1782538658,
-                "id": 9,
-                "direction": "in",
                 "number": "555-3873",
-                "missed": false
+                "direction": "in",
+                "missed": false,
+                "id": 9
             },
             {
                 "ts": 1782538579,
-                "id": 8,
-                "direction": "in",
                 "number": "555-3873",
-                "missed": false
+                "direction": "in",
+                "missed": false,
+                "id": 8
             },
             {
                 "ts": 1782538509,
-                "id": 7,
-                "direction": "in",
                 "number": "555-3873",
-                "missed": false
+                "direction": "in",
+                "missed": false,
+                "id": 7
             },
             {
                 "ts": 1782538426,
-                "id": 6,
-                "direction": "in",
                 "number": "555-3873",
-                "missed": false
+                "direction": "in",
+                "missed": false,
+                "id": 6
             },
             {
                 "ts": 1782538153,
-                "id": 5,
-                "direction": "in",
                 "number": "555-3873",
-                "missed": false
+                "direction": "in",
+                "missed": false,
+                "id": 5
             },
             {
                 "ts": 1782538103,
-                "id": 4,
-                "direction": "in",
                 "number": "555-3873",
-                "missed": false
+                "direction": "in",
+                "missed": false,
+                "id": 4
             },
             {
                 "ts": 1782538030,
-                "id": 3,
-                "direction": "in",
                 "number": "555-3873",
-                "missed": false
+                "direction": "in",
+                "missed": false,
+                "id": 3
             },
             {
                 "ts": 1782537657,
-                "id": 2,
-                "direction": "in",
                 "number": "555-3873",
-                "missed": false
+                "direction": "in",
+                "missed": false,
+                "id": 2
             },
             {
                 "ts": 1782537498,
-                "id": 1,
-                "direction": "in",
                 "number": "555-3873",
-                "missed": false
+                "direction": "in",
+                "missed": false,
+                "id": 1
             }
         ],
-        "nextContactId": 1,
         "blocked": [],
-        "number": "555-8944"
+        "contacts": [],
+        "nextRecentId": 19,
+        "nextContactId": 1
     },
-    "notifications": {
-        "nextId": 51,
-        "items": [
-            {
-                "route": {
-                    "number": "5553873",
-                    "app": "message"
-                },
-                "ts": 1782866028,
-                "id": 29,
-                "read": false,
-                "body": "asd",
-                "app": "message",
-                "title": "555-3873"
-            },
-            {
-                "route": {
-                    "number": "5553873",
-                    "app": "message"
-                },
-                "ts": 1782866028,
-                "id": 30,
-                "read": false,
-                "body": "asd",
-                "app": "message",
-                "title": "555-3873"
-            },
-            {
-                "route": {
-                    "number": "5553873",
-                    "app": "message"
-                },
-                "ts": 1782866029,
-                "id": 31,
-                "read": false,
-                "body": "asd",
-                "app": "message",
-                "title": "555-3873"
-            },
-            {
-                "route": {
-                    "number": "5553873",
-                    "app": "message"
-                },
-                "ts": 1782866031,
-                "id": 32,
-                "read": false,
-                "body": "asdasd",
-                "app": "message",
-                "title": "555-3873"
-            },
-            {
-                "route": {
-                    "number": "5553873",
-                    "app": "message"
-                },
-                "ts": 1782866031,
-                "id": 33,
-                "read": false,
-                "body": "asd",
-                "app": "message",
-                "title": "555-3873"
-            },
-            {
-                "route": {
-                    "number": "5553873",
-                    "app": "message"
-                },
-                "ts": 1782866031,
-                "id": 34,
-                "read": false,
-                "body": "asd",
-                "app": "message",
-                "title": "555-3873"
-            },
-            {
-                "route": {
-                    "number": "5553873",
-                    "app": "message"
-                },
-                "ts": 1782866031,
-                "id": 35,
-                "read": false,
-                "body": "as",
-                "app": "message",
-                "title": "555-3873"
-            },
-            {
-                "route": {
-                    "number": "5553873",
-                    "app": "message"
-                },
-                "ts": 1782866031,
-                "id": 36,
-                "read": false,
-                "body": "d",
-                "app": "message",
-                "title": "555-3873"
-            },
-            {
-                "route": {
-                    "number": "5553873",
-                    "app": "message"
-                },
-                "ts": 1782866031,
-                "id": 37,
-                "read": false,
-                "body": "asd",
-                "app": "message",
-                "title": "555-3873"
-            },
-            {
-                "route": {
-                    "number": "5553873",
-                    "app": "message"
-                },
-                "ts": 1782866032,
-                "id": 38,
-                "read": false,
-                "body": "asd",
-                "app": "message",
-                "title": "555-3873"
-            },
-            {
-                "route": {
-                    "number": "5553873",
-                    "app": "message"
-                },
-                "ts": 1782866032,
-                "id": 39,
-                "read": false,
-                "body": "as",
-                "app": "message",
-                "title": "555-3873"
-            },
-            {
-                "route": {
-                    "number": "5553873",
-                    "app": "message"
-                },
-                "ts": 1782866032,
-                "id": 40,
-                "read": false,
-                "body": "d",
-                "app": "message",
-                "title": "555-3873"
-            },
-            {
-                "route": {
-                    "number": "5553873",
-                    "app": "message"
-                },
-                "ts": 1782866032,
-                "id": 41,
-                "read": false,
-                "body": "as",
-                "app": "message",
-                "title": "555-3873"
-            },
-            {
-                "route": {
-                    "number": "5553873",
-                    "app": "message"
-                },
-                "ts": 1782866032,
-                "id": 42,
-                "read": false,
-                "body": "d",
-                "app": "message",
-                "title": "555-3873"
-            },
-            {
-                "route": {
-                    "app": "call",
-                    "tab": "recents"
-                },
-                "ts": 1782866038,
-                "id": 43,
-                "read": false,
-                "body": "Missed Call",
-                "app": "call",
-                "title": "555-3873"
-            },
-            {
-                "route": {
-                    "app": "call",
-                    "tab": "recents"
-                },
-                "ts": 1782866041,
-                "id": 44,
-                "read": false,
-                "body": "Missed Call",
-                "app": "call",
-                "title": "555-3873"
-            },
-            {
-                "route": {
-                    "number": "5553873",
-                    "app": "message"
-                },
-                "read": false,
-                "id": 45,
-                "ts": 1782951067,
-                "body": "📷 Photo",
-                "app": "message",
-                "title": "555-3873"
-            },
-            {
-                "route": {
-                    "number": "5553873",
-                    "app": "message"
-                },
-                "ts": 1782951153,
-                "id": 46,
-                "read": false,
-                "body": "📷 Photo",
-                "app": "message",
-                "title": "555-3873"
-            },
-            {
-                "route": {
-                    "number": "5553873",
-                    "app": "message"
-                },
-                "read": false,
-                "id": 47,
-                "ts": 1782951156,
-                "body": "🎞️ GIF",
-                "app": "message",
-                "title": "555-3873"
-            },
-            {
-                "route": {
-                    "number": "5553873",
-                    "app": "message"
-                },
-                "ts": 1782951164,
-                "id": 48,
-                "read": false,
-                "body": "📍 Location",
-                "app": "message",
-                "title": "555-3873"
-            },
-            {
-                "route": {
-                    "number": "5553873",
-                    "app": "message"
-                },
-                "read": false,
-                "id": 49,
-                "ts": 1782951192,
-                "body": "🎤 Voice message",
-                "app": "message",
-                "title": "555-3873"
-            },
-            {
-                "read": false,
-                "id": 50,
-                "ts": 1782951797,
-                "route": {
-                    "app": "message",
-                    "gid": "g17829517978103"
-                },
-                "body": "You were added to the group",
-                "app": "message",
-                "title": "Test"
-            }
-        ]
-    },
-    "citizenid": "C7E3021X",
-    "photos": {
-        "nextId": 2,
-        "items": [
-            {
-                "ts": 1782856921,
-                "id": 1,
-                "type": "image",
-                "url": "https://r2.fivemanage.com/QwvYnlNIMcYTc1520iXl0/66Wfidi8iXum.jpg",
-                "favorite": false
-            }
-        ]
+    "settings": {
+        "brightness": 100,
+        "locked": true,
+        "wallpaper": "default"
     },
     "createdAt": 1782537349,
-    "settings": {
-        "locked": true,
-        "wallpaper": "default",
-        "brightness": 100
-    },
-    "updatedAt": 1782951797
+    "updatedAt": 1783004431
 }

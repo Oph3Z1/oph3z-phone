@@ -16,14 +16,20 @@ end
 
 -- Load (or create) the caller's phone document ------------------------------
 lib.callback.register('oph3z-phone:server:getData', function(source)
-    local citizenid = getCitizenId(source)
-    if not citizenid then return nil end
+    local player = exports.qbx_core:GetPlayer(source)
+    if not player then return nil end
+    local citizenid = player.PlayerData.citizenid
+
+    -- Character name (for the Settings profile card, etc.).
+    local ci = player.PlayerData.charinfo or {}
+    local name = (('%s %s'):format(ci.firstname or '', ci.lastname or '')):gsub('^%s+', ''):gsub('%s+$', '')
 
     -- Ensure a phone number is generated/registered on first open so the player
     -- is reachable even before they open the Phone app.
     local doc = DB.EnsurePhone(citizenid, DB.LoadOrCreate(citizenid))
     return {
         citizenid = citizenid,
+        name      = name ~= '' and name or nil,         -- e.g. "Barbara Orton"
         settings  = doc.settings,
         number    = doc.phone.number,                  -- formatted (e.g. 555-0142)
         numberRaw = DB.Digits(doc.phone.numberRaw),     -- digits only

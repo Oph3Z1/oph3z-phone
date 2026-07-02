@@ -117,7 +117,10 @@
   gap: 0.7em;
   padding: 0.5em 0.9em;
   text-align: left;
+  transition: background 0.12s ease;
 }
+.msg-row:hover { background: rgba(255, 255, 255, 0.06); }
+.msg-row:active { background: rgba(255, 255, 255, 0.1); }
 .msg-row__dot {
   width: 0.5em;
   height: 0.5em;
@@ -1518,20 +1521,38 @@
 .msg-gifs__cell:active { opacity: 0.7; }
 
 /* ---- Emoji picker (bottom sheet) ---------------------------------------- */
+/* Sits inline BELOW the input row (keyboard-style) so the text field stays
+   visible while you add emoji. */
 .msg-emoji {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 25;
-  height: 62%;
+  flex: 0 0 auto;
+  height: 18.5em;
   display: flex;
   flex-direction: column;
+  padding-top: 0.7em;
   background: #0b0b0d;
-  border-top-left-radius: 1.3em;
-  border-top-right-radius: 1.3em;
-  animation: msg-sheet-in 0.22s cubic-bezier(0.32, 0.72, 0, 1) both;
+  border-top: 0.5px solid rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+  animation: msg-emoji-up 0.2s ease both;
 }
+/* Little grab line at the top — tap it to close the emoji keyboard. */
+.msg-emoji__grab {
+  flex: 0 0 auto;
+  align-self: center;
+  width: 2.6em;
+  height: 0.34em;
+  margin-bottom: 0.5em;
+  border-radius: 0.2em;
+  background: rgba(255, 255, 255, 0.32);
+}
+.msg-emoji__grab:active { background: rgba(255, 255, 255, 0.5); }
+@keyframes msg-emoji-up {
+  from { opacity: 0; transform: translateY(0.6em); }
+  to { opacity: 1; transform: translateY(0); }
+}
+/* When the emoji keyboard is open, drop the input's big bottom safe-area gap so
+   the input sits right on top of it (the keyboard carries the safe area). */
+.msg-input-wrap.is-emoji .msg-input { padding-bottom: 0.4em; }
+.msg-emoji__searchrow { margin-top: 0.5em; }
 .msg-emoji__searchrow {
   flex: 0 0 auto;
   display: flex;

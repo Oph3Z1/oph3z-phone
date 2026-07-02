@@ -21,6 +21,7 @@ import CameraApp from './camera/CameraApp';
 import MapsApp from './maps/MapsApp';
 import MessagesApp from './messages/MessagesApp';
 import AppStoreApp from './appstore/AppStoreApp';
+import SettingsApp from './settings/SettingsApp';
 
 /** @typedef {{ id:string, name:string, icon:string, component:(React.ComponentType|null) }} AppDef */
 
@@ -32,7 +33,7 @@ export const APPS = {
   photos:     { id: 'photos',     name: 'Photos',     icon: photosIcon,     component: PhotosApp },
   maps:       { id: 'maps',       name: 'Maps',       icon: mapsIcon,       component: MapsApp },
   clock:      { id: 'clock',      name: 'Clock',      icon: clockIcon,      component: null },
-  settings:   { id: 'settings',   name: 'Settings',   icon: settingsIcon,   component: null },
+  settings:   { id: 'settings',   name: 'Settings',   icon: settingsIcon,   component: SettingsApp },
   calculator: { id: 'calculator', name: 'Calculator', icon: calculatorIcon, component: null },
   appstore:   { id: 'appstore',   name: 'App Store',  icon: appstoreIcon,   component: AppStoreApp },
 };

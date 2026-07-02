@@ -16,9 +16,10 @@ const SearchIcon = () => (
   </svg>
 );
 
-// iOS-style emoji picker: search field, a Recents tab, and category tabs. Tapping
-// an emoji inserts it and remembers it in Recents; the sheet stays open.
-export default function EmojiPicker({ onClose, onSelect }) {
+// iOS-style emoji keyboard: sits below the input (input stays visible). Search
+// field, a Recents tab, and category tabs. Tapping an emoji inserts it and
+// remembers it in Recents.
+export default function EmojiPicker({ onSelect, onClose }) {
   const [recents, setRecents] = useState(loadRecents);
   const [cat, setCat] = useState('recents');
   const [query, setQuery] = useState('');
@@ -46,10 +47,8 @@ export default function EmojiPicker({ onClose, onSelect }) {
   const tabs = [{ key: 'recents', tab: '🕐' }, ...CATEGORIES.map((c) => ({ key: c.key, tab: c.tab }))];
 
   return (
-    <>
-      <div className="msg-cash-backdrop" onClick={onClose} />
-      <div className="msg-emoji">
-        <button className="msg-cash__grab" onClick={onClose} aria-label="Close" />
+    <div className="msg-emoji">
+        <button className="msg-emoji__grab" onClick={onClose} aria-label="Close" />
 
         <div className="msg-emoji__searchrow">
           <SearchIcon />
@@ -86,7 +85,6 @@ export default function EmojiPicker({ onClose, onSelect }) {
             </button>
           ))}
         </div>
-      </div>
-    </>
+    </div>
   );
 }

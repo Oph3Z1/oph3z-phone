@@ -25,9 +25,7 @@ export default function MessageInput({ onSend, onPlus, onMic, attachment, onRemo
   const insertEmoji = (e) => setText((t) => t + e);
 
   return (
-    <div className="msg-input-wrap">
-      {showEmoji && <EmojiPicker onClose={() => setShowEmoji(false)} onSelect={insertEmoji} />}
-
+    <div className={`msg-input-wrap${showEmoji ? ' is-emoji' : ''}`}>
       {attachment && (
         <div className="msg-draft">
           <div className="msg-draft__thumb">
@@ -71,6 +69,8 @@ export default function MessageInput({ onSend, onPlus, onMic, attachment, onRemo
           <SendIcon />
         </button>
       </div>
+
+      {showEmoji && <EmojiPicker onSelect={insertEmoji} onClose={() => setShowEmoji(false)} />}
     </div>
   );
 }

@@ -5,6 +5,7 @@ import './CameraApp.css';
 import { fetchNui } from '../../utils/fetchNui';
 import { pad2 } from '../../utils/misc';
 import { uploadToProvider, dataURLtoBlob } from '../../utils/upload';
+import { playSound } from '../../utils/sound';
 import { openApp } from '../../store/slices/phoneSlice';
 import { loadPhotos, upsertPhoto } from '../../store/slices/photosSlice';
 import { setShareTo, setResumeThread, setDraftAttach } from '../../store/slices/messagesSlice';
@@ -125,6 +126,7 @@ export default function CameraApp() {
     if (busy || !canvas) return;
     setBusy(true);
     setFlash(true);
+    playSound('photosound.mp3');
     setTimeout(() => setFlash(false), 180);
 
     try {

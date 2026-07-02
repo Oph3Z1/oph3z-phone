@@ -21,11 +21,11 @@ const AirplaneGlyph = () => (
   </svg>
 );
 const AirDropGlyph = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" width="1em" height="1em">
-    <path d="M8.5 15.5a5 5 0 017 0" />
-    <path d="M6 13a8.5 8.5 0 0112 0" />
-    <path d="M3.5 10.5a12 12 0 0117 0" />
-    <circle cx="12" cy="19.5" r="1.1" fill="currentColor" stroke="none" />
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" width="1em" height="1em">
+    <path d="M8.9 21A9 9 0 1 1 15.1 21" />
+    <path d="M10.05 17.86A5.7 5.7 0 1 1 13.95 17.86" />
+    <path d="M11.11 14.94A2.6 2.6 0 1 1 12.89 14.94" />
+    <circle cx="12" cy="12.5" r="1.5" fill="currentColor" stroke="none" />
   </svg>
 );
 const FlashlightGlyph = () => (

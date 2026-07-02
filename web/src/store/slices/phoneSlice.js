@@ -8,7 +8,7 @@ const initialState = {
   flashlightOn: false, // in-game flashlight beam toggle
   controlCenterOpen: false, // Control Center overlay
   launchTab: null,     // a tab the next-opened app should jump to (e.g. Phone -> Recents)
-  identity: { number: '', numberRaw: '', citizenid: '' }, // shared with third-party app iframes
+  identity: { number: '', numberRaw: '', citizenid: '', name: '' }, // shared with third-party app iframes
   // Live clock / weather pushed from the game.
   time: {
     useGameTime: true,
