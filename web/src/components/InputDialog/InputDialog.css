@@ -1,0 +1,82 @@
+/* iOS-style dark text-input popup, centred over the (dimmed) phone. */
+.inputdlg {
+  position: absolute;
+  inset: 0;
+  z-index: 82;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.6em;
+  background: rgba(0, 0, 0, 0.4);
+  animation: inputdlg-fade 0.18s ease both;
+}
+@keyframes inputdlg-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.inputdlg__card {
+  width: 100%;
+  max-width: 17.5em;
+  border-radius: 1.15em;
+  padding: 1.15em 1.1em 1em;
+  background: rgba(44, 44, 46, 0.9);
+  backdrop-filter: blur(2.2em) saturate(150%);
+  -webkit-backdrop-filter: blur(2.2em) saturate(150%);
+  color: #fff;
+  box-shadow: 0 1.2em 3.2em rgba(0, 0, 0, 0.55);
+  animation: inputdlg-pop 0.22s cubic-bezier(0.32, 0.72, 0, 1) both;
+}
+@keyframes inputdlg-pop {
+  from { transform: scale(1.1); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.inputdlg__head { margin-bottom: 0.85em; }
+.inputdlg__title { font-size: 1.02em; font-weight: 700; letter-spacing: -0.01em; }
+.inputdlg__msg {
+  font-size: 0.8em;
+  line-height: 1.35;
+  color: rgba(235, 235, 245, 0.7);
+  margin-top: 0.28em;
+}
+
+/* Grouped input container (iOS-style): fields stacked with hairline dividers. */
+.inputdlg__fields {
+  background: rgba(118, 118, 128, 0.24);
+  border-radius: 0.6em;
+  overflow: hidden;
+}
+.inputdlg__field {
+  width: 100%;
+  border: none;
+  outline: none;
+  background: transparent;
+  padding: 0.72em 0.85em;
+  font-size: 0.95em;
+  color: #fff;
+}
+.inputdlg__field + .inputdlg__field {
+  border-top: 0.5px solid rgba(255, 255, 255, 0.14);
+}
+.inputdlg__field::placeholder { color: rgba(235, 235, 245, 0.4); }
+
+.inputdlg__btns {
+  display: flex;
+  gap: 0.6em;
+  margin-top: 1.05em;
+}
+.inputdlg__btn {
+  flex: 1 1 0;
+  padding: 0.72em 0.5em;
+  border-radius: 1.6em;
+  font-size: 0.95em;
+  font-weight: 600;
+  cursor: pointer;
+  transition: filter 0.12s ease, opacity 0.12s ease;
+}
+.inputdlg__btn--cancel { background: rgba(118, 118, 128, 0.28); color: #fff; }
+.inputdlg__btn--cancel:active { filter: brightness(1.25); }
+.inputdlg__btn--confirm { background: #0a84ff; color: #fff; }
+.inputdlg__btn--confirm:active { filter: brightness(0.92); }
+.inputdlg__btn--confirm:disabled { opacity: 0.5; cursor: default; }

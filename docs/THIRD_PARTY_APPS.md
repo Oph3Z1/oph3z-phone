@@ -82,11 +82,12 @@ Your page runs inside an iframe. The phone talks to it with `postMessage`:
 
 | Direction | Message | Meaning |
 |---|---|---|
-| phone → app | `{ type:'oph3z:init', identity:{ number, numberRaw, citizenid }, app:{ id, label } }` | Sent on load; the player's identity. |
+| phone → app | `{ type:'oph3z:init', identity:{ number, numberRaw, citizenid, name, email, avatar }, app:{ id, label } }` | Sent on load; the player's identity (`name`/`email`/`avatar` are the phone-ID profile). |
 | app → phone | `{ type:'oph3z:ready' }` | Ask the phone to (re)send `oph3z:init`. |
 | app → phone | `{ type:'oph3z:close' }` | Send the player back to the home screen. |
 | app → phone | `{ type:'oph3z:confirm', id, title, message, confirmText?, cancelText?, destructive? }` | Show a native yes/no confirm; reply `{ type:'oph3z:confirm:result', id, confirmed }`. |
 | app → phone | `{ type:'oph3z:alert', id, title, message, buttons:[{ text, style?, value? }] }` | Show a native dialog with custom buttons; reply `{ type:'oph3z:alert:result', id, value }`. |
+| app → phone | `{ type:'oph3z:prompt', id, title, message?, placeholder?, value?, confirmText?, cancelText?, maxLength?, fields? }` | Show a native **text-input** popup; reply `{ type:'oph3z:prompt:result', id, value }`. `value` = a **string**, or an **object** `{ [key]: value }` when `fields:[{key,placeholder?,value?,optional?}]` is given, or `null` if cancelled. |
 
 ```js
 window.addEventListener('message', (e) => {
@@ -126,6 +127,43 @@ if (await phoneConfirm({ title: 'Delete post?', message: 'This cannot be undone.
 ```
 
 `style` for `oph3z:alert` buttons is `'default'` | `'cancel'` | `'destructive'`.
+
+### Native text-input popup
+
+Use the phone's built-in input popup (the same one Settings uses to rename the
+phone ID) instead of `window.prompt`. Resolves the entered string, or `null` on
+cancel:
+
+```js
+function phonePrompt(opts) {
+  return new Promise((resolve) => {
+    const id = 'p' + Math.random().toString(36).slice(2);
+    function onResult(e) {
+      if (e.data?.type === 'oph3z:prompt:result' && e.data.id === id) {
+        window.removeEventListener('message', onResult);
+        resolve(e.data.value); // string on confirm, null on cancel
+      }
+    }
+    window.addEventListener('message', onResult);
+    window.parent.postMessage({ type: 'oph3z:prompt', id, ...opts }, '*');
+  });
+}
+
+// usage — single field (resolves a string)
+const name = await phonePrompt({ title: 'Set nickname', placeholder: 'Type…',
+                                 confirmText: 'Save' });
+if (name !== null) { /* they confirmed — use `name` */ }
+
+// usage — multiple fields (resolves an object { name, url })
+const item = await phonePrompt({
+  title: 'Add New Item', confirmText: 'Add',
+  fields: [ { key: 'name', placeholder: 'Name' }, { key: 'url', placeholder: 'Paste URL' } ],
+});
+if (item) { /* item.name, item.url */ }
+```
+
+Both `phoneConfirm()` and `phonePrompt()` ship ready-to-use in the
+**oph3z-phone-app-template** (`ui/app.js`).
 
 **Layout note:** your iframe fills the whole phone screen. The phone's status bar
 floats at the top and the home indicator at the bottom — keep ~3.2em top padding

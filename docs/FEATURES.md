@@ -228,6 +228,91 @@ the 4 attachment features are the next phase.
 
 ---
 
+## Settings app  (web/src/app/settings/ + server/client/app/profile/)
+
+Dark iOS-style Settings. Screens are local `view` state; sub-screens use a circular
+back button + centred title (`set__backcircle` / `set__navbar--center`).
+
+**Profile card / Phone ID** (`ProfileScreen`)
+- The card shows the **profile name** + avatar (initial-letter fallback) and the
+  **Phone Number** row (AirDrop glyph + a **copy-number** button that copies the raw
+  digits via `execCommand('copy')`, CEF-safe).
+- Tapping it opens the **Phone ID** screen: big avatar, name, mail address, and two
+  rows — **Change Profile Photo** and **Change ID Name**.
+- **Change ID Name** → the reusable input popup → `saveProfileName` thunk.
+- **Change Profile Photo** → a bottom **Upload Photo** sheet: paste a URL, pick from
+  the gallery, or open the Camera. Sets the avatar immediately (`saveAvatar`). A
+  camera capture for the avatar is **not** saved to the gallery; it returns to the
+  Profile screen via `launchTab = 'profile'`.
+- Storage: `doc.profile = { name, avatar }` (name seeds from the character name on
+  first open; renaming never touches QBox charinfo). Server: `server/app/profile/`.
+  Shared with the UI + app iframes via `phone.identity { number, numberRaw,
+  citizenid, name, email, avatar }`.
+
+**Mail** (auto-generated, `DB.EnsureMail`)
+- Every player gets `firstname.lastname@<Config.MailDomain>` on first phone open
+  (collisions get a numeric suffix, e.g. `barbara.orton2@`). Uniqueness tracked in
+  `data/_mails.json`. Stored in `doc.mail = { address, inbox[], nextId }` — the
+  `inbox` is stubbed for a future Mail app. Existing characters get theirs lazily on
+  next open. Shown as the profile's email.
+
+**Notifications** (`NotificationsScreen`)
+- **Notification Sound** — mutes the new-notification sound only (`notifSound`,
+  honoured client-side in `App.jsx`).
+- **Close All Notifications** — master on/off (`notifMaster`). Off = silence
+  everything; the per-app card dims + disables.
+- **Per-app switches** — every registered app (built-in + third-party, from
+  `useAvailableApps`) with its real icon; `setAppNotif` merges into the `notifApps`
+  map (`{ [appId]: false }`, missing = enabled).
+- **Enforcement is server-side in `Notif.Push`**: if the master switch is off, or
+  the app is disabled, the notification is dropped entirely — nothing stored,
+  delivered, badged, or shown (works offline too).
+
+**Ringtones** (`RingtonesScreen`, server/client `app/ringtones/`)
+- Built-in ringtones from `Config.Ringtones` (`file` resolved to a bundled
+  `web/build/audio/*.mp3`, or a full `url`) + player-added custom ones (name + URL),
+  stored in `doc.ringtones = { items[], nextId }`.
+- **Add Your Ringtone** → the **multi-field** input popup (Name + Paste URL). Each row
+  has a **play/pause preview** (NUI `<audio>`, respects `settings.volume`) and a
+  selection check. **Long-press a custom ringtone** → confirm → delete (built-ins
+  can't be deleted).
+- Selecting saves `settings.ringtone` (URL). On an incoming call, the callee's chosen
+  ringtone plays 3D via xsound — `Ringtones.UrlFor(cid)` in `startRingtone`, falling
+  back to `Config.RingtoneUrl`.
+
+**Wallpaper** (`WallpaperScreen`)
+- Custom URL area with a **live phone-shaped preview** (updates as you type) + Set;
+  and a grid of **presets that auto-register** from `web/src/assets/wallpapers/`
+  (`import.meta.glob` in `phone.config.js` — drop an image + rebuild, no code edit;
+  filename → key, prettified → display name). Selecting saves `settings.wallpaper`
+  (preset key or raw URL); `Phone.jsx` applies it live. `getWallpaper()` resolves a
+  URL as-is or a key, default `blackTitanium` (old `'default'` aliases to it).
+
+**Display & Brightness** (`DisplayScreen`)
+- **Brightness** slider (20–100, same Control-Center-style thick slider, bound to the
+  same `settings.brightness`).
+- **Phone Size** slider (`settings.scale`, 50–100%) — scales the whole phone live via a
+  `--phone-scale` CSS var on `.phone` (`height: calc(--phone-height * --phone-scale)`,
+  anchored bottom-right; the ResizeObserver rescales the UI). Both use `saveSettingLive`
+  + `flushSettings` on leave.
+
+**Connectivity / other rows:** Airplane toggle (`setAirplane`), Wi-Fi (cosmetic
+`iPhone`), AirDrop toggle (`airdrop`). Language / About are placeholder sub-screens
+(coming later).
+
+### Reusable dialogs (phone-wide)
+- **`AlertDialog`** (dark) — confirm/alert, driven by `dialogSlice` (`openDialog`
+  thunk returns a Promise of the tapped button's value).
+- **`InputDialog`** (dark text-input popup) — driven by `promptSlice` (`openPrompt`
+  returns the entered string, or `null` on cancel; caret placed at end, no
+  select-all). Pass `fields: [{ key, placeholder?, value?, optional? }]` for a
+  **multi-field** popup (e.g. Add New Ringtone = Name + URL) — it then resolves an
+  object `{ [key]: value }`. Both are mounted once in `Phone.jsx` and are also exposed to
+  third-party iframe apps via the `oph3z:confirm` / `oph3z:alert` / `oph3z:prompt`
+  postMessage bridge (see THIRD_PARTY_APPS.md).
+
+---
+
 ## Config reference (config.lua)
 
 Config is intentionally **lean** — only meaningful options live here; fiddly tunables
@@ -238,11 +323,12 @@ encoding/size, ring volume/distance) are hardcoded in the relevant Lua files.
 |---|---|
 | General | `Debug`, `Command`, `Keybind`, `ItemName`, `RequireItem`, `DataFolder` |
 | Numbers | `PhoneNumberPrefix` (`555`) |
-| Defaults | `DefaultSettings` = `{wallpaper, brightness, locked, airplane}` |
+| Mail | `MailDomain` (address = `firstname.lastname@<MailDomain>`) |
+| Defaults | `DefaultSettings` = `{wallpaper, brightness, volume, airdrop, locked, airplane, notifSound, notifMaster}` (per-app `notifApps` is set from the UI, not seeded) |
 | Prop | `UseProp`, `PropModel` |
 | Calls | `RingTimeout` (30), `MaxRecents` (50), `RingtoneUrl` |
 | Camera | `Camera.provider` (`discord`/`fivemanage`), `Camera.discord.webhook`, `Camera.fivemanage.{apiKey,url}` |
-| Lock/time | `UseGameTime, Temperature, TempUnit` |
+| GIFs | `Gif.apiKey` (GIPHY) |
 
 ---
 

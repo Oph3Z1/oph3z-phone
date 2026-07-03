@@ -176,6 +176,97 @@ function DB.EnsurePhone(citizenid, doc)
     return doc
 end
 
+-- ===========================================================================
+-- Mail (auto-generated address per player; inbox used by the Mail app later)
+--   Registry file maps an address -> citizenid to keep addresses unique.
+-- ===========================================================================
+local MAIL_REGISTRY_PATH = ('%s/_mails.json'):format(FOLDER)
+local mailRegistryCache = nil
+
+local function loadMailRegistry()
+    if mailRegistryCache then return mailRegistryCache end
+    local raw = LoadResourceFile(RESOURCE, MAIL_REGISTRY_PATH)
+    if not raw or raw == '' then
+        mailRegistryCache = {}
+        return mailRegistryCache
+    end
+    local ok, decoded = pcall(json.decode, raw)
+    mailRegistryCache = (ok and type(decoded) == 'table') and decoded or {}
+    return mailRegistryCache
+end
+
+local function saveMailRegistry(registry)
+    mailRegistryCache = registry
+    SaveResourceFile(RESOURCE, MAIL_REGISTRY_PATH, json.encode(registry), -1)
+end
+
+---Turn a name part into a mail-safe slug ("Böb O'Brien" -> "boborien").
+---@param s any
+---@return string
+local function mailSlug(s)
+    return (tostring(s or ''):lower()):gsub('[^a-z0-9]', '')
+end
+
+---Ensure the document has a mail sub-table with a unique address + inbox.
+---Builds "firstname.lastname@<Config.MailDomain>" on first call, suffixing a
+---number on collision (barbara.orton@ -> barbara.orton2@).
+---@param citizenid string
+---@param doc table
+---@param firstname string|nil
+---@param lastname string|nil
+---@return table doc
+function DB.EnsureMail(citizenid, doc, firstname, lastname)
+    doc.mail = doc.mail or {}
+    local m = doc.mail
+    m.inbox  = m.inbox or {}          -- { {id, from, subject, body, read, ts}, ... }
+    m.nextId = m.nextId or 1
+
+    if not m.address then
+        local domain = Config.MailDomain or 'lsmail.com'
+        local first  = mailSlug(firstname)
+        local last   = mailSlug(lastname)
+
+        local base
+        if first ~= '' and last ~= '' then base = first .. '.' .. last
+        elseif first ~= '' then base = first
+        elseif last ~= '' then base = last
+        else base = 'user' .. (mailSlug(citizenid):sub(1, 6)) end
+
+        local registry = loadMailRegistry()
+        local address = base .. '@' .. domain
+        local n = 1
+        while registry[address] and registry[address] ~= citizenid do
+            n = n + 1
+            address = base .. tostring(n) .. '@' .. domain
+        end
+        registry[address] = citizenid
+        saveMailRegistry(registry)
+
+        m.address = address
+        DB.Save(citizenid, doc)
+    end
+
+    return doc
+end
+
+-- ===========================================================================
+-- Profile (phone "ID": display name + avatar; independent of the OOC char name)
+-- ===========================================================================
+---Ensure the document has a profile sub-table. `defaultName` seeds the display
+---name on first call (usually the character's full name).
+---@param citizenid string
+---@param doc table
+---@param defaultName string|nil
+---@return table doc
+function DB.EnsureProfile(citizenid, doc, defaultName)
+    doc.profile = doc.profile or {}
+    if not doc.profile.name and defaultName and defaultName ~= '' then
+        doc.profile.name = defaultName
+        DB.Save(citizenid, doc)
+    end
+    return doc
+end
+
 ---Strip everything but digits from a number string.
 ---@param s any
 ---@return string

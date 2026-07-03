@@ -19,6 +19,7 @@
 
 .phone {
   --phone-height: 74vh;
+  --phone-scale: 1; /* Display & Brightness "Phone Size" (0.5–1); anchored bottom-right */
   --case-aspect: 399 / 803;
   --screen-width: 90.7%;
   --screen-height: 97%;
@@ -27,7 +28,7 @@
   position: fixed;
   right: 2.5vh;
   bottom: 2.5vh;
-  height: var(--phone-height);
+  height: calc(var(--phone-height) * var(--phone-scale));
   aspect-ratio: var(--case-aspect);
   z-index: 1;
   filter: drop-shadow(0 1.5vh 3vh rgba(0, 0, 0, 0.55));

@@ -6,7 +6,7 @@ import { fetchNui } from '../../utils/fetchNui';
 import { pad2 } from '../../utils/misc';
 import { uploadToProvider, dataURLtoBlob } from '../../utils/upload';
 import { playSound } from '../../utils/sound';
-import { openApp } from '../../store/slices/phoneSlice';
+import { openApp, saveAvatar, setLaunchTab } from '../../store/slices/phoneSlice';
 import { loadPhotos, upsertPhoto } from '../../store/slices/photosSlice';
 import { setShareTo, setResumeThread, setDraftAttach } from '../../store/slices/messagesSlice';
 import { setResumeGroup, setGroupDraft } from '../../store/slices/groupsSlice';
@@ -99,13 +99,24 @@ export default function CameraApp() {
   // camera was opened from a chat, also send it there and return to Messages.
   const save = async (url, type, duration) => {
     if (!url) return;
+    const to = shareToRef.current;
+
+    // Profile-photo capture: set it as the avatar and return to the Profile
+    // screen. This is NOT saved to the gallery — it's just the avatar.
+    if (to === 'profile') {
+      dispatch(setShareTo(null));
+      dispatch(saveAvatar(url));
+      dispatch(setLaunchTab('profile'));
+      dispatch(openApp('settings'));
+      return;
+    }
+
     const photo = await fetchNui('phone:camera:save', { url, type, duration }, null);
     if (photo) dispatch(upsertPhoto(photo));
     else console.error('[camera] save returned no photo for', url);
 
     // If launched from a chat, hand the capture back as a draft attachment so the
     // player can add a caption before sending (don't auto-send).
-    const to = shareToRef.current;
     if (to) {
       dispatch(setShareTo(null));
       if (String(to).startsWith('g:')) {
@@ -181,6 +192,11 @@ export default function CameraApp() {
   const backToChat = () => {
     const to = shareToRef.current;
     dispatch(setShareTo(null));
+    if (to === 'profile') {
+      dispatch(setLaunchTab('profile'));
+      dispatch(openApp('settings'));
+      return;
+    }
     if (to) {
       if (String(to).startsWith('g:')) dispatch(setResumeGroup(String(to).slice(2)));
       else dispatch(setResumeThread(to));

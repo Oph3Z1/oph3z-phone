@@ -27,14 +27,26 @@ Config.DataFolder = 'data'
 -- 555 + 4 digits -> displayed as "555-0142".
 Config.PhoneNumberPrefix = '555'
 
+-- Mail ----------------------------------------------------------------------
+-- Every player gets an auto-generated mail address on first phone open, built as
+-- firstname.lastname@<Config.MailDomain>   e.g. "barbara.orton@lsmail.com"
+-- Duplicates (same first + last name) get a numeric suffix ("barbara.orton2@").
+-- The Mail app (added later) reads/writes this same inbox.
+Config.MailDomain = 'mail.com'
+
 -- Default phone settings written on first use for a citizen.
 Config.DefaultSettings = {
-    wallpaper  = 'default',                -- key into the web wallpaper map
+    wallpaper  = 'blackTitanium',          -- preset key (see WALLPAPER_PRESETS) or a custom URL
     brightness = 100,                      -- screen brightness (Control Center, 20-100)
     volume     = 70,                       -- media volume (Control Center / Music app)
     airdrop    = false,                    -- AirDrop receiving toggle (Control Center)
     locked     = true,                     -- start locked when opened
     airplane   = false,                    -- airplane mode (unreachable + can't call)
+    scale      = 100,                      -- phone size on screen (50-100; Display & Brightness)
+    notifSound = true,                     -- play a sound on new notifications
+    notifMaster = true,                    -- master switch: off = silence ALL notifications
+    -- notifApps: per-app enable map { [appId] = false } (missing = enabled). Set
+    -- from the Settings > Notifications screen; not seeded here (all on by default).
 }
 
 -- Home screen apps ----------------------------------------------------------
@@ -79,9 +91,18 @@ Config.PropModel = 'prop_amb_phone'        -- prop model to put in the player's 
 -- Calls ---------------------------------------------------------------------
 Config.RingTimeout = 30                     -- seconds before an unanswered call is "missed"
 Config.MaxRecents  = 50                     -- how many recent-call entries to keep
--- Ringtone played in 3D via xsound (callee + nearby hear it). Swap the file in
--- xsound/html/sounds/ or change this URL.
+-- Fallback ringtone (used when a player hasn't picked one in Settings > Ringtones).
+-- Played in 3D via xsound so the callee + nearby players hear it.
 Config.RingtoneUrl = 'https://cfx-nui-xsound/html/sounds/ringtone.mp3'
+
+-- Ringtones -----------------------------------------------------------------
+-- Built-in ringtones listed in Settings > Ringtones. Players can add their own by
+-- URL on top of these; the selected one plays (3D, via xsound) on an incoming call.
+--   `file` = a filename bundled in the phone's web/build/audio/ folder, OR give a
+--   full `url` instead (any http(s)/cfx-nui URL playable by xsound + the browser).
+Config.Ringtones = {
+    { id = 'default', name = 'Default', file = 'ringtone.mp3' },
+}
 
 -- Camera --------------------------------------------------------------------
 -- The phone-view photo/video is uploaded to your chosen provider and the

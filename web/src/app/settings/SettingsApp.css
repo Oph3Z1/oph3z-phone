@@ -45,6 +45,24 @@
 }
 .set__navspacer { flex: 1 1 auto; }
 
+/* Profile nav bar: circular back button + centred title. */
+.set__navbar--center { justify-content: flex-start; }
+.set__backcircle {
+  flex: 0 0 auto;
+  width: 2em;
+  height: 2em;
+  border-radius: 50%;
+  background: rgba(120, 120, 128, 0.28);
+  color: #0a84ff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.12s ease, transform 0.12s ease;
+}
+.set__backcircle svg { width: 1.05em; height: 1.05em; }
+.set__backcircle:hover { background: rgba(120, 120, 128, 0.42); }
+.set__backcircle:active { transform: scale(0.92); }
+
 /* ---- Scroll area / groups ---------------------------------------------- */
 .set__scroll {
   flex: 1 1 auto;
@@ -52,6 +70,7 @@
   overflow-y: auto;
   padding: 0.5em 1em calc(var(--safe-bottom) + 0.8em);
   scrollbar-width: none;
+  margin-top: 1em;
 }
 .set__scroll::-webkit-scrollbar { display: none; }
 .set__scroll--center { display: flex; align-items: center; justify-content: center; }
@@ -61,7 +80,7 @@
   background: #1c1c1e;
   border-radius: 0.95em;
   overflow: hidden;
-  margin-bottom: 0.95em;
+  margin-bottom: 2em;
 }
 
 /* Hairline separator, inset to align with labels (past the icon). */
@@ -101,6 +120,237 @@
   color: #fff;
 }
 .set-ico svg { width: 1.2em; height: 1.2em; }
+
+/* App icon (real bundled/third-party icon) used in the Notifications list. */
+.set-appico {
+  flex: 0 0 auto;
+  width: 1.85em;
+  height: 1.85em;
+  border-radius: 0.42em;
+  overflow: hidden;
+  background: #2c2c2e;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.set-appico img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.set-appico__ph { font-size: 0.9em; font-weight: 700; color: #fff; }
+
+/* Master switch off -> the per-app card is dimmed and non-interactive. */
+.set-card.is-disabled { opacity: 0.4; pointer-events: none; }
+
+/* ---- Group title + Display sliders -------------------------------------- */
+.set-grouptitle {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  color: #8e8e93;
+  font-size: 0.78em;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 0 0.35em 0.6em;
+}
+.set-grouptitle__val { color: #fff; font-variant-numeric: tabular-nums; }
+
+.set-card--slider { padding: 0.5em; background: transparent; margin-bottom: 1.6em; }
+
+.set-hslider {
+  position: relative;
+  height: 3em;
+  border-radius: 1em;
+  background: rgba(120, 120, 128, 0.24);
+  overflow: hidden;
+  cursor: pointer;
+  touch-action: none;
+}
+.set-hslider__fill {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  min-width: 1em;
+  background: #fff;
+  border-radius: 1em;
+}
+.set-hslider__icon {
+  position: absolute;
+  left: 0.8em;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #3a3a3c;
+  z-index: 1;
+  pointer-events: none;
+  display: flex;
+}
+.set-hslider__icon svg { width: 1.3em; height: 1.3em; }
+
+.set-hint {
+  margin: -0.8em 0.5em 1.6em;
+  color: #8e8e93;
+  font-size: 0.76em;
+  line-height: 1.35;
+}
+
+/* ---- Wallpaper screen --------------------------------------------------- */
+.wp-custom {
+  background: #1c1c1e;
+  border-radius: 0.95em;
+  padding: 1.1em 1em;
+  margin-bottom: 1.8em;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.95em;
+}
+.wp-custom__preview {
+  position: relative;
+  width: 40%;
+  aspect-ratio: 9 / 19;
+  border-radius: 1.1em;
+  overflow: hidden;
+  background: #2c2c2e;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0.3em 0.9em rgba(0, 0, 0, 0.4);
+}
+.wp-custom__preview img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.wp-custom__ph {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5em;
+  color: #8e8e93;
+  font-size: 0.68em;
+  text-align: center;
+  padding: 0 0.7em;
+  line-height: 1.3;
+}
+.wp-custom__ph svg { width: 2em; height: 2em; }
+.wp-custom__row { display: flex; gap: 0.5em; width: 100%; }
+.wp-input {
+  flex: 1 1 auto;
+  min-width: 0;
+  border: none;
+  outline: none;
+  background: #2c2c2e;
+  color: #fff;
+  border-radius: 0.65em;
+  padding: 0.62em 0.8em;
+  font-size: 0.9em;
+}
+.wp-input::placeholder { color: #8e8e93; }
+.wp-set {
+  flex: 0 0 auto;
+  padding: 0 1.1em;
+  border-radius: 0.65em;
+  background: #0a84ff;
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.9em;
+  transition: filter 0.12s ease, opacity 0.12s ease;
+}
+.wp-set:disabled { opacity: 0.45; }
+.wp-set:active { filter: brightness(0.9); }
+
+.wp-section-title {
+  color: #8e8e93;
+  font-size: 0.78em;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 0 0.35em 0.75em;
+}
+.wp-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.7em;
+}
+.wp-tile {
+  position: relative;
+  aspect-ratio: 9 / 19;
+  border-radius: 1.1em;
+  overflow: hidden;
+  background: #2c2c2e;
+  display: block;
+  box-shadow: 0 0.25em 0.7em rgba(0, 0, 0, 0.35);
+  transition: transform 0.12s ease;
+}
+.wp-tile img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.wp-tile:active { transform: scale(0.97); }
+.wp-tile.is-on { outline: 2px solid #0a84ff; outline-offset: -2px; }
+.wp-tile__name {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  font-size: 0.56em;
+  font-weight: 600;
+  color: #fff;
+  text-align: center;
+  padding: 1.5em 0.25em 0.5em;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.62), transparent);
+}
+.wp-check {
+  position: absolute;
+  top: 0.4em;
+  right: 0.4em;
+  width: 1.3em;
+  height: 1.3em;
+  border-radius: 50%;
+  background: #0a84ff;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0.1em 0.35em rgba(0, 0, 0, 0.45);
+}
+.wp-check svg { width: 0.9em; height: 0.9em; }
+
+/* ---- Ringtones list ----------------------------------------------------- */
+.set-card--rt { margin-top: 1.3em; }
+.rt-row { gap: 0.8em; }
+.rt-play {
+  flex: 0 0 auto;
+  width: 1.85em;
+  height: 1.85em;
+  border-radius: 50%;
+  background: rgba(120, 120, 128, 0.32);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.12s ease, transform 0.12s ease;
+}
+.rt-play svg { width: 1em; height: 1em; }
+.rt-play:hover { background: rgba(120, 120, 128, 0.5); }
+.rt-play:active { transform: scale(0.9); }
+.rt-body {
+  flex: 1 1 auto;
+  min-width: 0;
+  text-align: left;
+  color: #fff;
+  font-size: 1em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.rt-check {
+  flex: 0 0 auto;
+  width: 1.45em;
+  height: 1.45em;
+  border-radius: 50%;
+  border: 1.5px solid #48484a;
+  background: rgba(120, 120, 128, 0.2);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.12s ease, border-color 0.12s ease;
+}
+.rt-check.is-on { background: #0a84ff; border-color: #0a84ff; }
+.rt-check svg { width: 0.85em; height: 0.85em; }
 
 /* ---- iOS toggle --------------------------------------------------------- */
 .set-toggle {
@@ -149,7 +399,11 @@
   font-weight: 600;
   color: #fff;
   background: linear-gradient(150deg, #5e5ce6, #0a84ff);
+  overflow: hidden;
 }
+.set-profile__avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+/* With a real photo, drop the blue gradient so no ring bleeds around the image. */
+.set-profile__avatar:has(img) { background: #2c2c2e; }
 .set-profile__text { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; }
 .set-profile__name {
   font-size: 1.25em;
@@ -185,3 +439,160 @@
 .set-phonerow__ico:active { background: #0870d8; color: #fff; }
 .set-phonerow__ico--btn { color: #8e8e93; }
 .set-phonerow__ico--btn.is-copied { color: #34c759; }
+
+/* ---- Profile screen ("Phone ID") --------------------------------------- */
+.prof {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0.6em 1em 1.3em;
+}
+.prof__avatar {
+  width: 4.7em;
+  height: 4.7em;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4em;
+  font-weight: 600;
+  color: #fff;
+  background: linear-gradient(150deg, #5e5ce6, #0a84ff);
+  overflow: hidden;
+  box-shadow: 0 0.4em 1.2em rgba(0, 0, 0, 0.4);
+}
+.prof__avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.prof__avatar:has(img) { background: #2c2c2e; }
+.prof__name {
+  margin-top: 0.6em;
+  font-size: 1.35em;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+.prof__email { margin-top: 0.15em; font-size: 0.85em; color: #8e8e93; }
+
+/* Profile screen's two-option card: taller rows + more room beneath it. */
+.set-card--profile { margin-top: 1.2em; }
+.set-card--profile .set-row { padding-top: 0.98em; padding-bottom: 0.98em; }
+
+/* ---- Upload Photo sheet (bottom) --------------------------------------- */
+.set-up__backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 40;
+  background: rgba(0, 0, 0, 0.45);
+  animation: set-up-fade 0.2s ease both;
+}
+@keyframes set-up-fade { from { opacity: 0; } to { opacity: 1; } }
+
+.set-up {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 41;
+  max-height: 72%;
+  display: flex;
+  flex-direction: column;
+  background: #1c1c1e;
+  border-top-left-radius: 1.4em;
+  border-top-right-radius: 1.4em;
+  padding: 1em 1em calc(var(--safe-bottom) + 1em);
+  box-shadow: 0 -0.5em 1.8em rgba(0, 0, 0, 0.6);
+  animation: set-up-rise 0.26s cubic-bezier(0.32, 0.72, 0, 1) both;
+}
+@keyframes set-up-rise { from { transform: translateY(100%); } to { transform: translateY(0); } }
+
+.set-up__head {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 0.9em;
+}
+.set-up__title { font-size: 1.2em; font-weight: 700; color: #fff; }
+.set-up__close {
+  width: 1.9em;
+  height: 1.9em;
+  border-radius: 50%;
+  background: rgba(120, 120, 128, 0.28);
+  color: #d0d0d4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.12s ease;
+}
+.set-up__close svg { width: 1em; height: 1em; }
+.set-up__close:hover { background: rgba(120, 120, 128, 0.45); }
+
+.set-up__urlrow {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  padding-bottom: 1em;
+}
+.set-up__urllabel { font-size: 0.9em; color: #8e8e93; flex: 0 0 auto; }
+.set-up__input {
+  flex: 1 1 auto;
+  min-width: 0;
+  border: none;
+  outline: none;
+  background: #2c2c2e;
+  color: #fff;
+  border-radius: 0.6em;
+  padding: 0.6em 0.75em;
+  font-size: 0.9em;
+}
+.set-up__input::placeholder { color: #8e8e93; }
+.set-up__btn {
+  flex: 0 0 auto;
+  width: 2.35em;
+  height: 2.35em;
+  border-radius: 0.6em;
+  background: #0a84ff;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: filter 0.12s ease, opacity 0.12s ease;
+}
+.set-up__btn svg { width: 1.2em; height: 1.2em; }
+.set-up__btn:active { filter: brightness(0.9); }
+.set-up__btn:disabled { opacity: 0.45; }
+
+.set-up__grid {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  column-gap: 0.4em;
+  row-gap: 7.5em;
+  scrollbar-width: none;
+}
+.set-up__grid::-webkit-scrollbar { display: none; }
+.set-up__empty {
+  grid-column: 1 / -1;
+  text-align: center;
+  color: #8e8e93;
+  font-size: 0.85em;
+  padding: 2.2em 0;
+}
+.set-up__cell {
+  position: relative;
+  aspect-ratio: 1;
+  border-radius: 0.55em;
+  overflow: hidden;
+  background: #2c2c2e;
+}
+.set-up__cell img,
+.set-up__cell video { width: 100%; height: 100%; object-fit: cover; display: block; }
+.set-up__cell:active { opacity: 0.7; }
+.set-up__vid {
+  position: absolute;
+  bottom: 0.25em;
+  right: 0.3em;
+  color: #fff;
+  font-size: 0.7em;
+  text-shadow: 0 0 0.3em rgba(0, 0, 0, 0.8);
+}

@@ -21,6 +21,9 @@ export default function App() {
   const activeApp = useSelector((s) => s.phone.activeApp);
   const lightbox = useSelector((s) => s.photos.lightbox);
   const peek = useSelector((s) => s.notifications.peek);
+  const notifSound = useSelector((s) => s.settings.notifSound);
+  const notifSoundRef = useRef(notifSound);
+  notifSoundRef.current = notifSound;
 
   // Notification sound (notify.wav in web/public/audio/).
   const notifAudio = useRef(null);
@@ -73,7 +76,9 @@ export default function App() {
   useNuiEvent('phone:notify', (item) => {
     if (!item) return;
     const shown = dispatch(presentNotification(item));
-    if (shown) playNotify();
+    // Master-off notifications never reach the client (dropped server-side); here
+    // we honour the "Notification Sound" toggle for the ones that do.
+    if (shown && notifSoundRef.current !== false) playNotify();
   });
 
   // Opening the phone ends any active peek (it becomes the lock-screen list).

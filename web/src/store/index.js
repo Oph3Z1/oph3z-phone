@@ -11,6 +11,8 @@ import notificationsReducer from './slices/notificationsSlice';
 import appsReducer from './slices/appsSlice';
 import homeReducer from './slices/homeSlice';
 import dialogReducer from './slices/dialogSlice';
+import promptReducer from './slices/promptSlice';
+import ringtonesReducer from './slices/ringtonesSlice';
 import musicReducer from './slices/musicSlice';
 
 export const store = configureStore({
@@ -27,6 +29,8 @@ export const store = configureStore({
     apps: appsReducer,
     home: homeReducer,
     dialog: dialogReducer,
+    prompt: promptReducer,
+    ringtones: ringtonesReducer,
     music: musicReducer,
   },
 });

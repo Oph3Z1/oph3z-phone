@@ -215,6 +215,8 @@ function Phone.open()
         numberRaw = data.numberRaw,
         citizenid = data.citizenid,
         name      = data.name,
+        email     = data.email,
+        avatar    = data.avatar,
     }
     SetNuiFocus(true, true)
     SendNUIMessage({
@@ -291,7 +293,7 @@ local function showPhoneForCall()
     SetNuiFocus(true, true)
     local data = lib.callback.await('oph3z-phone:server:getData', false)
     if data then
-        Phone.identity = { number = data.number, numberRaw = data.numberRaw, citizenid = data.citizenid, name = data.name }
+        Phone.identity = { number = data.number, numberRaw = data.numberRaw, citizenid = data.citizenid, name = data.name, email = data.email, avatar = data.avatar }
     end
     SendNUIMessage({
         action = 'phone:setVisible',

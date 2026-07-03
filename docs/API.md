@@ -10,7 +10,7 @@ Called from the client via `lib.callback.await('<name>', false, ...args)`.
 
 | Name | Args | Returns |
 |---|---|---|
-| `oph3z-phone:server:getData` | – | `{ citizenid, settings }` (also ensures phone number) |
+| `oph3z-phone:server:getData` | – | `{ citizenid, name, email, avatar, settings, number, numberRaw, home }` (also ensures phone number, mail address + profile) |
 | `oph3z-phone:server:saveSettings` | `patch` (table) | `bool` |
 | `oph3z-phone:server:phone:getState` | – | `{ number, contacts, recents, blocked, airplane }` |
 | `oph3z-phone:server:phone:addContact` | `{name,number,notes,img}` | `contact` or `nil` |
@@ -38,6 +38,45 @@ load (id/favorite/ts filled in). NUI callbacks: `phone:photos:get|add|setFavorit
 Dev command: `/addphoto <url> [image|video]`. Redux slice: `photos { loaded, items, lightbox }`.
 Reusable on the server: `Photos.Add(citizenid, {url,type})`. Server push to client:
 `oph3z-phone:client:photoAdded` (photo) → NUI `phone:photos:added`.
+
+### Profile app  (server/app/profile/main.lua, client/app/profile/main.lua)
+The phone "ID": display name + avatar, stored in `doc.profile = { name, avatar }`
+(independent of the QBox character name). Mail address is generated in
+`DB.EnsureMail` and is read-only here.
+| Name | Args | Returns |
+|---|---|---|
+| `oph3z-phone:server:profile:setName` | `name` (string) | saved name or `false` |
+| `oph3z-phone:server:profile:setAvatar` | `url` (string, `''` clears) | saved url or `false` |
+
+NUI callbacks: `phone:profile:setName {name}`, `phone:profile:setAvatar {url}`.
+Thunks (phoneSlice): `saveProfileName`, `saveAvatar` — both optimistically update
+`phone.identity` then persist.
+
+### Ringtones app  (server/app/ringtones/main.lua, client/app/ringtones/main.lua)
+Built-ins from `Config.Ringtones` + player custom ones in `doc.ringtones = {items[],
+nextId}`. Selection is `doc.settings.ringtone` (URL, saved via `saveSettings`).
+`Ringtones.UrlFor(cid)` resolves the callee's ringtone for `startRingtone`.
+| Name | Args | Returns |
+|---|---|---|
+| `oph3z-phone:server:ringtones:get` | – | `{ ringtones:[{id,name,url,builtin}], selected }` |
+| `oph3z-phone:server:ringtones:add` | `{name,url}` | new item or `nil` |
+| `oph3z-phone:server:ringtones:delete` | `id` (string) | `bool` |
+
+NUI callbacks: `phone:ringtones:get|add|delete`. Slice: `ringtones { loaded, items[] }`
+(thunks `loadRingtones`, `addRingtone`, `deleteRingtone`; selection via
+`saveSetting('ringtone', url)`). Preview plays in the NUI `<audio>`.
+
+### Notifications  (server/app/notifications/main.lua)
+`Notif.Push(citizenid, { app, title, body, icon?, route? })` stores + live-pushes a
+notification — **unless** the player's settings suppress it: `settings.notifMaster
+== false` (master off) or `settings.notifApps[app] == false` (that app off) → the
+push is dropped entirely (nothing stored/delivered/badged). The
+`settings.notifSound` toggle is honoured client-side in `App.jsx` (sound only).
+| Name | Args | Returns |
+|---|---|---|
+| `oph3z-phone:server:notifications:get` | – | `items[]` (newest first) |
+| `oph3z-phone:server:notifications:read` | `{all}\|{id}\|{app}\|{number}\|{gid}` | `bool` |
+| `oph3z-phone:server:notifications:clear` | `{id}\|{app}\|{number}\|{gid}\|{}` | `bool` |
 
 ### Camera app  (server/app/camera/main.lua, client/app/camera/main.lua)
 Captures via the **screencapture** resource, uploads to Discord/Fivemanage
@@ -93,7 +132,9 @@ Called from React via `fetchNui('<event>', data, mock)`.
 | Event | data | Action |
 |---|---|---|
 | `phone:close` | – | release focus, hide |
-| `phone:saveSettings` | settings patch | persist via server |
+| `phone:saveSettings` | settings patch | persist via server (also used for `notifSound`/`notifMaster`/`notifApps`) |
+| `phone:profile:setName` | `{ name }` | → server profile:setName |
+| `phone:profile:setAvatar` | `{ url }` | → server profile:setAvatar |
 | `phone:flashlight` | `{ on }` | toggle in-game beam |
 | `phone:ready` | – | readiness ping |
 | `phone:phone:getState` | – | → server getState |
@@ -130,13 +171,17 @@ where `weather` is a category string: `clear/cloudy/fog/rain/thunder/snow`.
 
 | Slice | State |
 |---|---|
-| `phone` | `visible, locked, activeApp, flashlightOn, time` |
-| `settings` | `loaded, wallpaper, brightness, airplane` |
+| `phone` | `visible, locked, activeApp, flashlightOn, controlCenterOpen, launchTab, identity{number,numberRaw,citizenid,name,email,avatar}, time` |
+| `settings` | `loaded, wallpaper, brightness, volume, airdrop, airplane, notifSound, notifMaster, notifApps{}` |
 | `contacts` | `loaded, number, contacts[], recents[], blocked{}` |
 | `call` | `state, island, callId, number, name, img, muted, answeredAt, reason` |
+| `dialog` | `open, title, message, buttons[]` (confirm/alert) |
+| `prompt` | `open, title, message, placeholder, value, confirmText, cancelText, maxLength` (text-input popup) |
 
 Notable thunks: `loadPhoneState`, `addContact/editContact/deleteContact`,
-`toggleFavorite`, `blockNumber/unblockNumber`, `saveSetting`, `setAirplane`.
+`toggleFavorite`, `blockNumber/unblockNumber`, `saveSetting`, `saveSettingLive`,
+`flushSettings`, `setAirplane`, `setAppNotif`, `saveProfileName`, `saveAvatar`,
+`openDialog`/`resolveDialog`, `openPrompt`/`resolvePrompt`.
 
 ---
 

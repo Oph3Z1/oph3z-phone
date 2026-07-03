@@ -24,6 +24,15 @@ function Notif.Push(citizenid, data)
     if not citizenid or type(data) ~= 'table' then return end
 
     local doc = ensureNotifs(DB.LoadOrCreate(citizenid))
+
+    -- Respect the player's Notifications settings: the master switch silences
+    -- everything, and each app can be turned off individually. When suppressed we
+    -- drop the notification entirely (nothing stored, delivered or badged).
+    local s = doc.settings or {}
+    if s.notifMaster == false then return end
+    local appId = data.app or 'system'
+    if s.notifApps and s.notifApps[appId] == false then return end
+
     local n = doc.notifications
     local item = {
         id    = n.nextId,

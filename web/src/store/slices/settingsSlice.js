@@ -4,11 +4,16 @@ import { fetchNui } from '../../utils/fetchNui';
 // Persisted phone settings (mirrors the server-side JSON document).
 const initialState = {
   loaded: false,
-  wallpaper: 'default',
+  wallpaper: 'blackTitanium',
   brightness: 100, // 20-100 (Control Center)
+  scale: 100,      // 50-100 phone size on screen (Display & Brightness)
   volume: 70,      // 0-100 media volume
   airdrop: false,  // AirDrop receiving toggle
   airplane: false,
+  notifSound: true,   // play a sound on new notifications
+  notifMaster: true,  // master switch: off = silence ALL notifications
+  notifApps: {},      // per-app enable map { [appId]: false } (missing = enabled)
+  ringtone: '',       // selected incoming-call ringtone URL ('' = Config default)
 };
 
 const settingsSlice = createSlice({
@@ -63,6 +68,15 @@ export const flushSettings = () => () => {
     delete pendingSettings[key];
   }
   fetchNui('phone:saveSettings', patch, { ok: true });
+};
+
+// Thunk: enable/disable notifications for a single app. Merges into the notifApps
+// map and persists the whole map (only `false` entries matter; missing = enabled).
+export const setAppNotif = (appId, value) => (dispatch, getState) => {
+  const current = getState().settings.notifApps || {};
+  const next = { ...current, [appId]: value };
+  dispatch(applySetting({ key: 'notifApps', value: next }));
+  fetchNui('phone:saveSettings', { notifApps: next }, { ok: true });
 };
 
 // Thunk: toggle airplane mode (for the future Settings switch).

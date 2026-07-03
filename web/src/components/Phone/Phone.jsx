@@ -13,6 +13,7 @@ import AppScreen from '../../screens/AppScreen/AppScreen';
 import CallOverlay from '../../app/phone/call/CallOverlay';
 import NotificationBanner from '../Notifications/NotificationBanner';
 import AlertDialog from '../AlertDialog/AlertDialog';
+import InputDialog from '../InputDialog/InputDialog';
 import ControlCenter from '../ControlCenter/ControlCenter';
 
 export default function Phone() {
@@ -20,6 +21,7 @@ export default function Phone() {
   const activeApp = useSelector((s) => s.phone.activeApp);
   const wallpaperKey = useSelector((s) => s.settings.wallpaper);
   const brightness = useSelector((s) => s.settings.brightness);
+  const scale = useSelector((s) => s.settings.scale);
   const inCall = useSelector((s) => !!s.call.state);
 
   // Brightness dims the screen with a black veil (min 20% -> never fully dark).
@@ -70,7 +72,7 @@ export default function Phone() {
   const showHomeBar = !locked && !!activeApp && !inCall;
 
   return (
-    <div className="phone">
+    <div className="phone" style={{ '--phone-scale': (scale || 100) / 100 }}>
       {/* Screen layer sits ON TOP of the (opaque) case. */}
       <div className="phone__screen" ref={screenRef}>
         <img className="phone__wallpaper" src={getWallpaper(wallpaperKey)} alt="" />
@@ -98,6 +100,9 @@ export default function Phone() {
 
         {/* Reusable confirm / alert dialog (delete confirmation, third-party apps). */}
         <AlertDialog />
+
+        {/* Reusable text-input popup (rename ID, third-party apps). */}
+        <InputDialog />
 
         {/* Brightness veil — over EVERYTHING (status bar, island, apps, Control
             Center). pointer-events:none so it never blocks interaction. */}

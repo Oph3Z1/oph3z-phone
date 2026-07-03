@@ -20,16 +20,22 @@ lib.callback.register('oph3z-phone:server:getData', function(source)
     if not player then return nil end
     local citizenid = player.PlayerData.citizenid
 
-    -- Character name (for the Settings profile card, etc.).
+    -- Character name — seeds the phone "ID" display name on first use.
     local ci = player.PlayerData.charinfo or {}
-    local name = (('%s %s'):format(ci.firstname or '', ci.lastname or '')):gsub('^%s+', ''):gsub('%s+$', '')
+    local charName = (('%s %s'):format(ci.firstname or '', ci.lastname or '')):gsub('^%s+', ''):gsub('%s+$', '')
 
     -- Ensure a phone number is generated/registered on first open so the player
-    -- is reachable even before they open the Phone app.
+    -- is reachable even before they open the Phone app. Also ensure a mail
+    -- address (firstname.lastname@domain) and a profile (ID name + avatar).
     local doc = DB.EnsurePhone(citizenid, DB.LoadOrCreate(citizenid))
+    DB.EnsureMail(citizenid, doc, ci.firstname, ci.lastname)
+    DB.EnsureProfile(citizenid, doc, charName)
+
     return {
         citizenid = citizenid,
-        name      = name ~= '' and name or nil,         -- e.g. "Barbara Orton"
+        name      = doc.profile.name,                   -- phone ID display name (renameable)
+        email     = doc.mail.address,                   -- e.g. barbara.orton@lsmail.com
+        avatar    = doc.profile.avatar,                 -- profile photo URL (nil until set)
         settings  = doc.settings,
         number    = doc.phone.number,                  -- formatted (e.g. 555-0142)
         numberRaw = DB.Digits(doc.phone.numberRaw),     -- digits only
@@ -242,14 +248,16 @@ local function displayFor(viewerCid, otherDigits, otherFormatted)
 end
 
 ---Start the 3D ringtone at the callee's position (heard by callee + nearby).
+---Uses the callee's chosen ringtone (Settings > Ringtones), else Config.RingtoneUrl.
 local function startRingtone(call)
-    if not Config.RingtoneUrl or Config.RingtoneUrl == '' then return end
     local ped = GetPlayerPed(call.callee)
     if not ped or ped == 0 then return end
+    local url = (Ringtones and call.calleeCid and Ringtones.UrlFor(call.calleeCid)) or Config.RingtoneUrl
+    if not url or url == '' then return end
     local coords = GetEntityCoords(ped)
     local name = 'oph3z_ring_' .. call.id
     call.ringName = name
-    exports.xsound:PlayUrlPos(-1, name, Config.RingtoneUrl, 0.4, coords, true)
+    exports.xsound:PlayUrlPos(-1, name, url, 0.4, coords, true)
     exports.xsound:Distance(-1, name, 12.0)
 end
 

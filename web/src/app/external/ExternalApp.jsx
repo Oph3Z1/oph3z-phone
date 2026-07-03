@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { closeApp } from '../../store/slices/phoneSlice';
 import { openDialog } from '../../store/slices/dialogSlice';
+import { openPrompt } from '../../store/slices/promptSlice';
 import './ExternalApp.css';
 
 // Renders a third-party app inside the phone as an iframe (the dev's own resource
@@ -9,9 +10,11 @@ import './ExternalApp.css';
 // player's identity on load and lets it ask the phone to go home.
 //
 // Bridge messages:
-//   phone  -> app : { type:'oph3z:init', identity:{ number, numberRaw, citizenid }, app:{ id, label } }
+//   phone  -> app : { type:'oph3z:init', identity:{ number, numberRaw, citizenid, name, email, avatar }, app:{ id, label } }
 //   app    -> phone: { type:'oph3z:ready' }   request a (re)send of the init payload
 //   app    -> phone: { type:'oph3z:close' }   go back to the home screen
+//   app    -> phone: { type:'oph3z:prompt', id, title, message?, placeholder?, value?, confirmText?, cancelText? }
+//                     -> phone replies { type:'oph3z:prompt:result', id, value }  (value is string or null)
 // Iframes load most reliably from the https cfx-nui scheme; accept nui:// too and
 // normalize it (devs may write either).
 function toFrameSrc(url) {
@@ -64,6 +67,20 @@ export default function ExternalApp({ app }) {
         dispatch(openDialog({ title: d.title, message: d.message, buttons })).then((value) =>
           postToApp({ type: 'oph3z:alert:result', id: d.id, value })
         );
+      } else if (d.type === 'oph3z:prompt') {
+        // A text-input popup using the phone-native input dialog.
+        dispatch(
+          openPrompt({
+            title: d.title,
+            message: d.message,
+            placeholder: d.placeholder,
+            value: d.value,
+            confirmText: d.confirmText,
+            cancelText: d.cancelText,
+            maxLength: d.maxLength,
+            fields: d.fields, // array of { key, placeholder?, value? } -> reply value is an object
+          })
+        ).then((value) => postToApp({ type: 'oph3z:prompt:result', id: d.id, value }));
       }
     };
     window.addEventListener('message', onMsg);

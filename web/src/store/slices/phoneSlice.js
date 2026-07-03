@@ -1,4 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit';
+import { fetchNui } from '../../utils/fetchNui';
 
 // UI / runtime state of the phone (not persisted).
 const initialState = {
@@ -8,7 +9,7 @@ const initialState = {
   flashlightOn: false, // in-game flashlight beam toggle
   controlCenterOpen: false, // Control Center overlay
   launchTab: null,     // a tab the next-opened app should jump to (e.g. Phone -> Recents)
-  identity: { number: '', numberRaw: '', citizenid: '', name: '' }, // shared with third-party app iframes
+  identity: { number: '', numberRaw: '', citizenid: '', name: '', email: '', avatar: '' }, // shared with third-party app iframes
   // Live clock / weather pushed from the game.
   time: {
     useGameTime: true,
@@ -86,4 +87,21 @@ export const {
   setLaunchTab,
   setIdentity,
 } = phoneSlice.actions;
+
+// ---- Profile thunks (rename ID / set avatar) ------------------------------
+// Optimistically update the shared identity, then persist to the JSON DB. The
+// updated identity flows to the Settings card, Profile screen and app iframes.
+export const saveProfileName = (name) => async (dispatch) => {
+  const clean = (name || '').trim();
+  if (!clean) return;
+  dispatch(setIdentity({ name: clean }));
+  await fetchNui('phone:profile:setName', { name: clean }, clean);
+};
+
+export const saveAvatar = (url) => async (dispatch) => {
+  const clean = (url || '').trim();
+  dispatch(setIdentity({ avatar: clean }));
+  await fetchNui('phone:profile:setAvatar', { url: clean }, clean);
+};
+
 export default phoneSlice.reducer;
