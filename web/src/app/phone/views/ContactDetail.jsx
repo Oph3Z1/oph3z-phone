@@ -11,7 +11,11 @@ import {
 } from '../../../store/slices/contactsSlice';
 import { setResumeThread, setReturnProfile } from '../../../store/slices/messagesSlice';
 import { openApp } from '../../../store/slices/phoneSlice';
+import { pushToast } from '../../../store/slices/toastSlice';
+import { openShare } from '../../../store/slices/airdropSlice';
 import { fetchNui } from '../../../utils/fetchNui';
+import { copyText } from '../../../utils/clipboard';
+import { useT } from '../../../i18n/useT';
 
 // Small inline message glyph (chat bubble).
 const MessageGlyph = (p) => (
@@ -19,9 +23,16 @@ const MessageGlyph = (p) => (
     <path d="M12 3C6.5 3 2 6.6 2 11c0 2.2 1.1 4.2 3 5.6V21l3.9-2.1c1 .2 2 .4 3.1.4 5.5 0 10-3.6 10-8s-4.5-8-10-8z" />
   </svg>
 );
+const ShareGlyph = (p) => (
+  <svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}>
+    <path d="M12 3v12M12 3L8 7M12 3l4 4" />
+    <path d="M5 12v7h14v-7" />
+  </svg>
+);
 
-export default function ContactDetail({ id, onBack, onEdit, backLabel = 'Contacts' }) {
+export default function ContactDetail({ id, onBack, onEdit, backLabel }) {
   const dispatch = useDispatch();
+  const t = useT();
   const contact = useSelector((s) => s.contacts.contacts.find((c) => c.id === id));
   const blocked = useSelector((s) => s.contacts.blocked);
   const isBlocked = contact ? !!blocked[digitsOf(contact.number)] : false;
@@ -47,14 +58,20 @@ export default function ContactDetail({ id, onBack, onEdit, backLabel = 'Contact
     dispatch(openApp('message'));
   };
 
+  // Tap the number to copy it to the clipboard.
+  const copyNumber = async () => {
+    const ok = await copyText(contact.number);
+    dispatch(pushToast({ app: 'call', title: t('phone.title'), body: ok ? t('phone.numberCopied') : t('phone.copyFailed') }));
+  };
+
   return (
     <div className="pa-detail">
       <div className="pa-detail__nav">
         <button className="pa-actionbtn" onClick={onBack}>
-          <ChevronLeftIcon /> {backLabel}
+          <ChevronLeftIcon /> {backLabel || t('phone.contacts')}
         </button>
         <button className="pa-actionbtn" onClick={() => onEdit(contact)}>
-          Edit
+          {t('phone.edit')}
         </button>
       </div>
 
@@ -69,7 +86,7 @@ export default function ContactDetail({ id, onBack, onEdit, backLabel = 'Contact
           <span className="pa-quick__circle">
             <MessageGlyph />
           </span>
-          message
+          {t('phone.message')}
         </button>
         <button
           className="pa-quick"
@@ -78,18 +95,29 @@ export default function ContactDetail({ id, onBack, onEdit, backLabel = 'Contact
           <span className="pa-quick__circle">
             <PhoneIcon />
           </span>
-          call
+          {t('phone.call')}
+        </button>
+        <button
+          className="pa-quick"
+          onClick={() =>
+            dispatch(openShare({ kind: 'contact', contact: { name: contact.name, number: contact.number, img: contact.img } }))
+          }
+        >
+          <span className="pa-quick__circle">
+            <ShareGlyph />
+          </span>
+          {t('phone.share')}
         </button>
       </div>
 
       <div className="pa-card">
-        <div className="pa-card__item">
-          <div className="pa-card__label">mobile</div>
-          <div className="pa-card__value">{contact.number}</div>
-        </div>
+        <button className="pa-card__item pa-card__item--tap" onClick={copyNumber}>
+          <div className="pa-card__label">{t('phone.mobile')}</div>
+          <div className="pa-card__value pa-card__value--link">{contact.number}</div>
+        </button>
         {contact.notes ? (
           <div className="pa-card__item">
-            <div className="pa-card__label">notes</div>
+            <div className="pa-card__label">{t('phone.notes')}</div>
             <div className="pa-card__value pa-card__value--plain">{contact.notes}</div>
           </div>
         ) : null}
@@ -100,7 +128,7 @@ export default function ContactDetail({ id, onBack, onEdit, backLabel = 'Contact
           className="pa-card__btn"
           onClick={() => dispatch(toggleFavorite(contact.id, !contact.favorite))}
         >
-          {contact.favorite ? 'Remove from Favorites' : 'Add to Favorites'}
+          {contact.favorite ? t('phone.removeFromFavorites') : t('phone.addToFavorites')}
         </button>
       </div>
 
@@ -113,13 +141,13 @@ export default function ContactDetail({ id, onBack, onEdit, backLabel = 'Contact
             )
           }
         >
-          {isBlocked ? 'Unblock this Caller' : 'Block this Caller'}
+          {isBlocked ? t('phone.unblockCaller') : t('phone.blockCaller')}
         </button>
       </div>
 
       <div className="pa-card">
         <button className="pa-card__btn pa-card__btn--danger" onClick={remove}>
-          Delete Contact
+          {t('phone.deleteContact')}
         </button>
       </div>
     </div>

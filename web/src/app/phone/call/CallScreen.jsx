@@ -5,15 +5,16 @@ import Avatar from '../components/Avatar';
 import { PhoneIcon, MicIcon, MicOffIcon } from '../components/icons';
 import { fetchNui } from '../../../utils/fetchNui';
 import { setMuted } from '../../../store/slices/callSlice';
+import { useT } from '../../../i18n/useT';
 
-const REASON_TEXT = {
-  unavailable: 'Unavailable',
-  busy: 'Busy',
-  invalid: 'Invalid Number',
-  declined: 'Call Declined',
-  noanswer: 'No Answer',
-  hangup: 'Call Ended',
-  airplane: 'No Service',
+const REASON_KEY = {
+  unavailable: 'call.reasonUnavailable',
+  busy: 'call.reasonBusy',
+  invalid: 'call.reasonInvalid',
+  declined: 'call.reasonDeclined',
+  noanswer: 'call.reasonNoAnswer',
+  hangup: 'call.reasonEnded',
+  airplane: 'call.reasonAirplane',
 };
 
 const fmt = (s) =>
@@ -21,6 +22,7 @@ const fmt = (s) =>
 
 export default function CallScreen() {
   const dispatch = useDispatch();
+  const t = useT();
   const call = useSelector((s) => s.call);
 
   const [elapsed, setElapsed] = useState(0);
@@ -32,14 +34,14 @@ export default function CallScreen() {
     return () => clearInterval(id);
   }, [call.state, call.answeredAt]);
 
-  const title = call.name || call.number || 'Unknown';
+  const title = call.name || call.number || t('call.unknown');
 
   let status = '';
-  if (call.state === 'outgoing') status = 'Calling…';
+  if (call.state === 'outgoing') status = t('call.calling');
   else if (call.state === 'active') status = fmt(elapsed);
-  else if (call.state === 'incoming') status = 'Incoming call';
-  else if (call.state === 'ended') status = REASON_TEXT[call.reason] || 'Call Ended';
-  else if (call.state === 'failed') status = REASON_TEXT[call.reason] || 'Call Failed';
+  else if (call.state === 'incoming') status = t('call.incoming');
+  else if (call.state === 'ended') status = t(REASON_KEY[call.reason] || 'call.reasonEnded');
+  else if (call.state === 'failed') status = t(REASON_KEY[call.reason] || 'call.reasonFailed');
 
   const hangup = () => fetchNui('phone:call:hangup', { callId: call.callId }, {});
   const accept = () => fetchNui('phone:call:accept', { callId: call.callId }, {});
@@ -71,11 +73,11 @@ export default function CallScreen() {
           <>
             <button className="cs-btn cs-btn--end" onClick={decline} aria-label="Decline">
               <PhoneIcon />
-              <span>Decline</span>
+              <span>{t('call.decline')}</span>
             </button>
             <button className="cs-btn cs-btn--accept" onClick={accept} aria-label="Accept">
               <PhoneIcon />
-              <span>Accept</span>
+              <span>{t('call.accept')}</span>
             </button>
           </>
         ) : finished ? null : (
@@ -86,11 +88,11 @@ export default function CallScreen() {
               aria-label="Mute"
             >
               {call.muted ? <MicOffIcon /> : <MicIcon />}
-              <span>{call.muted ? 'Unmute' : 'Mute'}</span>
+              <span>{call.muted ? t('call.unmute') : t('call.mute')}</span>
             </button>
             <button className="cs-btn cs-btn--end" onClick={hangup} aria-label="End">
               <PhoneIcon />
-              <span>End</span>
+              <span>{t('call.end')}</span>
             </button>
           </>
         )}

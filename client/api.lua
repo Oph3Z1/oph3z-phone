@@ -23,6 +23,7 @@ local function listApps()
         out[#out + 1] = {
             id = a.id, label = a.label, developer = a.developer, description = a.description,
             icon = a.icon, url = a.url, place = a.place, deletable = a.deletable,
+            share = a.share, -- true = appears in the Messages "Share" sheet as a share source
             -- App Store metadata (every third-party app is listed in the App Store).
             headerImage = a.headerImage, swiperItems = a.swiperItems,
         }
@@ -57,6 +58,7 @@ exports('RegisterApp', function(def)
         url         = page,
         place       = def.place or 'grid',
         deletable   = def.deletable ~= false, -- third-party apps are uninstallable by default
+        share       = def.share and true or nil, -- can be a Messages "Share" source (oph3z:shareRequest)
         owner       = GetInvokingResource() or 'unknown',
         -- App Store page metadata.
         headerImage = def.headerImage,
@@ -89,6 +91,21 @@ end)
 
 exports('IsOpen', function()
     return Phone.isOpen == true
+end)
+
+-- Show a transient status toast (success / error / info). It looks like a
+-- notification card but is throwaway — nothing is saved. Only shows while the
+-- phone is open (it's an on-screen element). `app` is optional: an app id to
+-- borrow the icon from; defaults to whichever app is currently open.
+--   exports['oph3z-phone']:Toast('error', 'Camera', "Couldn't save the photo")
+--   exports['oph3z-phone']:Toast('success', 'Bank', 'Transfer complete', 'appstore')
+exports('Toast', function(kind, title, body, app)
+    if not Phone.isOpen then return false end
+    SendNUIMessage({
+        action = 'phone:toast',
+        data = { type = kind or 'info', title = title, body = body, app = app },
+    })
+    return true
 end)
 
 -- The player's formatted number (cached when the phone is first opened; may be nil

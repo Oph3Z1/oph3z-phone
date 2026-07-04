@@ -2,9 +2,11 @@ import { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import Avatar from '../components/Avatar';
 import { addContact, editContact } from '../../../store/slices/contactsSlice';
+import { useT } from '../../../i18n/useT';
 
 export default function ContactEditor({ contact, onClose }) {
   const dispatch = useDispatch();
+  const t = useT();
   const isEdit = !!(contact && contact.id);
 
   const [name, setName] = useState(contact?.name || '');
@@ -26,11 +28,11 @@ export default function ContactEditor({ contact, onClose }) {
     <div className="pa-editor">
       <div className="pa-editor__nav">
         <button className="pa-editor__cancel" onClick={onClose}>
-          Cancel
+          {t('phone.cancel')}
         </button>
-        <span className="pa-editor__nav-title">{isEdit ? 'Edit' : 'New Contact'}</span>
+        <span className="pa-editor__nav-title">{isEdit ? t('phone.edit') : t('phone.newContact')}</span>
         <button className="pa-editor__save" onClick={save} disabled={!canSave}>
-          {isEdit ? 'Done' : 'Save'}
+          {isEdit ? t('phone.done') : t('phone.save')}
         </button>
       </div>
 
@@ -40,11 +42,11 @@ export default function ContactEditor({ contact, onClose }) {
 
       <div className="pa-fields">
         <div className="pa-field">
-          <input placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} />
+          <input placeholder={t('phone.fieldName')} value={name} onChange={(e) => setName(e.target.value)} />
         </div>
         <div className="pa-field">
           <input
-            placeholder="Phone number"
+            placeholder={t('phone.fieldNumber')}
             value={number}
             inputMode="tel"
             onChange={(e) => setNumber(e.target.value)}
@@ -55,7 +57,7 @@ export default function ContactEditor({ contact, onClose }) {
       <div className="pa-fields">
         <div className="pa-field">
           <textarea
-            placeholder="Notes"
+            placeholder={t('phone.fieldNotes')}
             rows={3}
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
@@ -66,7 +68,7 @@ export default function ContactEditor({ contact, onClose }) {
       <div className="pa-fields">
         <div className="pa-field">
           <input
-            placeholder="Image URL (optional)"
+            placeholder={t('phone.fieldImage')}
             value={img}
             onChange={(e) => setImg(e.target.value)}
           />

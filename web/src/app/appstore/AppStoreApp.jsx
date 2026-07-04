@@ -4,6 +4,7 @@ import './AppStoreApp.css';
 import { openApp } from '../../store/slices/phoneSlice';
 import { startDownload, cancelDownload, folderFlat } from '../../store/slices/homeSlice';
 import { ChevronLeftIcon } from '../messages/components/icons';
+import { useT } from '../../i18n/useT';
 
 // Set of app ids currently on the home screen (dock + pages + folders).
 function useInstalledSet() {
@@ -42,6 +43,7 @@ function Ring({ progress }) {
 // Get / Open / (downloading) button.
 function ActionButton({ app, installed }) {
   const dispatch = useDispatch();
+  const t = useT();
   const dl = useSelector((s) => s.home.downloads[app.id]);
   const stop = (fn) => (e) => { e.stopPropagation(); fn(); };
   if (dl != null) {
@@ -52,18 +54,19 @@ function ActionButton({ app, installed }) {
     );
   }
   if (installed) {
-    return <button className="astore-getbtn" onClick={stop(() => dispatch(openApp(app.id)))}>Open</button>;
+    return <button className="astore-getbtn" onClick={stop(() => dispatch(openApp(app.id)))}>{t('appstore.open')}</button>;
   }
-  return <button className="astore-getbtn" onClick={stop(() => dispatch(startDownload(app.id)))}>Get</button>;
+  return <button className="astore-getbtn" onClick={stop(() => dispatch(startDownload(app.id)))}>{t('appstore.get')}</button>;
 }
 
 function StoreList({ apps, installed, onOpen }) {
+  const t = useT();
   return (
     <div className="astore">
       <div className="astore__topbar" />
       <div className="astore__scroll">
-        <h1 className="astore__title">Apps</h1>
-        {apps.length === 0 && <div className="astore__empty">No apps available.</div>}
+        <h1 className="astore__title">{t('appstore.title')}</h1>
+        {apps.length === 0 && <div className="astore__empty">{t('appstore.noApps')}</div>}
         {apps.map((a) => (
           <div key={a.id} className="astore-row" role="button" onClick={() => onOpen(a.id)}>
             <AppIconImg app={a} />
@@ -80,6 +83,7 @@ function StoreList({ apps, installed, onOpen }) {
 }
 
 function StoreDetail({ app, installed, onBack }) {
+  const t = useT();
   const shots = Array.isArray(app.swiperItems) ? app.swiperItems : [];
   return (
     <div className="astore astore--detail">
@@ -95,14 +99,14 @@ function StoreDetail({ app, installed, onBack }) {
           <AppIconImg app={app} className="astore-icon--lg" />
           <div className="astore-detail__meta">
             <div className="astore-detail__name">{app.label}</div>
-            <div className="astore-detail__dev">Developed by {app.developer || 'Unknown'}</div>
+            <div className="astore-detail__dev">{t('appstore.developedBy', { dev: app.developer || t('appstore.unknown') })}</div>
             <div className="astore-detail__action">
               <ActionButton app={app} installed={installed} />
             </div>
           </div>
         </div>
 
-        <div className="astore-detail__section">Preview</div>
+        <div className="astore-detail__section">{t('appstore.preview')}</div>
         {shots.length > 0 ? (
           <div className="astore-detail__shots">
             {shots.map((src, i) => (
@@ -112,7 +116,7 @@ function StoreDetail({ app, installed, onBack }) {
             ))}
           </div>
         ) : (
-          <div className="astore-detail__noshots">No preview images available</div>
+          <div className="astore-detail__noshots">{t('appstore.noPreview')}</div>
         )}
 
         {app.description && <div className="astore-detail__about">{app.description}</div>}

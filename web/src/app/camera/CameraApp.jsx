@@ -11,6 +11,7 @@ import { loadPhotos, upsertPhoto } from '../../store/slices/photosSlice';
 import { setShareTo, setResumeThread, setDraftAttach } from '../../store/slices/messagesSlice';
 import { setResumeGroup, setGroupDraft } from '../../store/slices/groupsSlice';
 import { FlipIcon } from './components/icons';
+import { useT } from '../../i18n/useT';
 
 const fmt = (s) => `${pad2(Math.floor(s / 60))}:${pad2(s % 60)}`;
 
@@ -18,6 +19,7 @@ const SELFIE_SHIFT = -0.13; // shift the crop left so the whole character is fra
 
 export default function CameraApp() {
   const dispatch = useDispatch();
+  const t = useT();
   const items = useSelector((s) => s.photos.items);
   // When launched from a chat's camera button, the capture is sent there.
   const shareTo = useSelector((s) => s.messages.shareTo);
@@ -226,7 +228,7 @@ export default function CameraApp() {
       {/* Cancel back to the chat (only when launched from Messages) */}
       {shareTo && !recording && (
         <button className="camera__cancel" onClick={backToChat}>
-          Cancel
+          {t('camera.cancel')}
         </button>
       )}
 
@@ -246,13 +248,13 @@ export default function CameraApp() {
               className={mode === 'photo' ? 'is-active' : ''}
               onClick={() => setMode('photo')}
             >
-              PHOTO
+              {t('camera.photo')}
             </button>
             <button
               className={mode === 'video' ? 'is-active' : ''}
               onClick={() => setMode('video')}
             >
-              VIDEO
+              {t('camera.video')}
             </button>
           </div>
         )}

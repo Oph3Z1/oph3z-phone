@@ -6,9 +6,11 @@ import { ChevronLeftIcon } from './icons';
 import { digitsOf } from '../../../store/slices/contactsSlice';
 import { manageGroup } from '../../../store/slices/groupsSlice';
 import { loadPhotos } from '../../../store/slices/photosSlice';
+import { useT } from '../../../i18n/useT';
 
 export default function GroupInfo({ gid, onBack, onLeft }) {
   const dispatch = useDispatch();
+  const t = useT();
   const group = useSelector((s) => s.groups.byGid[gid]);
   const contacts = useSelector((s) => s.contacts.contacts);
   const gallery = useSelector((s) => s.photos.items);
@@ -83,7 +85,7 @@ export default function GroupInfo({ gid, onBack, onLeft }) {
         <button className="msg-conv__back" onClick={onBack} aria-label="Back">
           <ChevronLeftIcon />
         </button>
-        <span className="ginfo__bartitle">Group Info</span>
+        <span className="ginfo__bartitle">{t('messages.groupInfo')}</span>
         <div className="msg-conv__spacer" />
       </div>
 
@@ -91,7 +93,7 @@ export default function GroupInfo({ gid, onBack, onLeft }) {
         <div className="ginfo__hero">
           <button className="ginfo__photo" onClick={isOwner ? () => { dispatch(loadPhotos()); setPicking(true); } : undefined}>
             <GroupAvatar group={group} className="msg-avatar--xl" />
-            {isOwner && <span className="ginfo__photoedit">Edit</span>}
+            {isOwner && <span className="ginfo__photoedit">{t('messages.edit')}</span>}
           </button>
 
           {renaming ? (
@@ -110,17 +112,17 @@ export default function GroupInfo({ gid, onBack, onLeft }) {
               onClick={isOwner ? () => { setNameVal(group.name); setRenaming(true); } : undefined}
             >
               {group.name}
-              {isOwner && <span className="ginfo__rename">Edit Name</span>}
+              {isOwner && <span className="ginfo__rename">{t('messages.editName')}</span>}
             </button>
           )}
-          <div className="ginfo__count">{group.members.length} members</div>
+          <div className="ginfo__count">{t('messages.membersCount', { n: group.members.length })}</div>
         </div>
 
         <div className="ginfo__section">
           <div className="ginfo__sechead">
-            <span>Members</span>
+            <span>{t('messages.members')}</span>
             <button className="ginfo__add" onClick={() => setAdding(true)}>
-              + Add
+              {t('messages.addPlus')}
             </button>
           </div>
           {group.members.map((m) => (
@@ -128,8 +130,8 @@ export default function GroupInfo({ gid, onBack, onLeft }) {
               <Avatar name={m.name} src={m.avatar} className="msg-avatar--md" />
               <div className="ginfo__memtext">
                 <div className="ginfo__memname">
-                  {m.number === group.selfNumber ? 'You' : m.name}
-                  {m.isOwner && <span className="ginfo__ownerbadge">Owner</span>}
+                  {m.number === group.selfNumber ? t('messages.you') : m.name}
+                  {m.isOwner && <span className="ginfo__ownerbadge">{t('messages.owner')}</span>}
                 </div>
                 <div className="ginfo__memnum">{m.number}</div>
               </div>
@@ -144,11 +146,11 @@ export default function GroupInfo({ gid, onBack, onLeft }) {
 
         <div className="ginfo__actions">
           <button className="ginfo__danger" onClick={leave}>
-            Leave Group
+            {t('messages.leaveGroup')}
           </button>
           {isOwner && (
             <button className="ginfo__danger" onClick={del}>
-              Delete Group
+              {t('messages.deleteGroup')}
             </button>
           )}
         </div>
@@ -158,19 +160,19 @@ export default function GroupInfo({ gid, onBack, onLeft }) {
         <div className="ginfo__addsheet">
           <div className="msg-new__bar msg-new__bar--3">
             <button className="msg-new__cancel" onClick={() => { setAdding(false); setPendingAdd([]); }}>
-              Cancel
+              {t('messages.cancel')}
             </button>
-            <span className="msg-new__title">Add Members</span>
+            <span className="msg-new__title">{t('messages.addMembers')}</span>
             <button className="msg-new__done" disabled={!pendingAdd.length} onClick={confirmAdd}>
-              Add
+              {t('messages.addAction')}
             </button>
           </div>
           <div className="msg-new__to">
-            <span className="msg-new__tolabel">Add:</span>
+            <span className="msg-new__tolabel">{t('messages.add')}</span>
             <input
               className="msg-new__toinput"
               value={query}
-              placeholder="Name or number"
+              placeholder={t('messages.nameOrNumber')}
               autoFocus
               onChange={(e) => setQuery(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && addPending(query)}
@@ -207,10 +209,10 @@ export default function GroupInfo({ gid, onBack, onLeft }) {
           <div className="msg-cash-backdrop" onClick={() => setPicking(false)} />
           <div className="msg-gallery">
             <button className="msg-cash__grab" onClick={() => setPicking(false)} aria-label="Close" />
-            <div className="msg-gallery__title">Choose a Group Photo</div>
+            <div className="msg-gallery__title">{t('messages.chooseGroupPhoto')}</div>
             <div className="msg-gallery__grid">
               {gallery.filter((i) => i.type !== 'video').length === 0 && (
-                <div className="msg-gallery__empty">No photos yet.</div>
+                <div className="msg-gallery__empty">{t('messages.noPhotos')}</div>
               )}
               {[...gallery]
                 .filter((i) => i.type !== 'video')

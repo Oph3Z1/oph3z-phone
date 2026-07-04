@@ -1,36 +1,37 @@
 {
-    "owner": "5558944",
+    "reads": {
+        "5558944": "17829519638486",
+        "5553873": "17829517978164"
+    },
+    "updatedAt": 1783113817,
+    "name": "Test",
+    "gid": "g17829517978103",
+    "createdAt": 1782951797,
     "items": [
         {
-            "from": "",
+            "ts": 1782951797,
             "id": "17829517978164",
-            "body": "Group created",
             "type": "system",
-            "ts": 1782951797
+            "from": "",
+            "body": "Group created"
         },
         {
-            "from": "",
+            "ts": 1782951963,
             "id": "17829519638486",
-            "body": "555-3873 left the group",
             "type": "system",
-            "ts": 1782951963
+            "from": "",
+            "body": "555-3873 left the group"
         }
     ],
-    "name": "Test",
     "members": [
         {
-            "number": "5558944",
-            "joinedAt": 1782951797
+            "joinedAt": 1782951797,
+            "number": "5558944"
         },
         {
-            "number": "123213123",
-            "joinedAt": 1782951797
+            "joinedAt": 1782951797,
+            "number": "123213123"
         }
     ],
-    "updatedAt": 1782951963,
-    "createdAt": 1782951797,
-    "gid": "g17829517978103",
-    "reads": {
-        "5553873": "17829517978164"
-    }
+    "owner": "5558944"
 }

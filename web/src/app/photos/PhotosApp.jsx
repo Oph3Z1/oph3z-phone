@@ -3,10 +3,19 @@ import { useDispatch, useSelector } from 'react-redux';
 import './PhotosApp.css';
 
 import { loadPhotos, deletePhotos, togglePhotoFavorite } from '../../store/slices/photosSlice';
+import { openShare } from '../../store/slices/airdropSlice';
 import PhotoGrid from './components/PhotoGrid';
 import PhotoViewer from './components/PhotoViewer';
 import PhotosNav from './components/PhotosNav';
 import { HeartIcon, TrashIcon } from './components/icons';
+import { useT } from '../../i18n/useT';
+
+const ShareIcon = () => (
+  <svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+    <path d="M12 3v13M12 3L8.5 6.5M12 3l3.5 3.5" />
+    <path d="M6 11H5a1 1 0 0 0-1 1v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7a1 1 0 0 0-1-1h-1" />
+  </svg>
+);
 
 // Date label used for the search filter (photos have no text to search).
 function dateLabel(ts) {
@@ -17,6 +26,7 @@ function dateLabel(ts) {
 
 export default function PhotosApp() {
   const dispatch = useDispatch();
+  const t = useT();
   const items = useSelector((s) => s.photos.items);
 
   const [tab, setTab] = useState('library'); // 'library' | 'favorites'
@@ -54,7 +64,7 @@ export default function PhotosApp() {
     }
   }, [list]);
 
-  const title = tab === 'favorites' ? 'Favorites' : 'Library';
+  const title = tab === 'favorites' ? t('photos.favorites') : t('photos.library');
 
   // --- selection ---
   const toggleSelect = (id) =>
@@ -75,20 +85,29 @@ export default function PhotosApp() {
     selected.forEach((id) => dispatch(togglePhotoFavorite(id, true)));
     exitSelect();
   };
+  // AirDrop the selected photos/videos (in the order they appear in the grid).
+  const shareSelected = () => {
+    if (!selected.size) return;
+    const photos = list
+      .filter((p) => selected.has(p.id))
+      .map((p) => ({ url: p.url, type: p.type, thumb: p.thumb }));
+    dispatch(openShare({ kind: 'photos', photos }));
+    exitSelect();
+  };
 
   return (
     <div className="photos">
       <div className="photos__header">
         <div className="photos__titles">
           <div className="photos__title">{title}</div>
-          <div className="photos__count">{list.length} items</div>
+          <div className="photos__count">{t('photos.itemsCount', { n: list.length })}</div>
         </div>
         {(list.length > 0 || selectMode) && (
           <button
             className="photos__select"
             onClick={() => (selectMode ? exitSelect() : setSelectMode(true))}
           >
-            {selectMode ? 'Cancel' : 'Select'}
+            {selectMode ? t('photos.cancel') : t('photos.select')}
           </button>
         )}
       </div>
@@ -105,18 +124,18 @@ export default function PhotosApp() {
 
       {selectMode ? (
         <div className="photos__selectbar">
-          <button onClick={favSelected} disabled={!selected.size}>
-            <HeartIcon /> Favorite
+          <button onClick={shareSelected} disabled={!selected.size}>
+            <ShareIcon /> {t('phone.share')}
           </button>
-          <span className="photos__selectcount">
-            {selected.size ? `${selected.size} selected` : 'Select items'}
-          </span>
+          <button onClick={favSelected} disabled={!selected.size}>
+            <HeartIcon /> {t('photos.favorite')}
+          </button>
           <button
             className="photos__selectbar-danger"
             onClick={removeSelected}
             disabled={!selected.size}
           >
-            <TrashIcon /> Delete
+            <TrashIcon /> {t('photos.delete')}
           </button>
         </div>
       ) : (

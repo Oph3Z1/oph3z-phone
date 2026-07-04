@@ -1,9 +1,11 @@
 import { useEffect, useRef } from 'react';
 import { SearchIcon } from './icons';
+import { useT } from '../../../i18n/useT';
 
 // iOS-18 style floating glass nav: [Library | Favorites] + a search button that
 // expands the whole bar into a search field.
 export default function PhotosNav({ tab, setTab, search, setSearch }) {
+  const t = useT();
   const inputRef = useRef(null);
 
   useEffect(() => {
@@ -17,7 +19,7 @@ export default function PhotosNav({ tab, setTab, search, setSearch }) {
           <SearchIcon />
           <input
             ref={inputRef}
-            placeholder="Search"
+            placeholder={t('photos.search')}
             value={search.query}
             onChange={(e) => setSearch({ open: true, query: e.target.value })}
           />
@@ -26,7 +28,7 @@ export default function PhotosNav({ tab, setTab, search, setSearch }) {
           className="ph-nav__cancel"
           onClick={() => setSearch({ open: false, query: '' })}
         >
-          Cancel
+          {t('photos.cancel')}
         </button>
       </div>
     );
@@ -39,13 +41,13 @@ export default function PhotosNav({ tab, setTab, search, setSearch }) {
           className={tab === 'library' ? 'is-active' : ''}
           onClick={() => setTab('library')}
         >
-          Library
+          {t('photos.library')}
         </button>
         <button
           className={tab === 'favorites' ? 'is-active' : ''}
           onClick={() => setTab('favorites')}
         >
-          Favorites
+          {t('photos.favorites')}
         </button>
       </div>
       <button

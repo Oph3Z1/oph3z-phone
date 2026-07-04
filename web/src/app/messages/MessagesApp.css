@@ -663,6 +663,20 @@
   background: linear-gradient(160deg, #ff453a, #c4271e);
   font-size: 1.05em;
 }
+.msg-attach__ico--contact { background: #34c759; }
+/* Third-party app icon in the Share sheet. */
+.msg-attach__appicon {
+  flex: 0 0 auto;
+  width: 2.1em;
+  height: 2.1em;
+  border-radius: 0.55em;
+  overflow: hidden;
+  background: #2a2a2c;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.msg-attach__appicon img { width: 100%; height: 100%; object-fit: cover; }
 .msg-attach__label { flex: 1 1 auto; }
 .msg-attach__cancel {
   width: 100%;
@@ -924,7 +938,13 @@
   display: flex;
   align-items: flex-end;
   gap: 0.4em;
-  padding: 0.4em 0.6em calc(var(--safe-bottom) + 0.4em);
+  /* Horizontal padding grows as the phone shrinks so the input row (and thus the
+     flex:1 field) gets narrower at smaller sizes; at 100% -> 0.6em. */
+  padding: 0.4em calc(0.6em + (1 - var(--phone-scale, 1)) * 3em) calc(var(--safe-bottom) + 0.4em);
+  /* Shrink the whole composer a touch more at smaller phone sizes (its children
+     are all em, so scaling the font-size compacts the field + buttons together).
+     At 100% -> 1em (no change); smaller -> down to ~0.9em. */
+  font-size: calc(0.3em + 0.7em * var(--phone-scale, 1));
 }
 .msg-input__round {
   flex: 0 0 auto;
@@ -1059,6 +1079,8 @@
 .msg-plus__ico svg { width: 1.3em; height: 1.3em; }
 .msg-plus__ico--loc { background: #0a84ff; }
 .msg-plus__ico--photos { background: linear-gradient(150deg, #ff5e3a, #ff2d55 45%, #ffcc00); }
+.msg-plus__ico--contact { background: #34c759; }
+.msg-plus__ico--share { background: linear-gradient(160deg, #0a84ff, #0a5fd0); }
 .msg-plus__label { font-size: 1.05em; font-weight: 500; }
 .msg-plus__close {
   flex: 0 0 auto;
@@ -1072,6 +1094,122 @@
   justify-content: center;
 }
 .msg-plus__close svg { width: 1.3em; height: 1.3em; }
+
+/* ---- Shared-contact card (message bubble) ------------------------------- */
+.msg-contactcard {
+  display: flex;
+  align-items: center;
+  gap: 0.6em;
+  width: 14em;
+  max-width: 74%;
+  padding: 0.55em 0.7em;
+  border-radius: 1.1em;
+  background: #262628;
+  color: #fff;
+  text-align: left;
+}
+.msg-brow.is-out .msg-contactcard { background: #0a84ff; }
+.msg-contactcard:active { filter: brightness(0.94); }
+.msg-contactcard__info { flex: 1 1 auto; min-width: 0; }
+.msg-contactcard__name {
+  font-size: 0.95em;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.msg-contactcard__num { font-size: 0.8em; opacity: 0.75; }
+.msg-brow.is-in .msg-contactcard__num { color: #9a9aa0; opacity: 1; }
+.msg-contactcard__chev { flex: 0 0 auto; opacity: 0.5; display: flex; font-size: 0.9em; }
+
+/* ---- Shared item from a third-party app (Share sheet) ------------------- */
+.msg-appshare {
+  display: flex;
+  align-items: center;
+  gap: 0.6em;
+  width: 15em;
+  max-width: 76%;
+  padding: 0.55em 0.7em;
+  border-radius: 1.1em;
+  background: #262628;
+  color: #fff;
+  text-align: left;
+}
+.msg-brow.is-out .msg-appshare { background: #0a84ff; }
+.msg-appshare:active { filter: brightness(0.94); }
+.msg-appshare__img {
+  flex: 0 0 auto;
+  width: 2.6em;
+  height: 2.6em;
+  border-radius: 0.55em;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.12);
+}
+.msg-appshare__img img { width: 100%; height: 100%; object-fit: cover; }
+.msg-appshare__img--icon { padding: 0; }
+.msg-appshare__info { flex: 1 1 auto; min-width: 0; }
+.msg-appshare__title {
+  font-size: 0.95em;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.msg-appshare__sub { font-size: 0.8em; opacity: 0.75; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.msg-appshare__badge {
+  flex: 0 0 auto;
+  width: 1.3em;
+  height: 1.3em;
+  border-radius: 0.3em;
+  overflow: hidden;
+}
+.msg-appshare__badge img { width: 100%; height: 100%; object-fit: cover; }
+
+/* ---- Contact picker sheet ----------------------------------------------- */
+.msg-cpick {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  max-height: 72%;
+  padding: 0.4em 0.9em calc(var(--safe-bottom) + 0.8em);
+  border-radius: 1.4em 1.4em 0 0;
+  background: #1c1c1e;
+  box-shadow: 0 -0.5em 1.5em rgba(0, 0, 0, 0.5);
+  animation: msg-sheet-up 0.26s cubic-bezier(0.32, 0.72, 0, 1);
+}
+@keyframes msg-sheet-up { from { transform: translateY(100%); } to { transform: translateY(0); } }
+.msg-cpick__title { text-align: center; font-weight: 700; font-size: 1.02em; color: #fff; padding: 0.2em 0 0.6em; }
+.msg-cpick__search {
+  flex: 0 0 auto;
+  background: rgba(118, 118, 128, 0.24);
+  border: none;
+  outline: none;
+  border-radius: 0.7em;
+  padding: 0.55em 0.8em;
+  color: #fff;
+  font-size: 0.95em;
+  margin-bottom: 0.5em;
+}
+.msg-cpick__search::placeholder { color: #8e8e93; }
+.msg-cpick__list { overflow-y: auto; display: flex; flex-direction: column; }
+.msg-cpick__row {
+  display: flex;
+  align-items: center;
+  gap: 0.7em;
+  padding: 0.5em 0.4em;
+  border-radius: 0.7em;
+  text-align: left;
+  color: #fff;
+}
+.msg-cpick__row:active { background: rgba(255, 255, 255, 0.06); }
+.msg-cpick__info { min-width: 0; }
+.msg-cpick__name { font-size: 0.98em; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.msg-cpick__num { font-size: 0.8em; color: #8e8e93; }
+.msg-cpick__empty { text-align: center; color: #8e8e93; padding: 1.5em 0; }
 
 /* ---- Money Send/Request toggle ------------------------------------------ */
 .msg-cash__toggle {

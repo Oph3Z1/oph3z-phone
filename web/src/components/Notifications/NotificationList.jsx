@@ -1,5 +1,6 @@
 import { useMemo, useRef, useState } from 'react';
 import NotificationCard from './NotificationCard';
+import { useT } from '../../i18n/useT';
 
 // Group notifications the way iOS does: by app + thread (route.number / tab).
 // Items come in newest-first; each group keeps that order, and groups are ordered
@@ -20,6 +21,7 @@ function groupItems(items) {
 
 // A swipeable row: drag left past the threshold to clear; a clean tap fires onTap.
 function Swipeable({ onTap, onSwipe, className, children }) {
+  const t = useT();
   const [dx, setDx] = useState(0);
   const startX = useRef(null);
   const moved = useRef(false);
@@ -46,7 +48,7 @@ function Swipeable({ onTap, onSwipe, className, children }) {
   return (
     <div className={`notif-swipe ${className || ''}`}>
       <div className="notif-swipe__clear" style={{ opacity: Math.min(1, -dx / 80) }}>
-        Clear
+        {t('notif.clear')}
       </div>
       <div
         className="notif-swipe__card"

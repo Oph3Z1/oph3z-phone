@@ -5,9 +5,11 @@ import GroupAvatar from './GroupAvatar';
 import { digitsOf } from '../../../store/slices/contactsSlice';
 import { createGroup } from '../../../store/slices/groupsSlice';
 import { loadPhotos } from '../../../store/slices/photosSlice';
+import { useT } from '../../../i18n/useT';
 
 export default function NewGroup({ onClose, onCreated }) {
   const dispatch = useDispatch();
+  const tr = useT();
   const contacts = useSelector((s) => s.contacts.contacts);
   const gallery = useSelector((s) => s.photos.items);
 
@@ -58,22 +60,22 @@ export default function NewGroup({ onClose, onCreated }) {
     <div className="msg msg--new">
       <div className="msg-new__bar msg-new__bar--3">
         <button className="msg-new__cancel" onClick={onClose}>
-          Cancel
+          {tr('messages.cancel')}
         </button>
-        <span className="msg-new__title">New Group</span>
+        <span className="msg-new__title">{tr('messages.newGroup')}</span>
         <button className="msg-new__done" disabled={members.length < 1 || busy} onClick={create}>
-          {busy ? '…' : 'Create'}
+          {busy ? '…' : tr('messages.create')}
         </button>
       </div>
 
       <div className="gnew__head">
         <button className="gnew__photo" onClick={openPhoto}>
-          {photo ? <img src={photo} alt="" /> : <GroupAvatar group={{ name: name || 'Group' }} className="msg-avatar--lg" />}
-          <span className="gnew__photoedit">Edit</span>
+          {photo ? <img src={photo} alt="" /> : <GroupAvatar group={{ name: name || tr('messages.group') }} className="msg-avatar--lg" />}
+          <span className="gnew__photoedit">{tr('messages.edit')}</span>
         </button>
         <input
           className="gnew__nameinput"
-          placeholder="Group Name"
+          placeholder={tr('messages.groupName')}
           value={name}
           onChange={(e) => setName(e.target.value)}
           maxLength={40}
@@ -81,11 +83,11 @@ export default function NewGroup({ onClose, onCreated }) {
       </div>
 
       <div className="msg-new__to">
-        <span className="msg-new__tolabel">Add:</span>
+        <span className="msg-new__tolabel">{tr('messages.add')}</span>
         <input
           className="msg-new__toinput"
           value={query}
-          placeholder="Name or number"
+          placeholder={tr('messages.nameOrNumber')}
           onChange={(e) => setQuery(e.target.value)}
           onKeyDown={(e) => {
             if (e.key === 'Enter') addMember(query);
@@ -121,7 +123,7 @@ export default function NewGroup({ onClose, onCreated }) {
       )}
 
       {!query && members.length === 0 && (
-        <div className="gnew__hint">Add people by contact or phone number, then tap Create.</div>
+        <div className="gnew__hint">{tr('messages.newGroupHint')}</div>
       )}
 
       {picking && (
@@ -129,10 +131,10 @@ export default function NewGroup({ onClose, onCreated }) {
           <div className="msg-cash-backdrop" onClick={() => setPicking(false)} />
           <div className="msg-gallery">
             <button className="msg-cash__grab" onClick={() => setPicking(false)} aria-label="Close" />
-            <div className="msg-gallery__title">Choose a Group Photo</div>
+            <div className="msg-gallery__title">{tr('messages.chooseGroupPhoto')}</div>
             <div className="msg-gallery__grid">
               {gallery.filter((i) => i.type !== 'video').length === 0 && (
-                <div className="msg-gallery__empty">No photos yet.</div>
+                <div className="msg-gallery__empty">{tr('messages.noPhotos')}</div>
               )}
               {[...gallery]
                 .filter((i) => i.type !== 'video')

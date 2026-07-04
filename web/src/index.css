@@ -48,3 +48,15 @@ button {
 *:focus-visible {
   outline: none !important;
 }
+
+/* A real phone has no visible scrollbars — hide them everywhere while keeping
+   the content scrollable (touch/drag still works). */
+* {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* old Edge */
+}
+*::-webkit-scrollbar {
+  width: 0 !important;
+  height: 0 !important;
+  display: none; /* Chromium / CEF */
+}

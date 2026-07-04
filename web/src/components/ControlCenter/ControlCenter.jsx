@@ -5,6 +5,7 @@ import { fetchNui } from '../../utils/fetchNui';
 import { setControlCenter, setFlashlight } from '../../store/slices/phoneSlice';
 import { saveSetting, saveSettingLive, flushSettings, setAirplane } from '../../store/slices/settingsSlice';
 import { togglePlaying, setPosition } from '../../store/slices/musicSlice';
+import { useT } from '../../i18n/useT';
 
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 
@@ -120,6 +121,7 @@ function Scrubber({ value, max, onChange, disabled }) {
 
 export default function ControlCenter() {
   const dispatch = useDispatch();
+  const t = useT();
   const open = useSelector((s) => s.phone.controlCenterOpen);
   const airplane = useSelector((s) => s.settings.airplane);
   const airdrop = useSelector((s) => s.settings.airdrop);
@@ -158,15 +160,15 @@ export default function ControlCenter() {
       <div className="cc-card cc-toggles" onPointerDown={stop}>
         <button className={`cc-toggle${airplane ? ' is-on cc-toggle--airplane' : ''}`} onClick={toggleAirplane}>
           <AirplaneGlyph />
-          <span>Airplane</span>
+          <span>{t('controlCenter.airplane')}</span>
         </button>
         <button className={`cc-toggle${airdrop ? ' is-on cc-toggle--airdrop' : ''}`} onClick={toggleAirdrop}>
           <AirDropGlyph />
-          <span>AirDrop</span>
+          <span>{t('controlCenter.airdrop')}</span>
         </button>
         <button className={`cc-toggle${flashlightOn ? ' is-on cc-toggle--flash' : ''}`} onClick={toggleFlashlight}>
           <FlashlightGlyph />
-          <span>Flashlight</span>
+          <span>{t('controlCenter.flashlight')}</span>
         </button>
       </div>
 
@@ -187,8 +189,8 @@ export default function ControlCenter() {
             {music.artwork ? <img src={music.artwork} alt="" /> : <NoteGlyph />}
           </div>
           <div className="cc-music__meta">
-            <div className="cc-music__title">{hasTrack ? music.title : 'No Music Playing'}</div>
-            <div className="cc-music__artist">{hasTrack ? music.artist || 'Unknown Artist' : 'Not Playing'}</div>
+            <div className="cc-music__title">{hasTrack ? music.title : t('controlCenter.noMusic')}</div>
+            <div className="cc-music__artist">{hasTrack ? music.artist || t('controlCenter.unknownArtist') : t('controlCenter.notPlaying')}</div>
           </div>
         </div>
 

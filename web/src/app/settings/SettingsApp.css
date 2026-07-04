@@ -139,6 +139,51 @@
 /* Master switch off -> the per-app card is dimmed and non-interactive. */
 .set-card.is-disabled { opacity: 0.4; pointer-events: none; }
 
+/* ---- About screen ------------------------------------------------------- */
+.about-scroll { display: flex; flex-direction: column; }
+.about-badge {
+  display: flex;
+  justify-content: center;
+  padding: 0.7em 0 1.7em;
+}
+.about-badge__svg {
+  width: 4.9em;
+  height: 4.9em;
+  filter: drop-shadow(0 0.25em 0.6em rgba(10, 132, 255, 0.4));
+}
+.about-row { min-height: 3.15em; }
+.about-value {
+  max-width: 64%;
+  text-align: right;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.about-footer {
+  margin-top: auto;
+  text-align: center;
+  color: #6d6d72;
+  font-size: 0.76em;
+  padding: 1.8em 1em 0.6em;
+}
+
+/* ---- Language screen ---------------------------------------------------- */
+.lang-globe {
+  display: flex;
+  justify-content: center;
+  color: #0a84ff;
+  padding: 0.8em 0 1.6em;
+}
+.lang-globe svg { width: 4.6em; height: 4.6em; }
+.lang-row { min-height: 3.1em; }
+.lang-check {
+  flex: 0 0 auto;
+  color: #0a84ff;
+  display: flex;
+  align-items: center;
+}
+.lang-check svg { width: 1.15em; height: 1.15em; }
+
 /* ---- Group title + Display sliders -------------------------------------- */
 .set-grouptitle {
   display: flex;
@@ -169,17 +214,16 @@
   left: 0;
   top: 0;
   bottom: 0;
-  min-width: 1em;
   background: #fff;
-  border-radius: 1em;
+  transition: width 0.06s linear;
 }
 .set-hslider__icon {
   position: absolute;
-  left: 0.8em;
+  left: 0.85em;
   top: 50%;
   transform: translateY(-50%);
-  color: #3a3a3c;
-  z-index: 1;
+  color: #fff;
+  mix-blend-mode: difference; /* readable over the white fill AND the dark track */
   pointer-events: none;
   display: flex;
 }

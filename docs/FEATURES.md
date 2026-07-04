@@ -268,6 +268,37 @@ back button + centred title (`set__backcircle` / `set__navbar--center`).
   the app is disabled, the notification is dropped entirely — nothing stored,
   delivered, badged, or shown (works offline too).
 
+**Status toasts** (`StatusToast`, `toastSlice`) — a **separate**, transient
+success/error/info popup, distinct from the saved notification system above.
+- Same glass card UI (icon + title + body, no timestamp), but **throwaway**: shows
+  ~3.2s then vanishes, never stored/badged. The icon defaults to the app it's about
+  (the one passed, else the app currently open).
+- **One at a time** — while a toast is on screen, further toasts are dropped (a
+  status message doesn't stack).
+- Triggers: internally via `dispatch(pushToast(...))`; third-party apps via the
+  `oph3z:toast` postMessage; other resources via the client export
+  `exports['oph3z-phone']:Toast(type, title, body, app?)` (only shows while the
+  phone is open). Not affected by the notification master/per-app switches.
+
+**AirDrop** (`server/client app/airdrop/`, `airdropSlice`, `components/Airdrop/`) —
+nearby player-to-player sharing. A player must turn AirDrop **on** (Control Center)
+to be discoverable + receive. `Config.Airdrop = { Range, MaxPhotos, RequirePhone }`.
+- **Share what:** a contact (Contact detail → *Share Contact*), your own card
+  (*My Card* row at the top of Contacts), photos/videos (Photos viewer *Share*, or
+  multi-select → *Share*), and third-party payloads (`oph3z:airdrop`).
+- **Send:** `AirdropPicker` lists nearby receivers (name + avatar, server-side
+  `GetEntityCoords` within `Range`); tap one to send.
+- **Receive:** if the phone is open & unlocked → the `AirdropIsland` Dynamic-Island
+  prompt (Accept/Decline + preview); otherwise it waits in the Notification Center /
+  lock screen as an `AirdropPendingCard`. Pending transfers persist in
+  `doc.airdrops.pending` so they can be **accepted later** — the payload is captured
+  at send time (no proximity/online re-check on accept).
+- **Apply on accept:** contact → saved (deduped); photos → `Photos.Add`; third-party
+  → the same app opens on the receiver and gets `oph3z:airdrop:received`.
+- **In Messages:** the `+` menu has **Contact** → sends a **contact-card** message
+  (`type:'contact'`, `ContactCard`); tapping the card opens Call / Add to Contacts
+  (if new) / Share (AirDrop nearby or forward in Messages) / Message.
+
 **Ringtones** (`RingtonesScreen`, server/client `app/ringtones/`)
 - Built-in ringtones from `Config.Ringtones` (`file` resolved to a bundled
   `web/build/audio/*.mp3`, or a full `url`) + player-added custom ones (name + URL),
@@ -291,14 +322,40 @@ back button + centred title (`set__backcircle` / `set__navbar--center`).
 **Display & Brightness** (`DisplayScreen`)
 - **Brightness** slider (20–100, same Control-Center-style thick slider, bound to the
   same `settings.brightness`).
-- **Phone Size** slider (`settings.scale`, 50–100%) — scales the whole phone live via a
-  `--phone-scale` CSS var on `.phone` (`height: calc(--phone-height * --phone-scale)`,
-  anchored bottom-right; the ResizeObserver rescales the UI). Both use `saveSettingLive`
-  + `flushSettings` on leave.
+- **Phone Size** slider (`settings.scale`, 85–100%) — resizes the phone via
+  `height: calc(var(--phone-height) * var(--phone-scale))` on `.phone`; the screen width
+  follows and the ResizeObserver recomputes the `em` base font-size, so the whole (em-based)
+  UI scales crisply and proportionally — no transform bitmap (no blur) and no per-app tweaks
+  (the app CSS is ~all `em`). Both sliders use `saveSettingLive` + `flushSettings` on leave.
+
+**Language** (`LanguageScreen`) — globe + a list of available languages with a check
+on the active one. Selecting saves `settings.language`. See **Localization** below.
 
 **Connectivity / other rows:** Airplane toggle (`setAirplane`), Wi-Fi (cosmetic
-`iPhone`), AirDrop toggle (`airdrop`). Language / About are placeholder sub-screens
-(coming later).
+`iPhone`), AirDrop toggle (`airdrop`). About is a placeholder sub-screen (coming later).
+
+### Localization (i18n)  (`locales/`, `shared/locale.lua`, `web/src/i18n/`)
+Locale files are Lua and are the **single source of truth**, usable in Lua AND the UI:
+```lua
+-- locales/en.lua (shared_script)
+Locales['en'] = { ['_name']='English', ['frontend']={ ['settings']={ ['title']='Settings' } }, ['systemNotification']={ ['minutes']='Minutes' } }
+```
+- **Add a language:** drop `locales/<code>.lua` (copy en.lua, change `Locales['en']`→
+  `Locales['xx']`, set `_name`, translate). It auto-appears in Settings > Language —
+  no other edits. (`fxmanifest` globs `locales/*.lua`.)
+- **Lua side:** `Lang('systemNotification.minutes' [, code])` resolves a key (falls back
+  to English, then the key). `GetLanguages()` / `GetFrontendLocales()` build the picker
+  list + the NUI payload.
+- **UI side:** on open the client sends `{ languages, translations }` (each locale's
+  `frontend` table) → `i18nSlice`. Components call `const t = useT();` then
+  `t('settings.title')` / `t('ringtones.deleteMsg', { name })` (dot-path, `{var}`
+  interpolation, English fallback). Current language = `settings.language`; switching is
+  instant (all locales are already in the NUI) and persists.
+- **Status:** system + English shipped. **All apps are migrated to `t()`** — Settings,
+  Phone/Contacts/Calls, Messages (threads, conversation, groups, money, location, GIF,
+  emoji), Camera, Photos, Maps, App Store, Control Center, Notifications, Lock screen.
+  `locales/en.lua` holds every string, grouped by app (`frontend.<app>.<key>`). Adding a
+  new locale file translates the whole phone.
 
 ### Reusable dialogs (phone-wide)
 - **`AlertDialog`** (dark) — confirm/alert, driven by `dialogSlice` (`openDialog`

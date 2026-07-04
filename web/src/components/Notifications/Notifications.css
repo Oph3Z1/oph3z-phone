@@ -159,6 +159,20 @@
   to { transform: translateY(0); opacity: 1; }
 }
 
+/* ---- Transient status toast (success / error / info) --------------------- */
+/* Same glass card as a notification, but throwaway — its own overlay so it
+   never mixes with the saved banner/center. Sits above the banner. */
+.status-toast {
+  position: absolute;
+  top: calc(var(--safe-top) + 0.4em);
+  left: 0.5em;
+  right: 0.5em;
+  z-index: 2147483647; /* above EVERYTHING (island, dialogs, call, share sheet…) */
+  animation: notif-banner-in 0.34s cubic-bezier(0.32, 0.72, 0, 1);
+}
+/* Vertically centre the icon against the title + body (no timestamp here). */
+.status-toast .notif-card { align-items: center; }
+
 /* ---- Pull-down Notification Center (open & unlocked) -------------------- */
 .notif-center {
   position: absolute;
@@ -184,6 +198,12 @@
   display: flex;
   flex-direction: column;
   gap: 0.5em;
+}
+.notif-center__airdrops {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5em;
+  padding: 0 0.5em; /* match the notification list inset so cards aren't wider */
 }
 .notif-center__list::-webkit-scrollbar { display: none; }
 .notif-center__empty { text-align: center; color: rgba(235, 235, 245, 0.55); padding: 2.5em 1em; font-size: 0.9em; }

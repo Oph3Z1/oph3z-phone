@@ -71,7 +71,13 @@ export default function MessagesApp() {
   });
 
   if (view.name === 'thread') {
-    return <Conversation number={view.number} onBack={() => setView({ name: 'list' })} />;
+    return (
+      <Conversation
+        number={view.number}
+        onBack={() => setView({ name: 'list' })}
+        onOpenThread={(num) => setView({ name: 'thread', number: num })}
+      />
+    );
   }
   if (view.name === 'group') {
     return (

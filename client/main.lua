@@ -229,12 +229,14 @@ function Phone.open()
             identity = Phone.identity,  -- shared with third-party app iframes
             home     = data.home,       -- saved home-screen arrangement
             appstore = Config.AppStore, -- App Store settings (download duration)
+            i18n     = { languages = GetLanguages(), translations = GetFrontendLocales() },
         },
     })
     if PhoneApps then PhoneApps.sync() end -- hand the NUI any registered third-party apps
     startTimeLoop()
     Phone.startAnim()
     startScreenGlow()
+    TriggerServerEvent('oph3z-phone:server:airdrop:presence', true) -- discoverable while open (RequirePhone)
     Phone.dbg('opened')
 end
 
@@ -246,6 +248,7 @@ function Phone.close()
     SendNUIMessage({ action = 'phone:setVisible', data = { visible = false } })
     Phone.setFlashlight(false)
     Phone.stopAnim()
+    TriggerServerEvent('oph3z-phone:server:airdrop:presence', false)
     Phone.dbg('closed')
 end
 
@@ -304,6 +307,7 @@ local function showPhoneForCall()
             apps     = Config.Apps,
             identity = Phone.identity,
             home     = data and data.home,
+            i18n     = { languages = GetLanguages(), translations = GetFrontendLocales() },
         },
     })
     if PhoneApps then PhoneApps.sync() end

@@ -67,10 +67,11 @@ The phone automatically **removes** your app when your resource stops.
 
 | Export | Description |
 |---|---|
-| `RegisterApp(def)` | Add/replace your app. `def = { id, label, developer?, description?, icon, ui, place, deletable?, headerImage?, swiperItems? }`. Returns `true` on success. |
+| `RegisterApp(def)` | Add/replace your app. `def = { id, label, developer?, description?, icon, ui, place, deletable?, share?, headerImage?, swiperItems? }`. `share = true` lists it in the Messages Share sheet. Returns `true` on success. |
 | `UnregisterApp(id)` | Remove an app you registered. |
 | `OpenApp(id)` | Open the phone (if closed) and jump to an app (yours or built-in). |
 | `IsOpen()` | Is the phone currently open? |
+| `Toast(type, title, body, app?)` | Pop a transient status toast (`type`: `'success'`/`'error'`/`'info'`). Throwaway feedback — shows a few seconds, not saved. Only shows while the phone is open. `app` (optional) is an app id to borrow the icon from; defaults to the app currently open. Returns `true` if shown. |
 | `GetNumber()` | The player's formatted number (cached once the phone has been opened; may be `nil` before then). |
 | `GetIdentity()` | `{ number, numberRaw, citizenid }` (same caveat as above). |
 
@@ -88,6 +89,12 @@ Your page runs inside an iframe. The phone talks to it with `postMessage`:
 | app → phone | `{ type:'oph3z:confirm', id, title, message, confirmText?, cancelText?, destructive? }` | Show a native yes/no confirm; reply `{ type:'oph3z:confirm:result', id, confirmed }`. |
 | app → phone | `{ type:'oph3z:alert', id, title, message, buttons:[{ text, style?, value? }] }` | Show a native dialog with custom buttons; reply `{ type:'oph3z:alert:result', id, value }`. |
 | app → phone | `{ type:'oph3z:prompt', id, title, message?, placeholder?, value?, confirmText?, cancelText?, maxLength?, fields? }` | Show a native **text-input** popup; reply `{ type:'oph3z:prompt:result', id, value }`. `value` = a **string**, or an **object** `{ [key]: value }` when `fields:[{key,placeholder?,value?,optional?}]` is given, or `null` if cancelled. |
+| app → phone | `{ type:'oph3z:toast', toastType?, title?, body? }` | Show a **transient status toast** (`toastType`: `'success'`/`'error'`/`'info'`). Looks like a notification but is throwaway — shows a few seconds, never saved. The icon is automatically your app's icon. Fire-and-forget (no reply). Only one shows at a time. |
+| app → phone | `{ type:'oph3z:airdrop', title?, payload }` | **AirDrop** `payload` to a nearby player. The phone shows the nearby-people picker + the receiver's Accept/Decline prompt. On accept, the **same app** opens on the receiver's phone. |
+| phone → app | `{ type:'oph3z:airdrop:received', payload }` | Delivered to the receiver's app after they **accept** an AirDrop from your app (also fired when someone taps a shared card you sent into a chat). |
+| phone → app | `{ type:'oph3z:shareRequest' }` | Your app was opened from the Messages **Share** sheet (register with `share: true`) to provide a shareable item. |
+| app → phone | `{ type:'oph3z:shareResult', item:{ title, subtitle?, image?, data? } }` | The item to send into the conversation as a card. Tapping the card re-opens your app with `data` (via `oph3z:airdrop:received`). |
+| app → phone | `{ type:'oph3z:shareCancel' }` | Abort the share and return to the chat. |
 
 ```js
 window.addEventListener('message', (e) => {
@@ -165,6 +172,80 @@ if (item) { /* item.name, item.url */ }
 Both `phoneConfirm()` and `phonePrompt()` ship ready-to-use in the
 **oph3z-phone-app-template** (`ui/app.js`).
 
+### Status toast (success / error / info)
+
+A lightweight, throwaway message that pops at the top for a few seconds and is
+**never saved** (unlike a notification). Use it for quick feedback — "Saved",
+"Couldn't connect". The icon is automatically your app's icon. Fire-and-forget:
+
+```js
+function phoneToast(toastType, title, body) {
+  window.parent.postMessage({ type: 'oph3z:toast', toastType, title, body }, '*');
+}
+
+// usage
+phoneToast('success', 'Saved', 'Your changes were saved.');
+phoneToast('error', 'Oops', 'Something went wrong.');
+```
+
+Only one toast shows at a time — while one is on screen, further toasts are
+dropped (a status message doesn't stack). Ships ready-to-use in the template.
+
+### AirDrop (share with a nearby player)
+
+Hand a payload to a nearby player who also has your app. The phone handles the
+nearby-people picker and the receiver's Accept/Decline prompt; on accept, the
+**same app** opens on their phone and receives the payload. Great for "share this
+profile / post / item" features.
+
+```js
+// Sender: AirDrop a payload. `title` shows in the receiver's prompt
+// ("<name> would like to share <title>").
+function phoneAirdrop(title, payload) {
+  window.parent.postMessage({ type: 'oph3z:airdrop', title, payload }, '*');
+}
+phoneAirdrop('a profile', { userId: 42, handle: '@john' });
+
+// Receiver: your app opens with the payload once they accept.
+window.addEventListener('message', (e) => {
+  if (e.data?.type === 'oph3z:airdrop:received') {
+    const payload = e.data.payload; // { userId: 42, handle: '@john' }
+    // ...open the profile, save it, etc.
+  }
+});
+```
+
+The receiver must have **AirDrop turned on** (Control Center) and be within range
+(`Config.Airdrop.Range`). If they don't have your app installed, the sender is told.
+Ships ready-to-use in the template (the **AirDrop to nearby** button).
+
+### Share into a conversation (Messages "Share" sheet)
+
+Register your app with **`share = true`** and it appears in the Messages `+` →
+**Share** sheet. When the player picks it, the phone opens your app with
+`oph3z:shareRequest`; you show your own picker and return an item, which is posted
+into the conversation as a card. Tapping that card later re-opens your app with the
+item's `data`.
+
+```lua
+-- config.lua / RegisterApp def
+exports['oph3z-phone']:RegisterApp({ id = 'myapp', ui = '…', share = true, --[[ … ]] })
+```
+```js
+window.addEventListener('message', (e) => {
+  if (e.data?.type === 'oph3z:shareRequest') {
+    // show your picker, then return the chosen item:
+    window.parent.postMessage({
+      type: 'oph3z:shareResult',
+      item: { title: 'Profile: @john', subtitle: 'Tap to open', data: { userId: 42 } },
+    }, '*');
+    // ...or window.parent.postMessage({ type: 'oph3z:shareCancel' }, '*');
+  }
+});
+```
+
+Ships ready-to-use in the template (`share = true` + a demo picker).
+
 **Layout note:** your iframe fills the whole phone screen. The phone's status bar
 floats at the top and the home indicator at the bottom — keep ~3.2em top padding
 and ~2em bottom padding clear of them.
@@ -226,13 +307,39 @@ KVP — whatever you like) in your resource.
 
 ## 4. Notifications & badges
 
-`PushNotification(src, { app = 'myapp', ... })` will:
+Your app gets the **exact same** notification system as the built-in apps. There
+are two, deliberately separate kinds:
 
-- show on the lock screen / banner / closed-phone peek like built-in apps, and
-- put an unread **badge** on your app's home-screen icon (badge counts unread
-  notifications whose `app` equals your app id).
+**Saved notification** — `PushNotification(src, { app = 'myapp', ... })` (server export). It:
 
-Add `route = { app = 'myapp' }` so tapping the notification opens your app.
+- shows on the lock screen / banner / closed-phone peek like the built-ins,
+- is **saved** to the Notification Center and survives relogs (works offline too),
+- puts a red unread **count badge** on your app's home-screen icon — top corner,
+  exactly like Messages and Phone (the badge counts unread notifications whose
+  `app` equals your app id), and
+- automatically uses **your app's icon** on the card (no need to pass `icon`).
+
+When the player **opens your app**, its notifications are **removed** — both the
+badge and the entries in the Notification Center — exactly like opening a chat in
+Messages. Add `route = { app = 'myapp' }` so tapping a notification opens your app
+(which then clears it).
+
+```lua
+-- server.lua
+exports['oph3z-phone']:PushNotification(src, {
+    app = 'myapp', title = 'New order', body = 'You have a delivery request.',
+    route = { app = 'myapp' }, -- tap opens your app
+})
+```
+
+> Respects the player's **Notifications settings** — the master switch and the
+> per-app toggle for your app gate it server-side (a disabled notification is
+> dropped entirely: not stored, delivered or badged).
+
+**Status toast** — `oph3z:toast` postMessage (client, from your iframe). Transient
+success/error/info feedback: shows for a few seconds, is **never saved**, and does
+**not** badge. See "Status toast" in §2. Use `PushNotification` for things the
+player should be able to come back to; use a toast for throwaway feedback.
 
 ---
 

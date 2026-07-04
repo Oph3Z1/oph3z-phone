@@ -7,6 +7,7 @@ import { setResumeThread } from '../../store/slices/messagesSlice';
 import { openApp, setLaunchTab } from '../../store/slices/phoneSlice';
 import { markNotifRead } from '../../store/slices/notificationsSlice';
 import { StarIcon, ClockIcon, PersonIcon, KeypadIcon } from './components/icons';
+import { useT } from '../../i18n/useT';
 
 import FavoritesView from './views/FavoritesView';
 import RecentsView from './views/RecentsView';
@@ -16,14 +17,15 @@ import ContactDetail from './views/ContactDetail';
 import ContactEditor from './views/ContactEditor';
 
 const TABS = [
-  { id: 'favorites', label: 'Favorites', Icon: StarIcon },
-  { id: 'recents', label: 'Recents', Icon: ClockIcon },
-  { id: 'contacts', label: 'Contacts', Icon: PersonIcon },
-  { id: 'keypad', label: 'Keypad', Icon: KeypadIcon },
+  { id: 'favorites', Icon: StarIcon },
+  { id: 'recents', Icon: ClockIcon },
+  { id: 'contacts', Icon: PersonIcon },
+  { id: 'keypad', Icon: KeypadIcon },
 ];
 
 export default function PhoneApp() {
   const dispatch = useDispatch();
+  const t = useT();
   const loaded = useSelector((s) => s.contacts.loaded);
   const contacts = useSelector((s) => s.contacts.contacts);
   const focus = useSelector((s) => s.contacts.focus);
@@ -116,14 +118,14 @@ export default function PhoneApp() {
       <div className="phoneapp__body">{renderTab()}</div>
 
       <nav className="phoneapp__tabbar">
-        {TABS.map(({ id, label, Icon }) => (
+        {TABS.map(({ id, Icon }) => (
           <button
             key={id}
             className={`phoneapp__tab${tab === id ? ' is-active' : ''}`}
             onClick={() => setTab(id)}
           >
             <Icon className="phoneapp__tabicon" />
-            <span>{label}</span>
+            <span>{t(`phone.${id}`)}</span>
           </button>
         ))}
       </nav>
@@ -132,7 +134,7 @@ export default function PhoneApp() {
         <ContactDetail
           id={overlay.id}
           onBack={backFromOverlay}
-          backLabel={returnTo ? 'Messages' : 'Contacts'}
+          backLabel={returnTo ? t('phone.messages') : t('phone.contacts')}
           onEdit={(contact) => setOverlay({ type: 'editor', contact })}
         />
       )}

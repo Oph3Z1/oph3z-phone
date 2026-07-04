@@ -10,10 +10,13 @@ import { setVisible, setTime, closeApp, openApp, unlock, setIdentity } from './s
 import { setLayout, setExternalApps } from './store/slices/appsSlice';
 import { setSaved, setDownloadMs } from './store/slices/homeSlice';
 import { hydrate } from './store/slices/settingsSlice';
+import { setI18n } from './store/slices/i18nSlice';
 import { applyCall } from './store/slices/callSlice';
 import { loadPhoneState } from './store/slices/contactsSlice';
 import { upsertPhoto, setLightbox } from './store/slices/photosSlice';
 import { presentNotification, loadNotifications, setPeek } from './store/slices/notificationsSlice';
+import { pushToast, clearToast } from './store/slices/toastSlice';
+import { presentIncoming, loadPending, stashIsland, applyStatus } from './store/slices/airdropSlice';
 
 export default function App() {
   const dispatch = useDispatch();
@@ -47,6 +50,7 @@ export default function App() {
   useNuiEvent('phone:setVisible', (data) => {
     if (data?.visible) {
       if (data.settings) dispatch(hydrate(data.settings));
+      if (data.i18n) dispatch(setI18n(data.i18n));
       if (data.time) dispatch(setTime(data.time));
       if (data.apps) dispatch(setLayout(data.apps)); // built-in app layout (Config.Apps)
       if (data.identity) dispatch(setIdentity(data.identity)); // shared with app iframes
@@ -55,9 +59,12 @@ export default function App() {
         dispatch(setDownloadMs(data.appstore.downloadSeconds * 1000));
       dispatch(setVisible(true));
       dispatch(loadNotifications()); // refresh the lock screen / center on open
+      dispatch(loadPending()); // pending AirDrops waiting to be accepted
     } else {
       dispatch(setVisible(false));
       dispatch(setLightbox(null));
+      dispatch(clearToast()); // kill any on-screen toast so it can't resurface on reopen
+      dispatch(stashIsland()); // an unacted AirDrop island moves to the Notification Center
     }
   });
 
@@ -80,6 +87,16 @@ export default function App() {
     // we honour the "Notification Sound" toggle for the ones that do.
     if (shown && notifSoundRef.current !== false) playNotify();
   });
+
+  // Lua -> transient status toast (success / error / info). Not saved anywhere.
+  useNuiEvent('phone:toast', (d) => dispatch(pushToast(d)));
+
+  // Lua -> an AirDrop transfer arrived (island if open+unlocked, else it waits in
+  // the Notification Center).
+  useNuiEvent('phone:airdrop:incoming', (transfer) => dispatch(presentIncoming(transfer)));
+
+  // Lua -> the person you AirDropped to accepted/declined. Reflect it + toast.
+  useNuiEvent('phone:airdrop:status', (status) => dispatch(applyStatus(status)));
 
   // Opening the phone ends any active peek (it becomes the lock-screen list).
   useEffect(() => {

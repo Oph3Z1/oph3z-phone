@@ -23,9 +23,11 @@ import { openApp } from '../../../store/slices/phoneSlice';
 import { loadPhotos } from '../../../store/slices/photosSlice';
 import { setFocus } from '../../../store/slices/mapsSlice';
 import { setShareTo } from '../../../store/slices/messagesSlice';
+import { useT } from '../../../i18n/useT';
 
 export default function GroupConversation({ gid, onBack, onInfo }) {
   const dispatch = useDispatch();
+  const t = useT();
   const group = useSelector((s) => s.groups.byGid[gid]);
   const selfNumber = digitsOf(useSelector((s) => s.contacts.number));
   const draft = useSelector((s) => s.groups.draftAttach[gid]);
@@ -122,7 +124,7 @@ export default function GroupConversation({ gid, onBack, onInfo }) {
 
   const onReact = (id, emoji) => dispatch(reactGroup(gid, id, emoji));
 
-  const name = group?.name || 'Group';
+  const name = group?.name || t('messages.group');
   const memberCount = group?.members?.length || 0;
 
   return (
@@ -137,7 +139,7 @@ export default function GroupConversation({ gid, onBack, onInfo }) {
             <span className="gconv__title">{name}</span>
             <ChevronRightIcon className="msg-conv__namechev" />
           </div>
-          <span className="gconv__sub">{memberCount} people</span>
+          <span className="gconv__sub">{t('messages.peopleCount', { n: memberCount })}</span>
         </button>
         <div className="msg-conv__spacer" />
       </div>
@@ -168,7 +170,7 @@ export default function GroupConversation({ gid, onBack, onInfo }) {
         <VoiceComposer
           onComplete={sendVoice}
           onCancel={() => setRecording(false)}
-          onError={() => showNotice('Microphone unavailable.')}
+          onError={() => showNotice(t('messages.micUnavailable'))}
         />
       ) : (
         <MessageInput
@@ -187,19 +189,19 @@ export default function GroupConversation({ gid, onBack, onInfo }) {
           <div className="msg-plus__list" onClick={(e) => e.stopPropagation()}>
             <button className="msg-plus__item" onClick={openCamera}>
               <span className="msg-plus__ico msg-plus__ico--cam"><CameraIcon /></span>
-              <span className="msg-plus__label">Camera</span>
+              <span className="msg-plus__label">{t('messages.camera')}</span>
             </button>
             <button className="msg-plus__item" onClick={openGallery}>
               <span className="msg-plus__ico msg-plus__ico--photos"><PhotosIcon /></span>
-              <span className="msg-plus__label">Gallery</span>
+              <span className="msg-plus__label">{t('messages.gallery')}</span>
             </button>
             <button className="msg-plus__item" onClick={() => { closeAttach(); setShowGif(true); }}>
               <span className="msg-plus__ico msg-plus__ico--gif"><GifIcon /></span>
-              <span className="msg-plus__label">GIF</span>
+              <span className="msg-plus__label">{t('messages.gif')}</span>
             </button>
             <button className="msg-plus__item" onClick={() => setAttach('location')}>
               <span className="msg-plus__ico msg-plus__ico--loc"><PinIcon /></span>
-              <span className="msg-plus__label">Location</span>
+              <span className="msg-plus__label">{t('messages.locationMenu')}</span>
             </button>
           </div>
           <button className="msg-plus__close" onClick={closeAttach} aria-label="Close">
@@ -213,9 +215,9 @@ export default function GroupConversation({ gid, onBack, onInfo }) {
           <div className="msg-cash-backdrop" onClick={closeAttach} />
           <div className="msg-gallery">
             <button className="msg-cash__grab" onClick={closeAttach} aria-label="Close" />
-            <div className="msg-gallery__title">Choose a Photo or Video</div>
+            <div className="msg-gallery__title">{t('messages.choosePhotoVideo')}</div>
             <div className="msg-gallery__grid">
-              {gallery.length === 0 && <div className="msg-gallery__empty">No photos yet.</div>}
+              {gallery.length === 0 && <div className="msg-gallery__empty">{t('messages.noPhotos')}</div>}
               {[...gallery]
                 .sort((a, b) => (b.ts || 0) - (a.ts || 0))
                 .map((item) => (
@@ -243,29 +245,29 @@ export default function GroupConversation({ gid, onBack, onInfo }) {
                 <span className="msg-attach__ico msg-attach__ico--loc">
                   <PinIcon />
                 </span>
-                <span className="msg-attach__label">Send Current Location</span>
+                <span className="msg-attach__label">{t('messages.sendCurrentLocation')}</span>
               </button>
               <button className="msg-attach__item" onClick={() => shareLocation({ live: true, duration: 900 })}>
                 <span className="msg-attach__ico msg-attach__ico--live">
                   <LiveIcon />
                 </span>
-                <span className="msg-attach__label">Share Live · 15 min</span>
+                <span className="msg-attach__label">{t('messages.shareLive15')}</span>
               </button>
               <button className="msg-attach__item" onClick={() => shareLocation({ live: true, duration: 3600 })}>
                 <span className="msg-attach__ico msg-attach__ico--live">
                   <LiveIcon />
                 </span>
-                <span className="msg-attach__label">Share Live · 1 hour</span>
+                <span className="msg-attach__label">{t('messages.shareLive60')}</span>
               </button>
               <button className="msg-attach__item" onClick={() => shareLocation({ live: true, duration: 0 })}>
                 <span className="msg-attach__ico msg-attach__ico--live">
                   <LiveIcon />
                 </span>
-                <span className="msg-attach__label">Share Live · Until I stop</span>
+                <span className="msg-attach__label">{t('messages.shareLiveStop')}</span>
               </button>
             </div>
             <button className="msg-attach__cancel" onClick={closeAttach}>
-              Cancel
+              {t('messages.cancel')}
             </button>
           </div>
         </div>

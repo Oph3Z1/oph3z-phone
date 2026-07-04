@@ -11,6 +11,8 @@ version '0.1.0'
 shared_scripts {
     '@ox_lib/init.lua',
     'config.lua',
+    'locales/*.lua',      -- language files: Locales['en'] = {...} (add more here)
+    'shared/locale.lua',  -- Lang() helper (loads after the locale tables)
 }
 
 -- Client

@@ -4,9 +4,11 @@ import { digitsOf } from '../../../store/slices/contactsSlice';
 import { sendMessage } from '../../../store/slices/messagesSlice';
 import Avatar from './Avatar';
 import MessageInput from './MessageInput';
+import { useT } from '../../../i18n/useT';
 
 export default function NewMessage({ onClose, onOpen }) {
   const dispatch = useDispatch();
+  const tr = useT();
   const contacts = useSelector((s) => s.contacts.contacts);
 
   const [query, setQuery] = useState('');
@@ -44,14 +46,14 @@ export default function NewMessage({ onClose, onOpen }) {
   return (
     <div className="msg msg--new">
       <div className="msg-new__bar">
-        <span className="msg-new__title">New Message</span>
+        <span className="msg-new__title">{tr('messages.newMessage')}</span>
         <button className="msg-new__cancel" onClick={onClose}>
-          Cancel
+          {tr('messages.cancel')}
         </button>
       </div>
 
       <div className="msg-new__to">
-        <span className="msg-new__tolabel">To:</span>
+        <span className="msg-new__tolabel">{tr('messages.to')}</span>
         {recipient ? (
           <span className="msg-new__chip">
             {recipient.name || recipient.number}

@@ -48,8 +48,10 @@
    light rim and an inner top highlight that reads as polished glass. */
 .phoneapp__tabbar {
   position: absolute;
-  left: 0.7em;
-  right: 0.7em;
+  /* Inset grows as the phone shrinks (via --phone-scale) so the pill gets a bit
+     narrower at smaller sizes. At 100% -> 0.7em; smaller -> more inset. */
+  left: calc(0.7em + (1 - var(--phone-scale, 1)) * 3.5em);
+  right: calc(0.7em + (1 - var(--phone-scale, 1)) * 3.5em);
   bottom: calc(var(--safe-bottom) + 0.35em);
   display: flex;
   border-radius: 1.8em;
@@ -340,6 +342,22 @@
   color: #8e8e93;
   margin-left: 0.5em;
 }
+/* Share icon on My Card — only this triggers the AirDrop (not the whole row). */
+.pa-mycard__share {
+  flex: 0 0 auto;
+  color: #0a84ff;
+  font-size: 1.25em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.35em;
+  border-radius: 50%;
+  cursor: pointer;
+}
+.pa-mycard__share:active {
+  background: rgba(10, 132, 255, 0.16);
+  transform: scale(0.92);
+}
 
 /* ===========================================================================
    Keypad
@@ -534,6 +552,21 @@
 }
 .pa-card__value--plain {
   color: #fff;
+}
+/* Tappable card row (e.g. copy the number). */
+.pa-card__item--tap {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+.pa-card__item--tap:active {
+  background: rgba(255, 255, 255, 0.06);
+}
+.pa-card__value--link {
+  color: #0a84ff;
 }
 .pa-card__btn {
   width: 100%;

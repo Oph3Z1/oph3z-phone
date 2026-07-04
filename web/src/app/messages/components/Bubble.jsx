@@ -1,5 +1,8 @@
 import LocationCard from './LocationCard';
 import VoiceBubble from './VoiceBubble';
+import ContactCard from './ContactCard';
+import AppShareCard from './AppShareCard';
+import { useT } from '../../../i18n/useT';
 
 const PayMark = () => (
   <svg width="1em" height="1em" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
@@ -10,11 +13,20 @@ const PayMark = () => (
 // The inner content of a message (no row wrapper / alignment). Shared by 1-on-1
 // bubbles and group bubbles so every message type renders identically. Money /
 // request only ever appear in 1-on-1 chats.
-export function BubbleContent({ msg, out, selfNumber, onSettle, onDecline, onOpenMedia, onOpenLocation, onStopLive }) {
+export function BubbleContent({ msg, out, selfNumber, onSettle, onDecline, onOpenMedia, onOpenLocation, onStopLive, onOpenContact }) {
+  const t = useT();
   const amt = (msg.meta && msg.meta.amount) || Number(msg.body) || 0;
 
   if (msg.type === 'location') {
     return <LocationCard msg={msg} out={out} onOpen={onOpenLocation} onStopLive={onStopLive} />;
+  }
+
+  if (msg.type === 'contact') {
+    return <ContactCard msg={msg} onOpen={onOpenContact} />;
+  }
+
+  if (msg.type === 'appshare') {
+    return <AppShareCard msg={msg} />;
   }
 
   if (msg.type === 'voice') {
@@ -53,11 +65,11 @@ export function BubbleContent({ msg, out, selfNumber, onSettle, onDecline, onOpe
       <div className="msg-cashmsg">
         <div className={`msg-cashmsg__card${msg.pending ? ' is-pending' : ''}`}>
           <div className="msg-cashmsg__hdr">
-            <PayMark /> Pay
+            <PayMark /> {t('messages.payHeader')}
           </div>
           <div className="msg-cashmsg__amt">${Number(amt).toLocaleString()}</div>
         </div>
-        <div className="msg-cashmsg__status">{out ? 'Sent' : 'Received'}</div>
+        <div className="msg-cashmsg__status">{out ? t('messages.moneySent') : t('messages.moneyReceived')}</div>
       </div>
     );
   }
@@ -69,30 +81,30 @@ export function BubbleContent({ msg, out, selfNumber, onSettle, onDecline, onOpe
     const showBtns = status === 'pending' && !out; // their turn -> shown on the receiver
     const sub =
       status === 'paid'
-        ? 'Paid'
+        ? t('messages.moneyPaid')
         : status === 'declined'
-        ? 'Declined'
+        ? t('messages.moneyDeclined')
         : out
-        ? 'Pending'
+        ? t('messages.moneyPending')
         : iPay
-        ? 'Requested from you'
-        : 'Offering you';
+        ? t('messages.moneyRequestedFromYou')
+        : t('messages.moneyOfferingYou');
 
     return (
       <div className="msg-cashmsg">
         <div className={`msg-cashmsg__card is-request${done ? ' is-done' : ''}`}>
           <div className="msg-cashmsg__hdr">
-            <PayMark /> Pay
+            <PayMark /> {t('messages.payHeader')}
           </div>
           <div className="msg-cashmsg__amt">${Number(amt).toLocaleString()}</div>
           <div className="msg-cashmsg__req">{sub}</div>
           {showBtns && (
             <div className="msg-cashmsg__btns">
               <button className="msg-cashmsg__btn msg-cashmsg__btn--pay" onClick={() => onSettle && onSettle(msg.id)}>
-                {iPay ? 'Pay' : 'Accept'}
+                {iPay ? t('messages.payHeader') : t('messages.accept')}
               </button>
               <button className="msg-cashmsg__btn msg-cashmsg__btn--decline" onClick={() => onDecline && onDecline(msg.id)}>
-                Decline
+                {t('messages.declineBtn')}
               </button>
             </div>
           )}
@@ -109,7 +121,7 @@ export function BubbleContent({ msg, out, selfNumber, onSettle, onDecline, onOpe
 }
 
 // A 1-on-1 message row: aligns the content left/right by direction.
-export default function Bubble({ msg, selfNumber, onSettle, onDecline, onOpenMedia, onOpenLocation, onStopLive }) {
+export default function Bubble({ msg, selfNumber, onSettle, onDecline, onOpenMedia, onOpenLocation, onStopLive, onOpenContact }) {
   const out = msg.dir === 'out';
   return (
     <div className={`msg-brow ${out ? 'is-out' : 'is-in'}`}>
@@ -122,6 +134,7 @@ export default function Bubble({ msg, selfNumber, onSettle, onDecline, onOpenMed
         onOpenMedia={onOpenMedia}
         onOpenLocation={onOpenLocation}
         onStopLive={onStopLive}
+        onOpenContact={onOpenContact}
       />
     </div>
   );

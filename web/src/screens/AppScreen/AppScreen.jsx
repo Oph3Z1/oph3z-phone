@@ -3,6 +3,7 @@ import './AppScreen.css';
 import { getApp } from '../../app/registry';
 import { selectExternalApp } from '../../store/slices/appsSlice';
 import ExternalApp from '../../app/external/ExternalApp';
+import { useT } from '../../i18n/useT';
 
 /**
  * Renders an open app:
@@ -13,6 +14,7 @@ import ExternalApp from '../../app/external/ExternalApp';
  * @param {{ appId: string }} props
  */
 export default function AppScreen({ appId }) {
+  const t = useT();
   const external = useSelector(selectExternalApp(appId));
   if (external) return <ExternalApp app={external} />;
 
@@ -31,8 +33,8 @@ export default function AppScreen({ appId }) {
           <img src={app.icon} alt="" />
         </span>
         <div className="appscreen__name">{app.name}</div>
-        <div className="appscreen__soon">Coming soon</div>
-        <div className="appscreen__hint">Tap the bar below to go home</div>
+        <div className="appscreen__soon">{t('common.comingSoonShort')}</div>
+        <div className="appscreen__hint">{t('common.goHomeHint')}</div>
       </div>
     </div>
   );

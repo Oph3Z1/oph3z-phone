@@ -4,30 +4,31 @@ import Avatar from './Avatar';
 import GroupAvatar from './GroupAvatar';
 import { ChevronRightIcon, ComposeIcon, CheckIcon, GroupAddIcon } from './icons';
 import { deleteThreads } from '../../../store/slices/messagesSlice';
+import { useT } from '../../../i18n/useT';
 
-function preview(t) {
+function preview(t, tr) {
   if (t.isGroup) {
-    const who = t.lastDir === 'out' ? 'You' : t.lastSender;
-    const body = mediaLabel(t) ?? t.lastBody ?? '';
+    const who = t.lastDir === 'out' ? tr('messages.you') : t.lastSender;
+    const body = mediaLabel(t, tr) ?? t.lastBody ?? '';
     if (t.lastType === 'system') return body;
     return who ? `${who}: ${body}` : body;
   }
-  return mediaLabel(t) ?? t.lastBody ?? '';
+  return mediaLabel(t, tr) ?? t.lastBody ?? '';
 }
 
-function mediaLabel(t) {
+function mediaLabel(t, tr) {
   switch (t.lastType) {
-    case 'image': return 'Photo';
-    case 'video': return 'Video';
-    case 'gif': return 'GIF';
-    case 'location': return 'Location';
-    case 'money': return 'Money';
-    case 'voice': return 'Voice message';
+    case 'image': return tr('messages.photo');
+    case 'video': return tr('messages.video');
+    case 'gif': return tr('messages.gif');
+    case 'location': return tr('messages.location');
+    case 'money': return tr('messages.money');
+    case 'voice': return tr('messages.voice');
     default: return null;
   }
 }
 
-function timeLabel(ts) {
+function timeLabel(ts, tr) {
   if (!ts) return '';
   const d = new Date(ts * 1000);
   const now = new Date();
@@ -35,12 +36,13 @@ function timeLabel(ts) {
     return d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', hour12: false });
   const y = new Date(now);
   y.setDate(now.getDate() - 1);
-  if (d.toDateString() === y.toDateString()) return 'Yesterday';
+  if (d.toDateString() === y.toDateString()) return tr('messages.yesterday');
   return d.toLocaleDateString(undefined, { month: 'numeric', day: 'numeric' });
 }
 
 export default function ThreadList({ onOpen, onCompose, onNewGroup }) {
   const dispatch = useDispatch();
+  const tr = useT();
   const threads = useSelector((s) => s.messages.threads);
 
   const [edit, setEdit] = useState(false);
@@ -70,7 +72,7 @@ export default function ThreadList({ onOpen, onCompose, onNewGroup }) {
       <div className="msg-topbar">
         {threads.length > 0 ? (
           <button className="msg-topbar__edit" onClick={() => (edit ? exitEdit() : setEdit(true))}>
-            {edit ? 'Done' : 'Edit'}
+            {edit ? tr('messages.done') : tr('messages.edit')}
           </button>
         ) : (
           <span />
@@ -88,9 +90,9 @@ export default function ThreadList({ onOpen, onCompose, onNewGroup }) {
       </div>
 
       <div className="msg-scroll">
-        <div className="msg-list__title">Messages</div>
+        <div className="msg-list__title">{tr('messages.title')}</div>
 
-        {threads.length === 0 && <div className="msg-empty">No messages yet. Tap ✎ to start.</div>}
+        {threads.length === 0 && <div className="msg-empty">{tr('messages.empty')}</div>}
 
         {threads.map((t) => {
           const selectable = edit && !t.isGroup; // groups are left via Group Info
@@ -111,10 +113,10 @@ export default function ThreadList({ onOpen, onCompose, onNewGroup }) {
               <div className="msg-row__body">
                 <div className="msg-row__top">
                   <span className="msg-row__name">{t.name}</span>
-                  <span className="msg-row__time">{timeLabel(t.lastTs)}</span>
+                  <span className="msg-row__time">{timeLabel(t.lastTs, tr)}</span>
                   {!edit && <ChevronRightIcon className="msg-row__chev" />}
                 </div>
-                <div className={`msg-row__prev${t.unread > 0 ? ' is-unread' : ''}`}>{preview(t)}</div>
+                <div className={`msg-row__prev${t.unread > 0 ? ' is-unread' : ''}`}>{preview(t, tr)}</div>
               </div>
             </button>
           );
@@ -124,7 +126,7 @@ export default function ThreadList({ onOpen, onCompose, onNewGroup }) {
       {edit && (
         <div className="msg-deletebar">
           <button className="msg-deletebar__btn" disabled={selected.size === 0} onClick={removeSelected}>
-            Delete{selected.size ? ` (${selected.size})` : ''}
+            {tr('messages.delete')}{selected.size ? ` (${selected.size})` : ''}
           </button>
         </div>
       )}

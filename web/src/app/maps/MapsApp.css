@@ -24,6 +24,12 @@
 .maps .leaflet-tile-pane {
   filter: saturate(1.02);
 }
+/* Expand each tile a hair so neighbours overlap — hides the thin black seams
+   that otherwise show between tiles while zooming in/out. */
+.maps .leaflet-tile {
+  width: 256.5px !important;
+  height: 256.5px !important;
+}
 
 /* ---- Player marker (pulsing blue dot) ---------------------------------- */
 .maps-player {
@@ -82,9 +88,9 @@
   max-width: 92%;
   text-align: center;
   white-space: nowrap;
-  font-size: 0.66em;
+  font-size: 0.82em;
   color: #e6e6ea;
-  padding: 0.4em 0.9em;
+  padding: 0.5em 1em;
   border-radius: 1em;
   background: rgba(28, 28, 30, 0.78);
   backdrop-filter: blur(1em) saturate(180%);

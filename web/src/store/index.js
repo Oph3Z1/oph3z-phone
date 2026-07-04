@@ -13,7 +13,11 @@ import homeReducer from './slices/homeSlice';
 import dialogReducer from './slices/dialogSlice';
 import promptReducer from './slices/promptSlice';
 import ringtonesReducer from './slices/ringtonesSlice';
+import i18nReducer from './slices/i18nSlice';
 import musicReducer from './slices/musicSlice';
+import toastReducer from './slices/toastSlice';
+import airdropReducer from './slices/airdropSlice';
+import shareReducer from './slices/shareSlice';
 
 export const store = configureStore({
   reducer: {
@@ -31,6 +35,10 @@ export const store = configureStore({
     dialog: dialogReducer,
     prompt: promptReducer,
     ringtones: ringtonesReducer,
+    i18n: i18nReducer,
     music: musicReducer,
+    toast: toastReducer,
+    airdrop: airdropReducer,
+    share: shareReducer,
   },
 });

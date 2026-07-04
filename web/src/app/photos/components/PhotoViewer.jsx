@@ -2,7 +2,15 @@ import { useEffect, useRef, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { ChevronLeftIcon, ChevronRightIcon, HeartIcon, HeartFillIcon, TrashIcon } from './icons';
 import { togglePhotoFavorite, deletePhotos, setLightbox } from '../../../store/slices/photosSlice';
+import { openShare } from '../../../store/slices/airdropSlice';
 import VideoPlayer from './VideoPlayer';
+
+const ShareIcon = () => (
+  <svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+    <path d="M12 3v13M12 3L8.5 6.5M12 3l3.5 3.5" />
+    <path d="M6 11H5a1 1 0 0 0-1 1v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7a1 1 0 0 0-1-1h-1" />
+  </svg>
+);
 
 const SWIPE = 50; // px to move between items
 
@@ -51,6 +59,8 @@ export default function PhotoViewer({ items, startId, onClose }) {
   };
 
   const remove = () => dispatch(deletePhotos([photo.id]));
+  const share = () =>
+    dispatch(openShare({ kind: 'photos', photos: [{ url: photo.url, type: photo.type, thumb: photo.thumb }] }));
 
   return (
     <div className="ph-viewer">
@@ -116,6 +126,9 @@ export default function PhotoViewer({ items, startId, onClose }) {
       </div>
 
       <div className="ph-viewer__actions">
+        <button className="ph-viewer__act" onClick={share} aria-label="Share">
+          <ShareIcon />
+        </button>
         <button
           className={`ph-viewer__act${photo.favorite ? ' is-fav' : ''}`}
           onClick={() => dispatch(togglePhotoFavorite(photo.id, !photo.favorite))}

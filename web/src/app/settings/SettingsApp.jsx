@@ -8,8 +8,10 @@ import { openDialog } from '../../store/slices/dialogSlice';
 import { loadPhotos } from '../../store/slices/photosSlice';
 import { loadRingtones, addRingtone, deleteRingtone } from '../../store/slices/ringtonesSlice';
 import { setShareTo } from '../../store/slices/messagesSlice';
+import { openShare } from '../../store/slices/airdropSlice';
 import { useAvailableApps } from '../useAvailableApps';
 import { WALLPAPER_PRESETS, isWallpaperUrl } from '../../config/phone.config';
+import { useT } from '../../i18n/useT';
 
 const WIFI_NAME = 'iPhone'; // cosmetic network name
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
@@ -76,6 +78,13 @@ const DisplayG = () => (
 );
 const LanguageG = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="12" cy="12" r="8.5" /><path d="M3.5 12h17M12 3.5c2.4 2.3 3.6 5.3 3.6 8.5s-1.2 6.2-3.6 8.5c-2.4-2.3-3.6-5.3-3.6-8.5S9.6 5.8 12 3.5z" /></svg>
+);
+const GlobeBigG = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="9" />
+    <path d="M3 12h18" />
+    <path d="M12 3c2.6 2.5 4 5.7 4 9s-1.4 6.5-4 9c-2.6-2.5-4-5.7-4-9s1.4-6.5 4-9z" />
+  </svg>
 );
 const AboutG = () => (
   <svg viewBox="0 0 24 24" fill="currentColor"><path d="M11 10h2v7h-2z" /><circle cx="12" cy="7" r="1.3" /></svg>
@@ -205,24 +214,25 @@ function ToggleRow({ icon, label, on, onChange }) {
   );
 }
 
-const SUBTITLES = {
-  language: 'Language',
-  about: 'About',
+const SUBTITLE_KEY = {
+  about: 'settings.about',
 };
 
 function SubScreen({ id, onBack }) {
+  const t = useT();
+  const title = t(SUBTITLE_KEY[id] || 'settings.about');
   return (
     <div className="set">
       <div className="set__navbar">
         <button className="set__back" onClick={onBack}>
           <ChevronL />
-          <span>Settings</span>
+          <span>{t('settings.title')}</span>
         </button>
-        <span className="set__navtitle">{SUBTITLES[id]}</span>
+        <span className="set__navtitle">{title}</span>
         <span className="set__navspacer" />
       </div>
       <div className="set__scroll set__scroll--center">
-        <div className="set__soon">“{SUBTITLES[id]}” — coming soon.</div>
+        <div className="set__soon">{t('common.comingSoon', { name: title })}</div>
       </div>
     </div>
   );
@@ -231,6 +241,7 @@ function SubScreen({ id, onBack }) {
 /* ---- Display & Brightness screen ----------------------------------------- */
 function DisplayScreen({ onBack }) {
   const dispatch = useDispatch();
+  const t = useT();
   const brightness = useSelector((s) => s.settings.brightness);
   const scale = useSelector((s) => s.settings.scale) ?? 100;
 
@@ -239,7 +250,7 @@ function DisplayScreen({ onBack }) {
   useEffect(() => () => dispatch(flushSettings()), [dispatch]);
 
   const setBrightness = (v) => dispatch(saveSettingLive('brightness', clamp(v, 20, 100)));
-  const setScale = (v) => dispatch(saveSettingLive('scale', clamp(v, 50, 100)));
+  const setScale = (v) => dispatch(saveSettingLive('scale', clamp(v, 85, 100)));
 
   return (
     <div className="set">
@@ -247,24 +258,24 @@ function DisplayScreen({ onBack }) {
         <button className="set__backcircle" onClick={onBack} aria-label="Back">
           <ChevronL />
         </button>
-        <span className="set__navtitle">Display &amp; Brightness</span>
+        <span className="set__navtitle">{t('display.title')}</span>
         <span className="set__navspacer" />
       </div>
 
       <div className="set__scroll">
-        <div className="set-grouptitle"><span>Brightness</span></div>
+        <div className="set-grouptitle"><span>{t('display.brightness')}</span></div>
         <div className="set-card set-card--slider">
           <ThickSlider value={brightness} min={20} max={100} onChange={setBrightness} icon={<SunG />} />
         </div>
 
         <div className="set-grouptitle">
-          <span>Phone Size</span>
+          <span>{t('display.phoneSize')}</span>
           <span className="set-grouptitle__val">{Math.round(scale)}%</span>
         </div>
         <div className="set-card set-card--slider">
-          <ThickSlider value={scale} min={50} max={100} onChange={setScale} icon={<PhoneSizeG />} />
+          <ThickSlider value={scale} min={85} max={100} onChange={setScale} icon={<PhoneSizeG />} />
         </div>
-        <p className="set-hint">Shrink the phone to keep more of the game visible around it.</p>
+        <p className="set-hint">{t('display.hint')}</p>
       </div>
     </div>
   );
@@ -273,6 +284,7 @@ function DisplayScreen({ onBack }) {
 /* ---- Wallpaper screen ---------------------------------------------------- */
 function WallpaperScreen({ onBack }) {
   const dispatch = useDispatch();
+  const t = useT();
   const current = useSelector((s) => s.settings.wallpaper) || '';
   const [url, setUrl] = useState('');
 
@@ -294,7 +306,7 @@ function WallpaperScreen({ onBack }) {
         <button className="set__backcircle" onClick={onBack} aria-label="Back">
           <ChevronL />
         </button>
-        <span className="set__navtitle">Wallpaper</span>
+        <span className="set__navtitle">{t('wallpaper.title')}</span>
         <span className="set__navspacer" />
       </div>
 
@@ -307,7 +319,7 @@ function WallpaperScreen({ onBack }) {
             ) : (
               <div className="wp-custom__ph">
                 <WallpaperG />
-                <span>Paste a URL to preview</span>
+                <span>{t('wallpaper.previewHint')}</span>
               </div>
             )}
             {customActive && !typed && (
@@ -318,18 +330,18 @@ function WallpaperScreen({ onBack }) {
             <input
               className="wp-input"
               value={url}
-              placeholder="Paste image URL…"
+              placeholder={t('wallpaper.pasteUrl')}
               onChange={(e) => setUrl(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && setCustom()}
             />
             <button className="wp-set" onClick={setCustom} disabled={!typed}>
-              Set
+              {t('common.set')}
             </button>
           </div>
         </div>
 
         {/* Built-in presets */}
-        <div className="wp-section-title">Wallpapers</div>
+        <div className="wp-section-title">{t('wallpaper.wallpapers')}</div>
         <div className="wp-grid">
           {WALLPAPER_PRESETS.map((w) => (
             <button
@@ -351,6 +363,7 @@ function WallpaperScreen({ onBack }) {
 /* ---- Ringtones screen ---------------------------------------------------- */
 function RingtonesScreen({ onBack }) {
   const dispatch = useDispatch();
+  const t = useT();
   const items = useSelector((s) => s.ringtones.items);
   const selected = useSelector((s) => s.settings.ringtone) || '';
   const volume = useSelector((s) => s.settings.volume);
@@ -404,12 +417,12 @@ function RingtonesScreen({ onBack }) {
   const addRingtoneFlow = async () => {
     const res = await dispatch(
       openPrompt({
-        title: 'Add New Ringtone',
-        message: 'Fill details to add new ringtone.',
-        confirmText: 'Add',
+        title: t('ringtones.addTitle'),
+        message: t('ringtones.addMsg'),
+        confirmText: t('common.add'),
         fields: [
-          { key: 'name', placeholder: 'Name', maxLength: 40 },
-          { key: 'url', placeholder: 'Paste URL', maxLength: 512 },
+          { key: 'name', placeholder: t('ringtones.name'), maxLength: 40 },
+          { key: 'url', placeholder: t('ringtones.pasteUrl'), maxLength: 512 },
         ],
       })
     );
@@ -419,11 +432,11 @@ function RingtonesScreen({ onBack }) {
   const removeFlow = async (rt) => {
     const ok = await dispatch(
       openDialog({
-        title: 'Delete Ringtone',
-        message: `Remove “${rt.name}” from your ringtones?`,
+        title: t('ringtones.deleteTitle'),
+        message: t('ringtones.deleteMsg', { name: rt.name }),
         buttons: [
-          { text: 'Cancel', style: 'cancel', value: false },
-          { text: 'Delete', style: 'destructive', value: true },
+          { text: t('common.cancel'), style: 'cancel', value: false },
+          { text: t('common.delete'), style: 'destructive', value: true },
         ],
       })
     );
@@ -457,7 +470,7 @@ function RingtonesScreen({ onBack }) {
         <button className="set__backcircle" onClick={onBack} aria-label="Back">
           <ChevronL />
         </button>
-        <span className="set__navtitle">Ringtones</span>
+        <span className="set__navtitle">{t('ringtones.title')}</span>
         <span className="set__navspacer" />
       </div>
 
@@ -465,7 +478,7 @@ function RingtonesScreen({ onBack }) {
         <div className="set-card">
           <button className="set-row" onClick={addRingtoneFlow}>
             <SqIcon bg="#0a84ff"><MusicNoteG /></SqIcon>
-            <span className="set-row__label">Add Your Ringtone</span>
+            <span className="set-row__label">{t('ringtones.add')}</span>
             <Chevron />
           </button>
         </div>
@@ -502,9 +515,117 @@ function RingtonesScreen({ onBack }) {
   );
 }
 
+/* ---- About screen -------------------------------------------------------- */
+// iOS-style blue "info" seal badge (a smooth 11-lobe scalloped disc + an "i").
+const SealBadge = () => {
+  const cx = 50, cy = 50, base = 42, amp = 6, lobes = 11, N = 160;
+  let d = '';
+  for (let i = 0; i < N; i++) {
+    const th = (i / N) * Math.PI * 2;
+    const r = base + amp * Math.cos(lobes * th);
+    d += `${i === 0 ? 'M' : 'L'}${(cx + Math.cos(th) * r).toFixed(2)} ${(cy + Math.sin(th) * r).toFixed(2)} `;
+  }
+  d += 'Z';
+  return (
+    <svg viewBox="0 0 100 100" className="about-badge__svg">
+      <path d={d} fill="#0a84ff" />
+      <circle cx="50" cy="37" r="3.7" fill="#fff" />
+      <rect x="46.3" y="44.5" width="7.4" height="20" rx="3.7" fill="#fff" />
+    </svg>
+  );
+};
+
+// Cosmetic device info (data/brand — not translated).
+const ABOUT_VERSION = '1.0';
+const ABOUT_SERIAL = '6779686977';
+const ABOUT_MODEL = 'oPhone 26';
+
+function AboutScreen({ onBack }) {
+  const t = useT();
+  const identity = useSelector((s) => s.phone.identity);
+  const name = identity.name || t('settings.myProfile');
+  const email = identity.email || '—';
+
+  const Row = ({ label, value }) => (
+    <div className="set-row set-row--static about-row">
+      <span className="set-row__label">{label}</span>
+      <span className="set-row__value about-value">{value}</span>
+    </div>
+  );
+
+  return (
+    <div className="set">
+      <div className="set__navbar set__navbar--center">
+        <button className="set__backcircle" onClick={onBack} aria-label="Back">
+          <ChevronL />
+        </button>
+        <span className="set__navtitle">{t('about.title')}</span>
+        <span className="set__navspacer" />
+      </div>
+
+      <div className="set__scroll about-scroll">
+        <div className="about-badge"><SealBadge /></div>
+
+        <div className="set-card">
+          <Row label={t('about.name')} value={name} />
+          <div className="set-sep set-sep--profile" />
+          <Row label={t('about.phoneId')} value={email} />
+          <div className="set-sep set-sep--profile" />
+          <Row label={t('about.version')} value={ABOUT_VERSION} />
+          <div className="set-sep set-sep--profile" />
+          <Row label={t('about.serial')} value={ABOUT_SERIAL} />
+          <div className="set-sep set-sep--profile" />
+          <Row label={t('about.model')} value={ABOUT_MODEL} />
+        </div>
+
+        <div className="about-footer">{t('about.footer')}</div>
+      </div>
+    </div>
+  );
+}
+
+/* ---- Language screen ----------------------------------------------------- */
+function LanguageScreen({ onBack }) {
+  const dispatch = useDispatch();
+  const t = useT();
+  const languages = useSelector((s) => s.i18n.languages);
+  const current = useSelector((s) => s.settings.language) || 'en';
+
+  const select = (code) => dispatch(saveSetting('language', code));
+
+  return (
+    <div className="set">
+      <div className="set__navbar set__navbar--center">
+        <button className="set__backcircle" onClick={onBack} aria-label="Back">
+          <ChevronL />
+        </button>
+        <span className="set__navtitle">{t('language.title')}</span>
+        <span className="set__navspacer" />
+      </div>
+
+      <div className="set__scroll">
+        <div className="lang-globe"><GlobeBigG /></div>
+
+        <div className="set-card">
+          {languages.map((l, i) => (
+            <Fragment key={l.code}>
+              {i > 0 && <div className="set-sep set-sep--profile" />}
+              <button className="set-row lang-row" onClick={() => select(l.code)}>
+                <span className="set-row__label">{l.name}</span>
+                {current === l.code && <span className="lang-check"><CheckG /></span>}
+              </button>
+            </Fragment>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* ---- Notifications screen ------------------------------------------------ */
 function NotificationsScreen({ onBack }) {
   const dispatch = useDispatch();
+  const t = useT();
   const { list } = useAvailableApps();
   const notifSound = useSelector((s) => s.settings.notifSound);
   const notifMaster = useSelector((s) => s.settings.notifMaster);
@@ -517,7 +638,7 @@ function NotificationsScreen({ onBack }) {
         <button className="set__backcircle" onClick={onBack} aria-label="Back">
           <ChevronL />
         </button>
-        <span className="set__navtitle">Notifications</span>
+        <span className="set__navtitle">{t('notifications.title')}</span>
         <span className="set__navspacer" />
       </div>
 
@@ -526,14 +647,14 @@ function NotificationsScreen({ onBack }) {
         <div className="set-card">
           <ToggleRow
             icon={<SqIcon bg="#ff3b30"><BellG /></SqIcon>}
-            label="Notification Sound"
+            label={t('notifications.sound')}
             on={notifSound !== false}
             onChange={(v) => dispatch(saveSetting('notifSound', v))}
           />
           <div className="set-sep" />
           <ToggleRow
             icon={<SqIcon bg="#ff9500"><BellOffG /></SqIcon>}
-            label="Close All Notifications"
+            label={t('notifications.closeAll')}
             on={masterOn}
             onChange={(v) => dispatch(saveSetting('notifMaster', v))}
           />
@@ -570,12 +691,13 @@ function NotificationsScreen({ onBack }) {
 /* ---- Profile screen ("Phone ID") ---------------------------------------- */
 function ProfileScreen({ onBack }) {
   const dispatch = useDispatch();
+  const t = useT();
   const identity = useSelector((s) => s.phone.identity);
   const gallery = useSelector((s) => s.photos.items);
   const [sheet, setSheet] = useState(false); // Upload Photo sheet open?
   const [url, setUrl] = useState('');
 
-  const name = identity.name || 'My Profile';
+  const name = identity.name || t('settings.myProfile');
   const email = identity.email || '';
   const avatar = identity.avatar || '';
 
@@ -586,11 +708,11 @@ function ProfileScreen({ onBack }) {
   const rename = async () => {
     const v = await dispatch(
       openPrompt({
-        title: 'Change ID Name',
-        message: 'Fill details to rename your ID.',
-        placeholder: 'Your name',
-        value: name === 'My Profile' ? '' : name,
-        confirmText: 'Rename',
+        title: t('profile.renameTitle'),
+        message: t('profile.renameMsg'),
+        placeholder: t('profile.yourName'),
+        value: identity.name || '',
+        confirmText: t('profile.rename'),
         maxLength: 40,
       })
     );
@@ -619,7 +741,7 @@ function ProfileScreen({ onBack }) {
         <button className="set__backcircle" onClick={onBack} aria-label="Back">
           <ChevronL />
         </button>
-        <span className="set__navtitle">Phone ID</span>
+        <span className="set__navtitle">{t('profile.title')}</span>
         <span className="set__navspacer" />
       </div>
 
@@ -635,12 +757,12 @@ function ProfileScreen({ onBack }) {
         <div className="set-card set-card--profile">
           <button className="set-row" onClick={() => setSheet(true)}>
             <SqIcon bg="#0a84ff"><CameraG /></SqIcon>
-            <span className="set-row__label">Change Profile Photo</span>
+            <span className="set-row__label">{t('profile.changePhoto')}</span>
           </button>
           <div className="set-sep" />
           <button className="set-row" onClick={rename}>
             <SqIcon bg="#34c759"><IdCardG /></SqIcon>
-            <span className="set-row__label">Change ID Name</span>
+            <span className="set-row__label">{t('profile.changeName')}</span>
           </button>
         </div>
       </div>
@@ -650,7 +772,7 @@ function ProfileScreen({ onBack }) {
           <div className="set-up__backdrop" onClick={() => setSheet(false)} />
           <div className="set-up">
             <div className="set-up__head">
-              <span className="set-up__title">Upload Photo</span>
+              <span className="set-up__title">{t('profile.uploadPhoto')}</span>
               <button className="set-up__close" onClick={() => setSheet(false)} aria-label="Close">
                 <XG />
               </button>
@@ -661,7 +783,7 @@ function ProfileScreen({ onBack }) {
               <input
                 className="set-up__input"
                 value={url}
-                placeholder="Paste url in here…"
+                placeholder={t('profile.pasteUrl')}
                 onChange={(e) => setUrl(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && applyPhoto(url)}
               />
@@ -674,7 +796,7 @@ function ProfileScreen({ onBack }) {
             </div>
 
             <div className="set-up__grid">
-              {sorted.length === 0 && <div className="set-up__empty">No photos yet.</div>}
+              {sorted.length === 0 && <div className="set-up__empty">{t('profile.noPhotos')}</div>}
               {sorted.map((item) => (
                 <button key={item.id} className="set-up__cell" onClick={() => applyPhoto(item.url)}>
                   {item.type === 'video' ? (
@@ -697,6 +819,7 @@ function ProfileScreen({ onBack }) {
 
 export default function SettingsApp() {
   const dispatch = useDispatch();
+  const t = useT();
   const [view, setView] = useState('list');
   const [copied, setCopied] = useState(false);
   const identity = useSelector((s) => s.phone.identity);
@@ -704,7 +827,7 @@ export default function SettingsApp() {
   const airdrop = useSelector((s) => s.settings.airdrop);
   const launchTab = useSelector((s) => s.phone.launchTab);
 
-  const name = identity.name || 'My Profile';
+  const name = identity.name || t('settings.myProfile');
   const number = identity.number || '';
   const avatar = identity.avatar || '';
   // Copy digits only ("5553873"), not the formatted "555-3873".
@@ -746,17 +869,23 @@ export default function SettingsApp() {
     setTimeout(() => setCopied(false), 1200);
   };
 
+  // Same as the Phone app's My Card: AirDrop your own contact to a nearby player.
+  const shareMyCard = () =>
+    dispatch(openShare({ kind: 'contact', contact: { name, number, img: avatar } }));
+
   if (view === 'profile') return <ProfileScreen onBack={() => setView('list')} />;
   if (view === 'notifications') return <NotificationsScreen onBack={() => setView('list')} />;
   if (view === 'ringtones') return <RingtonesScreen onBack={() => setView('list')} />;
   if (view === 'wallpaper') return <WallpaperScreen onBack={() => setView('list')} />;
   if (view === 'display') return <DisplayScreen onBack={() => setView('list')} />;
+  if (view === 'language') return <LanguageScreen onBack={() => setView('list')} />;
+  if (view === 'about') return <AboutScreen onBack={() => setView('list')} />;
   if (view !== 'list') return <SubScreen id={view} onBack={() => setView('list')} />;
 
   return (
     <div className="set">
       <div className="set__bar">
-        <h1 className="set__title">Settings</h1>
+        <h1 className="set__title">{t('settings.title')}</h1>
       </div>
 
       <div className="set__scroll">
@@ -768,18 +897,18 @@ export default function SettingsApp() {
             </span>
             <span className="set-profile__text">
               <span className="set-profile__name">{name}</span>
-              <span className="set-profile__sub">Phone ID, Profile Photo and more</span>
+              <span className="set-profile__sub">{t('settings.profileSub')}</span>
             </span>
             <Chevron />
           </button>
           <div className="set-sep set-sep--profile" />
           <div className="set-phonerow">
             <span className="set-phonerow__text">
-              <span className="set-phonerow__label">Phone Number</span>
+              <span className="set-phonerow__label">{t('settings.phoneNumber')}</span>
               <span className="set-phonerow__num">{number}</span>
             </span>
             <span className="set-phonerow__icons">
-              <span className="set-phonerow__ico"><AirdropG /></span>
+              <button className="set-phonerow__ico set-phonerow__ico--btn" onClick={shareMyCard} aria-label="Share my contact"><AirdropG /></button>
               <button className={`set-phonerow__ico set-phonerow__ico--btn${copied ? ' is-copied' : ''}`} onClick={copyNumber} aria-label="Copy number">
                 {copied ? <CheckG /> : <CopyG />}
               </button>
@@ -791,16 +920,16 @@ export default function SettingsApp() {
         <div className="set-card">
           <ToggleRow
             icon={<SqIcon bg="#ff9f0a"><AirplaneG /></SqIcon>}
-            label="Airplane Mode"
+            label={t('settings.airplane')}
             on={airplane}
             onChange={(v) => dispatch(setAirplane(v))}
           />
           <div className="set-sep" />
-          <ValueRow icon={<SqIcon bg="#0a84ff"><WifiG /></SqIcon>} label="Wi-Fi" value={WIFI_NAME} />
+          <ValueRow icon={<SqIcon bg="#0a84ff"><WifiG /></SqIcon>} label={t('settings.wifi')} value={WIFI_NAME} />
           <div className="set-sep" />
           <ToggleRow
             icon={<SqIcon bg="#0a84ff"><AirdropG /></SqIcon>}
-            label="AirDrop"
+            label={t('settings.airdrop')}
             on={airdrop}
             onChange={(v) => dispatch(saveSetting('airdrop', v))}
           />
@@ -808,20 +937,20 @@ export default function SettingsApp() {
 
         {/* Notifications / sounds / display */}
         <div className="set-card">
-          <NavRow icon={<SqIcon bg="#ff3b30"><BellG /></SqIcon>} label="Notifications" onClick={() => setView('notifications')} />
+          <NavRow icon={<SqIcon bg="#ff3b30"><BellG /></SqIcon>} label={t('settings.notifications')} onClick={() => setView('notifications')} />
           <div className="set-sep" />
-          <NavRow icon={<SqIcon bg="#ff2d55"><RingtoneG /></SqIcon>} label="Ringtones" onClick={() => setView('ringtones')} />
+          <NavRow icon={<SqIcon bg="#ff2d55"><RingtoneG /></SqIcon>} label={t('settings.ringtones')} onClick={() => setView('ringtones')} />
           <div className="set-sep" />
-          <NavRow icon={<SqIcon bg="#30b0c7"><WallpaperG /></SqIcon>} label="Wallpaper" onClick={() => setView('wallpaper')} />
+          <NavRow icon={<SqIcon bg="#30b0c7"><WallpaperG /></SqIcon>} label={t('settings.wallpaper')} onClick={() => setView('wallpaper')} />
           <div className="set-sep" />
-          <NavRow icon={<SqIcon bg="#0a84ff"><DisplayG /></SqIcon>} label="Display & Brightness" onClick={() => setView('display')} />
+          <NavRow icon={<SqIcon bg="#0a84ff"><DisplayG /></SqIcon>} label={t('settings.display')} onClick={() => setView('display')} />
         </div>
 
         {/* General */}
         <div className="set-card">
-          <NavRow icon={<SqIcon bg="#0a84ff"><LanguageG /></SqIcon>} label="Language" onClick={() => setView('language')} />
+          <NavRow icon={<SqIcon bg="#0a84ff"><LanguageG /></SqIcon>} label={t('settings.language')} onClick={() => setView('language')} />
           <div className="set-sep" />
-          <NavRow icon={<SqIcon bg="#8e8e93"><AboutG /></SqIcon>} label="About" onClick={() => setView('about')} />
+          <NavRow icon={<SqIcon bg="#8e8e93"><AboutG /></SqIcon>} label={t('settings.about')} onClick={() => setView('about')} />
         </div>
       </div>
     </div>

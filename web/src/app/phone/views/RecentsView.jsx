@@ -4,11 +4,12 @@ import Avatar from '../components/Avatar';
 import { InfoIcon } from '../components/icons';
 import { fetchNui } from '../../../utils/fetchNui';
 import { pad2 } from '../../../utils/misc';
+import { useT } from '../../../i18n/useT';
 
 const digitsOnly = (s) => String(s || '').replace(/\D/g, '');
 
 // Format a unix (seconds) timestamp like iOS recents.
-function formatTime(ts) {
+function formatTime(ts, t) {
   if (!ts) return '';
   const d = new Date(ts * 1000);
   const now = new Date();
@@ -16,11 +17,12 @@ function formatTime(ts) {
   if (sameDay) return `${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
   const yest = new Date(now);
   yest.setDate(now.getDate() - 1);
-  if (d.toDateString() === yest.toDateString()) return 'Yesterday';
+  if (d.toDateString() === yest.toDateString()) return t('phone.yesterday');
   return `${d.getMonth() + 1}/${d.getDate()}`;
 }
 
 export default function RecentsView({ onProfile }) {
+  const t = useT();
   const recents = useSelector((s) => s.contacts.recents);
   const contacts = useSelector((s) => s.contacts.contacts);
   const [filter, setFilter] = useState('all'); // 'all' | 'missed'
@@ -40,31 +42,31 @@ export default function RecentsView({ onProfile }) {
     <>
       <div className="pa-topbar">
         <button className="pa-actionbtn" style={{ visibility: 'hidden' }}>
-          Edit
+          {t('phone.edit')}
         </button>
         <div className="pa-segment" style={{ margin: 0, width: '45%' }}>
           <button
             className={filter === 'all' ? 'is-active' : ''}
             onClick={() => setFilter('all')}
           >
-            All
+            {t('phone.all')}
           </button>
           <button
             className={filter === 'missed' ? 'is-active' : ''}
             onClick={() => setFilter('missed')}
           >
-            Missed
+            {t('phone.missed')}
           </button>
         </div>
         <span style={{ width: '3em' }} />
       </div>
-      <div className="pa-title">Recents</div>
+      <div className="pa-title">{t('phone.recents')}</div>
 
       <div className="pa-scroll">
         {list.length === 0 ? (
           <div className="pa-empty">
-            <div className="pa-empty__title">No Recent Calls</div>
-            <div>Your call history will appear here.</div>
+            <div className="pa-empty__title">{t('phone.noRecents')}</div>
+            <div>{t('phone.noRecentsHint')}</div>
           </div>
         ) : (
           <div className="pa-list">
@@ -78,10 +80,14 @@ export default function RecentsView({ onProfile }) {
                     {who.name || r.number}
                   </span>
                   <span className="pa-row__sub">
-                    {r.direction === 'out' ? '↗ outgoing' : r.missed ? '↙ missed' : '↙ incoming'}
+                    {r.direction === 'out'
+                      ? `↗ ${t('phone.outgoing')}`
+                      : r.missed
+                      ? `↙ ${t('phone.missedLower')}`
+                      : `↙ ${t('phone.incoming')}`}
                   </span>
                 </span>
-                <span className="pa-row__time">{formatTime(r.ts)}</span>
+                <span className="pa-row__time">{formatTime(r.ts, t)}</span>
                 <span
                   className="pa-row__info"
                   onClick={(e) => {

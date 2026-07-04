@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { fetchNui } from '../../../utils/fetchNui';
 import { isEnvBrowser } from '../../../utils/misc';
+import { useT } from '../../../i18n/useT';
 
 // Browser-dev fallback so the picker isn't empty via `npm run dev`.
 const MOCK_RESULTS = [
@@ -23,6 +24,7 @@ function giphyUrl(apiKey, q) {
 }
 
 export default function GifPicker({ onClose, onSelect }) {
+  const tr = useT();
   const [cfg, setCfg] = useState(null);
   const [query, setQuery] = useState('');
   const [results, setResults] = useState([]);
@@ -80,20 +82,16 @@ export default function GifPicker({ onClose, onSelect }) {
           <input
             className="msg-gifs__search"
             value={query}
-            placeholder="Search GIPHY"
+            placeholder={tr('messages.searchGiphy')}
             autoFocus
             onChange={(e) => setQuery(e.target.value)}
           />
         </div>
 
-        {status === 'loading' && <div className="msg-gifs__note">Loading…</div>}
-        {status === 'nokey' && (
-          <div className="msg-gifs__note">
-            Add your GIPHY API key in <b>config.lua</b> (Config.Gif.apiKey) to enable GIFs.
-          </div>
-        )}
-        {status === 'empty' && <div className="msg-gifs__note">No GIFs found.</div>}
-        {status === 'error' && <div className="msg-gifs__note">Couldn’t reach the GIF service.</div>}
+        {status === 'loading' && <div className="msg-gifs__note">{tr('messages.loading')}</div>}
+        {status === 'nokey' && <div className="msg-gifs__note">{tr('messages.gifNoKey')}</div>}
+        {status === 'empty' && <div className="msg-gifs__note">{tr('messages.noGifs')}</div>}
+        {status === 'error' && <div className="msg-gifs__note">{tr('messages.gifError')}</div>}
 
         {status === 'ok' && (
           <div className="msg-gifs__grid">

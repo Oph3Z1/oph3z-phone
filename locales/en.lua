@@ -1,0 +1,411 @@
+--[[
+    oph3z-phone | Locale: English (en)
+
+    This is the single source of truth for English text. It is used BOTH by:
+      - the phone UI (the `frontend` table is sent to the NUI when 'en' is selected)
+      - Lua scripts (client/server) via the Lang() helper, e.g.
+            Lang('systemNotification.minutes')      -> "Minutes"
+            Lang('frontend.settings.title', 'en')   -> "Settings"
+
+    To ADD A LANGUAGE: copy this file to locales/<code>.lua (e.g. locales/tr.lua),
+    change `Locales['en']` to `Locales['tr']`, set `_name`, and translate the values.
+    It then appears automatically in Settings > Language (no other changes needed).
+--]]
+
+Locales = Locales or {}
+
+Locales['en'] = {
+    -- Shown in the Settings > Language picker.
+    ['_name'] = 'English',
+
+    -- =====================================================================
+    -- Strings used by the phone UI (React). This whole sub-table is handed to
+    -- the NUI; components look keys up with t('settings.title') etc.
+    -- =====================================================================
+    ['frontend'] = {
+        ['common'] = {
+            ['cancel'] = 'Cancel',
+            ['done'] = 'Done',
+            ['add'] = 'Add',
+            ['set'] = 'Set',
+            ['delete'] = 'Delete',
+            ['settings'] = 'Settings',
+            ['comingSoon'] = '“{name}” — coming soon.',
+            ['comingSoonShort'] = 'Coming soon',
+            ['goHomeHint'] = 'Tap the bar below to go home',
+        },
+
+        ['settings'] = {
+            ['title'] = 'Settings',
+            ['profileSub'] = 'Phone ID, Profile Photo and more',
+            ['myProfile'] = 'My Profile',
+            ['phoneNumber'] = 'Phone Number',
+            ['airplane'] = 'Airplane Mode',
+            ['wifi'] = 'Wi-Fi',
+            ['airdrop'] = 'AirDrop',
+            ['notifications'] = 'Notifications',
+            ['ringtones'] = 'Ringtones',
+            ['wallpaper'] = 'Wallpaper',
+            ['display'] = 'Display & Brightness',
+            ['language'] = 'Language',
+            ['about'] = 'About',
+        },
+
+        ['profile'] = {
+            ['title'] = 'Phone ID',
+            ['changePhoto'] = 'Change Profile Photo',
+            ['changeName'] = 'Change ID Name',
+            ['renameTitle'] = 'Change ID Name',
+            ['renameMsg'] = 'Fill details to rename your ID.',
+            ['rename'] = 'Rename',
+            ['yourName'] = 'Your name',
+            ['uploadPhoto'] = 'Upload Photo',
+            ['pasteUrl'] = 'Paste url in here…',
+            ['noPhotos'] = 'No photos yet.',
+        },
+
+        ['notifications'] = {
+            ['title'] = 'Notifications',
+            ['sound'] = 'Notification Sound',
+            ['closeAll'] = 'Close All Notifications',
+        },
+
+        ['ringtones'] = {
+            ['title'] = 'Ringtones',
+            ['add'] = 'Add Your Ringtone',
+            ['addTitle'] = 'Add New Ringtone',
+            ['addMsg'] = 'Fill details to add new ringtone.',
+            ['name'] = 'Name',
+            ['pasteUrl'] = 'Paste URL',
+            ['deleteTitle'] = 'Delete Ringtone',
+            ['deleteMsg'] = 'Remove “{name}” from your ringtones?',
+        },
+
+        ['wallpaper'] = {
+            ['title'] = 'Wallpaper',
+            ['previewHint'] = 'Paste a URL to preview',
+            ['pasteUrl'] = 'Paste image URL…',
+            ['wallpapers'] = 'Wallpapers',
+        },
+
+        ['display'] = {
+            ['title'] = 'Display & Brightness',
+            ['brightness'] = 'Brightness',
+            ['phoneSize'] = 'Phone Size',
+            ['hint'] = 'Shrink the phone to keep more of the game visible around it.',
+        },
+
+        ['language'] = {
+            ['title'] = 'Language',
+        },
+
+        ['about'] = {
+            ['title'] = 'About',
+            ['name'] = 'Name',
+            ['phoneId'] = 'phoneID',
+            ['version'] = 'Version',
+            ['serial'] = 'Serial Number',
+            ['model'] = 'Model Name',
+            ['footer'] = 'Designed & Developed by Oph3Z',
+        },
+
+        -- Phone / Contacts / Calls app
+        ['phone'] = {
+            ['title'] = 'Phone',
+            ['favorites'] = 'Favorites',
+            ['recents'] = 'Recents',
+            ['contacts'] = 'Contacts',
+            ['keypad'] = 'Keypad',
+            ['messages'] = 'Messages',
+            ['numberCopied'] = 'Number copied',
+            ['copyFailed'] = 'Couldn\'t copy',
+            ['shareContact'] = 'Share Contact',
+            ['addContact'] = 'Add to Contacts',
+            ['share'] = 'Share',
+            ['myCardSub'] = 'Share your contact',
+            ['edit'] = 'Edit',
+            ['done'] = 'Done',
+            ['save'] = 'Save',
+            ['cancel'] = 'Cancel',
+            ['search'] = 'Search',
+            ['mobile'] = 'mobile',
+            ['notes'] = 'notes',
+            ['message'] = 'message',
+            ['call'] = 'call',
+            ['myCard'] = 'My Card',
+            ['newContact'] = 'New Contact',
+            ['noFavorites'] = 'No Favorites',
+            ['noFavoritesHint'] = 'Add contacts you call often for quick access.',
+            ['noRecents'] = 'No Recent Calls',
+            ['noRecentsHint'] = 'Your call history will appear here.',
+            ['noResults'] = 'No Results',
+            ['noContacts'] = 'No Contacts',
+            ['noContactsHint'] = 'Tap + to add your first contact.',
+            ['all'] = 'All',
+            ['missed'] = 'Missed',
+            ['yesterday'] = 'Yesterday',
+            ['outgoing'] = 'outgoing',
+            ['incoming'] = 'incoming',
+            ['missedLower'] = 'missed',
+            ['addToFavorites'] = 'Add to Favorites',
+            ['removeFromFavorites'] = 'Remove from Favorites',
+            ['blockCaller'] = 'Block this Caller',
+            ['unblockCaller'] = 'Unblock this Caller',
+            ['deleteContact'] = 'Delete Contact',
+            ['fieldName'] = 'Name',
+            ['fieldNumber'] = 'Phone number',
+            ['fieldNotes'] = 'Notes',
+            ['fieldImage'] = 'Image URL (optional)',
+        },
+
+        ['call'] = {
+            ['unknown'] = 'Unknown',
+            ['calling'] = 'Calling…',
+            ['incoming'] = 'Incoming call',
+            ['decline'] = 'Decline',
+            ['accept'] = 'Accept',
+            ['mute'] = 'Mute',
+            ['unmute'] = 'Unmute',
+            ['end'] = 'End',
+            ['reasonUnavailable'] = 'Unavailable',
+            ['reasonBusy'] = 'Busy',
+            ['reasonInvalid'] = 'Invalid Number',
+            ['reasonDeclined'] = 'Call Declined',
+            ['reasonNoAnswer'] = 'No Answer',
+            ['reasonEnded'] = 'Call Ended',
+            ['reasonAirplane'] = 'No Service',
+            ['reasonFailed'] = 'Call Failed',
+        },
+
+        -- Messages app
+        ['messages'] = {
+            ['title'] = 'Messages',
+            ['empty'] = 'No messages yet. Tap ✎ to start.',
+            ['edit'] = 'Edit',
+            ['done'] = 'Done',
+            ['cancel'] = 'Cancel',
+            ['delete'] = 'Delete',
+            ['you'] = 'You',
+            ['yesterday'] = 'Yesterday',
+            -- media previews
+            ['photo'] = 'Photo',
+            ['video'] = 'Video',
+            ['gif'] = 'GIF',
+            ['location'] = 'Location',
+            ['money'] = 'Money',
+            ['voice'] = 'Voice message',
+            -- composer
+            ['inputPlaceholder'] = 'Send your message…',
+            ['addComment'] = 'Add a comment',
+            -- new message / group
+            ['newMessage'] = 'New Message',
+            ['newGroup'] = 'New Group',
+            ['create'] = 'Create',
+            ['to'] = 'To:',
+            ['add'] = 'Add:',
+            ['groupName'] = 'Group Name',
+            ['group'] = 'Group',
+            ['nameOrNumber'] = 'Name or number',
+            ['newGroupHint'] = 'Add people by contact or phone number, then tap Create.',
+            ['chooseGroupPhoto'] = 'Choose a Group Photo',
+            ['choosePhotoVideo'] = 'Choose a Photo or Video',
+            ['noPhotos'] = 'No photos yet.',
+            -- + menu
+            ['camera'] = 'Camera',
+            ['gallery'] = 'Gallery',
+            ['locationMenu'] = 'Location',
+            ['shareMenu'] = 'Share',
+            ['contactMenu'] = 'Contact',
+            -- shared contact card
+            ['contactCard'] = 'Contact',
+            ['cardCall'] = 'Call',
+            ['cardMessage'] = 'Message',
+            ['cardSave'] = 'Save as Contact',
+            ['cardAdded'] = 'Added to Contacts',
+            ['cardExists'] = 'Already in Contacts',
+            -- money
+            ['send'] = 'Send',
+            ['request'] = 'Request',
+            ['sending'] = 'Sending…',
+            ['showKeypad'] = 'Show Keypad',
+            ['hideKeypad'] = 'Hide Keypad',
+            ['errFunds'] = 'Not enough bank balance.',
+            ['errOffline'] = "They're offline right now.",
+            ['errRecipient'] = "Can't send to this number.",
+            ['errAmount'] = 'Enter an amount.',
+            ['errGone'] = 'That request is no longer available.',
+            ['errGeneric'] = 'Could not send.',
+            ['errComplete'] = 'Could not complete.',
+            ['errDecline'] = 'Could not decline.',
+            -- location
+            ['sendCurrentLocation'] = 'Send Current Location',
+            ['shareLive15'] = 'Share Live · 15 min',
+            ['shareLive60'] = 'Share Live · 1 hour',
+            ['shareLiveStop'] = 'Share Live · Until I stop',
+            -- gif
+            ['searchGiphy'] = 'Search GIPHY',
+            ['loading'] = 'Loading…',
+            ['noGifs'] = 'No GIFs found.',
+            ['gifError'] = 'Couldn’t reach the GIF service.',
+            ['gifNoKey'] = 'Add your GIPHY API key in config.lua (Config.Gif.apiKey) to enable GIFs.',
+            -- group info
+            ['groupInfo'] = 'Group Info',
+            ['editName'] = 'Edit Name',
+            ['membersCount'] = '{n} members',
+            ['members'] = 'Members',
+            ['addPlus'] = '+ Add',
+            ['owner'] = 'Owner',
+            ['leaveGroup'] = 'Leave Group',
+            ['deleteGroup'] = 'Delete Group',
+            ['addMembers'] = 'Add Members',
+            ['addAction'] = 'Add',
+            -- emoji
+            ['searchEmoji'] = 'Search emoji…',
+            ['noEmoji'] = 'No Emoji Found',
+            ['noRecentEmoji'] = "You haven't used any emoji yet",
+            -- voice / bubbles
+            ['recording'] = 'Recording…',
+            ['slideToCancel'] = 'slide to cancel',
+            ['liveLocation'] = 'Live Location',
+            ['locationEnded'] = 'Live Location Ended',
+            ['sharedLocation'] = 'Shared Location',
+            ['sent'] = 'Sent',
+            ['received'] = 'Received',
+            ['requested'] = 'requested',
+            ['peopleCount'] = '{n} people',
+            ['micUnavailable'] = 'Microphone unavailable.',
+            -- money / request bubbles
+            ['payHeader'] = 'Pay',
+            ['moneySent'] = 'Sent',
+            ['moneyReceived'] = 'Received',
+            ['moneyPaid'] = 'Paid',
+            ['moneyDeclined'] = 'Declined',
+            ['moneyPending'] = 'Pending',
+            ['moneyRequestedFromYou'] = 'Requested from you',
+            ['moneyOfferingYou'] = 'Offering you',
+            ['accept'] = 'Accept',
+            ['declineBtn'] = 'Decline',
+            -- location card
+            ['locStop'] = 'Stop',
+            ['locYouStopped'] = 'You stopped sharing',
+            ['locStopped'] = 'Stopped sharing',
+            ['locEnded'] = 'Live ended',
+            ['locSharingYour'] = 'Sharing your location',
+            ['locSharingLive'] = 'Sharing live',
+            ['locCurrent'] = 'Current Location',
+        },
+
+        -- Camera app
+        ['camera'] = {
+            ['photo'] = 'PHOTO',
+            ['video'] = 'VIDEO',
+            ['cancel'] = 'Cancel',
+        },
+
+        -- Photos app
+        ['photos'] = {
+            ['library'] = 'Library',
+            ['favorites'] = 'Favorites',
+            ['select'] = 'Select',
+            ['cancel'] = 'Cancel',
+            ['search'] = 'Search',
+            ['noPhotos'] = 'No Photos',
+            ['selectItems'] = 'Select items',
+            ['selectedCount'] = '{n} selected',
+            ['itemsCount'] = '{n} items',
+            ['favorite'] = 'Favorite',
+            ['delete'] = 'Delete',
+            ['noPhotosHint'] = 'Photos and videos you take will appear here.',
+        },
+
+        -- Maps app
+        ['maps'] = {
+            ['messages'] = 'Messages',
+            ['tip'] = 'Right-click to add · hold Ctrl + drag to move a pin',
+            ['newPlace'] = 'New place',
+            ['moveHint'] = 'Hold Ctrl + drag the pin to move it',
+            ['namePlace'] = 'Name this place',
+            ['cancel'] = 'Cancel',
+            ['save'] = 'Save',
+            ['setWaypoint'] = 'Set Waypoint',
+            ['delete'] = 'Delete',
+            ['sharedLocation'] = 'Shared Location',
+            ['savedPlace'] = 'Saved place',
+        },
+
+        -- App Store
+        ['appstore'] = {
+            ['title'] = 'Apps',
+            ['get'] = 'Get',
+            ['open'] = 'Open',
+            ['developedBy'] = 'Developed by {dev}',
+            ['unknown'] = 'Unknown',
+            ['preview'] = 'Preview',
+            ['noPreview'] = 'No preview images available',
+            ['noApps'] = 'No apps available.',
+        },
+
+        -- Control Center
+        ['controlCenter'] = {
+            ['airplane'] = 'Airplane',
+            ['airdrop'] = 'AirDrop',
+            ['flashlight'] = 'Flashlight',
+            ['noMusic'] = 'No Music Playing',
+            ['unknownArtist'] = 'Unknown Artist',
+            ['notPlaying'] = 'Not Playing',
+        },
+
+        -- Notifications / lock screen
+        ['notif'] = {
+            ['none'] = 'No Notifications',
+            ['clearAll'] = 'Clear All',
+            ['clear'] = 'Clear',
+            ['center'] = 'Notification Center',
+            ['swipeUp'] = 'Swipe up to open',
+        },
+
+        -- AirDrop (nearby sharing)
+        ['airdrop'] = {
+            ['title'] = 'AirDrop',
+            ['shareVia'] = 'Share via AirDrop',
+            ['searching'] = 'Searching for people nearby…',
+            ['noPeople'] = 'No People Found',
+            ['noPeopleHint'] = 'Make sure people nearby have AirDrop turned on.',
+            ['offTitle'] = 'AirDrop is Off',
+            ['offHint'] = 'Turn on AirDrop in Control Center so people nearby can share with you.',
+            ['sending'] = 'Sending…',
+            ['waiting'] = 'Waiting for {name}…',
+            ['sent'] = 'Sent',
+            ['declined'] = '{name} declined',
+            ['accepted'] = '{name} accepted',
+            ['failed'] = 'Couldn\'t send',
+            ['decline'] = 'Decline',
+            ['accept'] = 'Accept',
+            -- Incoming prompt body: "<name> would like to share <what>."
+            ['wants'] = '{name} would like to share {what}.',
+            ['whatContact'] = 'a contact',
+            ['whatOnePhoto'] = '1 photo',
+            ['whatPhotos'] = '{count} photos',
+            ['whatApp'] = 'something from {app}',
+            ['savedContact'] = 'Contact saved',
+            ['savedPhotos'] = 'Saved to Photos',
+            ['cantOpenApp'] = 'You don\'t have {app}',
+            ['shareMyCard'] = 'Share My Contact',
+            ['chooseContact'] = 'Choose a Contact',
+            ['toNearby'] = 'AirDrop to Nearby',
+            ['inMessages'] = 'Send in Messages',
+            ['chooseChat'] = 'Choose a Conversation',
+            ['select'] = 'Select',
+            ['selectedCount'] = '{count} selected',
+        },
+    },
+
+    -- =====================================================================
+    -- Strings used by LUA scripts (notifications, prints, etc.). Not sent to
+    -- the NUI. Look them up with Lang('systemNotification.<key>').
+    -- =====================================================================
+    ['systemNotification'] = {
+        ['minutes'] = 'Minutes',
+        ['missedCall'] = 'Missed Call',
+    },
+}

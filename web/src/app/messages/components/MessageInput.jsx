@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { PlusIcon, MicIcon, SendIcon, EmojiIcon } from './icons';
 import EmojiPicker from './EmojiPicker';
+import { useT } from '../../../i18n/useT';
 
 // Bottom composer bar: [ + ] · [ input with emoji + mic inside ] · [ Send ].
 // Camera / Gallery / GIF / Money / Location live in the + menu now.
 export default function MessageInput({ onSend, onPlus, onMic, attachment, onRemoveAttachment }) {
+  const tr = useT();
   const [text, setText] = useState('');
   const [showEmoji, setShowEmoji] = useState(false);
   const hasText = text.trim().length > 0;
@@ -51,7 +53,7 @@ export default function MessageInput({ onSend, onPlus, onMic, attachment, onRemo
             value={text}
             onChange={(e) => setText(e.target.value)}
             onKeyDown={onKey}
-            placeholder={attachment ? 'Add a comment' : 'Send your message…'}
+            placeholder={attachment ? tr('messages.addComment') : tr('messages.inputPlaceholder')}
           />
           <button
             className={`msg-input__emoji${showEmoji ? ' is-on' : ''}`}

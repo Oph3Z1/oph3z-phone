@@ -8,18 +8,22 @@ import lockCameraIcon from '../../assets/icons/lockscreen/camera.png';
 import { unlock, setFlashlight, openApp } from '../../store/slices/phoneSlice';
 import { openRoute, clearNotification } from '../../store/slices/notificationsSlice';
 import NotificationList from '../../components/Notifications/NotificationList';
+import AirdropPendingCard from '../../components/Airdrop/AirdropPendingCard';
 import { fetchNui } from '../../utils/fetchNui';
 import { useNow } from '../../hooks/useNow';
 import { formatClock, formatLongDate } from '../../utils/datetime';
+import { useT } from '../../i18n/useT';
 
 // Minimum upward drag (screen px) that counts as an unlock swipe.
 const SWIPE_THRESHOLD = 55;
 
 export default function LockScreen({ exiting = false, onExited }) {
   const dispatch = useDispatch();
+  const t = useT();
   const now = useNow();
   const flashlightOn = useSelector((s) => s.phone.flashlightOn);
   const notifs = useSelector((s) => s.notifications.items);
+  const airdrops = useSelector((s) => s.airdrop.pending);
 
   const startY = useRef(null);
 
@@ -73,19 +77,28 @@ export default function LockScreen({ exiting = false, onExited }) {
 
       {/* Waiting notifications. Stop pointer propagation so scrolling/swiping the
           list doesn't trigger the swipe-to-unlock gesture on the lock screen. */}
-      {notifs.length > 0 && (
+      {(notifs.length > 0 || airdrops.length > 0) && (
         <div
           className="lockscreen__notifs"
           onPointerDown={(e) => e.stopPropagation()}
           onPointerMove={(e) => e.stopPropagation()}
         >
           <div className="lockscreen__notifhead">
-            <span className="lockscreen__notiftitle">Notification Center</span>
-            <button className="lockscreen__notifclear" onClick={() => dispatch(clearNotification())}>
-              Clear
-            </button>
+            <span className="lockscreen__notiftitle">{t('notif.center')}</span>
+            {notifs.length > 0 && (
+              <button className="lockscreen__notifclear" onClick={() => dispatch(clearNotification())}>
+                {t('notif.clear')}
+              </button>
+            )}
           </div>
           <div className="lockscreen__notifscroll">
+            {airdrops.length > 0 && (
+              <div className="notif-center__airdrops">
+                {airdrops.map((tr) => (
+                  <AirdropPendingCard key={tr.id} transfer={tr} />
+                ))}
+              </div>
+            )}
             <NotificationList
               items={notifs}
               onOpen={(n) => dispatch(openRoute(n.route, n.id))}
@@ -111,7 +124,7 @@ export default function LockScreen({ exiting = false, onExited }) {
 
       {/* Footer: swipe hint (bouncing) + home indicator line. */}
       <div className="lockscreen__footer">
-        <div className="lockscreen__hint">Swipe up to open</div>
+        <div className="lockscreen__hint">{t('notif.swipeUp')}</div>
         <div className="lockscreen__indicator" />
       </div>
     </div>

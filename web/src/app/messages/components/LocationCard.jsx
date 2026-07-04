@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import L from 'leaflet';
 import { CUSTOM_CRS, toLatLng, tileUrl } from '../../maps/crs';
+import { useT } from '../../../i18n/useT';
 
 const pin = L.divIcon({
   className: 'msg-loc-pin',
@@ -19,6 +20,7 @@ const PinMini = () => (
 // type (Location / Live Location) and reflects when a live share ends or stops.
 // Tapping opens the full Maps app on it.
 export default function LocationCard({ msg, out, onOpen, onStopLive }) {
+  const t = useT();
   const meta = msg.meta || {};
   const { x = 0, y = 0, label, live, sid, endReason } = meta;
   const isLive = !!sid; // it was/is a live share (static locations have no sid)
@@ -71,11 +73,11 @@ export default function LocationCard({ msg, out, onOpen, onStopLive }) {
     m.setView(ll, m.getZoom(), { animate: true });
   }, [x, y]);
 
-  const title = isLive ? 'Live Location' : 'Location';
+  const title = isLive ? t('messages.liveLocation') : t('messages.location');
   let sub;
-  if (ended) sub = endReason === 'stopped' ? (out ? 'You stopped sharing' : 'Stopped sharing') : 'Live ended';
-  else if (isLive) sub = out ? 'Sharing your location' : 'Sharing live';
-  else sub = label || 'Current Location';
+  if (ended) sub = endReason === 'stopped' ? (out ? t('messages.locYouStopped') : t('messages.locStopped')) : t('messages.locEnded');
+  else if (isLive) sub = out ? t('messages.locSharingYour') : t('messages.locSharingLive');
+  else sub = label || t('messages.locCurrent');
 
   return (
     <div
@@ -91,7 +93,7 @@ export default function LocationCard({ msg, out, onOpen, onStopLive }) {
 
       <div className="msg-loc__bar">
         <div className="msg-loc__text">
-          {isLive && <span className="msg-loc__label">{label || 'Current Location'}</span>}
+          {isLive && <span className="msg-loc__label">{label || t('messages.locCurrent')}</span>}
           <span className="msg-loc__status">{sub}</span>
         </div>
         {out && live && (
@@ -102,7 +104,7 @@ export default function LocationCard({ msg, out, onOpen, onStopLive }) {
               onStopLive && onStopLive(msg);
             }}
           >
-            Stop
+            {t('messages.locStop')}
           </button>
         )}
       </div>

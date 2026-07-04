@@ -12,6 +12,9 @@ import HomeScreen from '../../screens/HomeScreen/HomeScreen';
 import AppScreen from '../../screens/AppScreen/AppScreen';
 import CallOverlay from '../../app/phone/call/CallOverlay';
 import NotificationBanner from '../Notifications/NotificationBanner';
+import StatusToast from '../Notifications/StatusToast';
+import AirdropIsland from '../Airdrop/AirdropIsland';
+import AirdropPicker from '../Airdrop/AirdropPicker';
 import AlertDialog from '../AlertDialog/AlertDialog';
 import InputDialog from '../InputDialog/InputDialog';
 import ControlCenter from '../ControlCenter/ControlCenter';
@@ -95,6 +98,13 @@ export default function Phone() {
         {/* Transient notification banner (phone open & unlocked). */}
         {!locked && !inCall && <NotificationBanner />}
 
+        {/* Transient status toast (success / error / info) — throwaway, not saved. */}
+        {!locked && <StatusToast />}
+
+        {/* AirDrop receive prompt (Dynamic Island) — shows over the home OR lock
+            screen while the phone is open, just like an incoming call. */}
+        {!inCall && <AirdropIsland />}
+
         {/* Call UI (incoming island / calling / in-call) on top of everything. */}
         <CallOverlay />
 
@@ -103,6 +113,9 @@ export default function Phone() {
 
         {/* Reusable text-input popup (rename ID, third-party apps). */}
         <InputDialog />
+
+        {/* AirDrop share picker (nearby people) — opened via openShare(...). */}
+        <AirdropPicker />
 
         {/* Brightness veil — over EVERYTHING (status bar, island, apps, Control
             Center). pointer-events:none so it never blocks interaction. */}

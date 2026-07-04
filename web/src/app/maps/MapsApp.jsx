@@ -12,6 +12,7 @@ import { setResumeThread } from '../../store/slices/messagesSlice';
 import { setResumeGroup } from '../../store/slices/groupsSlice';
 import { openApp } from '../../store/slices/phoneSlice';
 import { MAP, CUSTOM_CRS, toLatLng, MAP_BOUNDS, tileUrl } from './crs';
+import { useT } from '../../i18n/useT';
 
 const ChevronLeft = () => (
   <svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
@@ -47,6 +48,7 @@ const LocateIcon = () => (
 
 export default function MapsApp() {
   const dispatch = useDispatch();
+  const t = useT();
   const blips = useSelector((s) => s.maps.blips);
   const focus = useSelector((s) => s.maps.focus); // shared location to jump to
 
@@ -161,7 +163,7 @@ export default function MapsApp() {
       m.invalidateSize();
       m.setView(ll, 4, { animate: false });
     }, 160);
-    setShared({ x: focus.x, y: focus.y, label: focus.label || 'Shared Location' });
+    setShared({ x: focus.x, y: focus.y, label: focus.label || t('maps.sharedLocation') });
     if (focus.number) setReturnTo(focus.number);
     dispatch(setFocus(null));
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -220,7 +222,7 @@ export default function MapsApp() {
   const savePending = async () => {
     const c = pendingCoords.current; // where the pin was dragged to
     if (!c) return;
-    await dispatch(addBlip({ x: c.x, y: c.y, label: pendingName.trim() || 'Saved place' }));
+    await dispatch(addBlip({ x: c.x, y: c.y, label: pendingName.trim() || t('maps.savedPlace') }));
     setPending(null);
     setPendingName('');
   };
@@ -259,13 +261,11 @@ export default function MapsApp() {
 
       {viewOnly ? (
         <button className="maps__back" onClick={backToChat}>
-          <ChevronLeft /> Messages
+          <ChevronLeft /> {t('maps.messages')}
         </button>
       ) : (
         <>
-          <div className="maps__tip">
-            Right-click to add · hold <b>Ctrl</b> + drag to move a pin
-          </div>
+          <div className="maps__tip">{t('maps.tip')}</div>
           <button className="maps__locate" onClick={recenter} aria-label="Recenter">
             <LocateIcon />
           </button>
@@ -274,22 +274,22 @@ export default function MapsApp() {
 
       {pending && (
         <div className="maps__sheet">
-          <div className="maps__sheet-title">New place</div>
-          <div className="maps__hint">Hold Ctrl + drag the pin to move it</div>
+          <div className="maps__sheet-title">{t('maps.newPlace')}</div>
+          <div className="maps__hint">{t('maps.moveHint')}</div>
           <input
             className="maps__input"
             value={pendingName}
             onChange={(e) => setPendingName(e.target.value)}
-            placeholder="Name this place"
+            placeholder={t('maps.namePlace')}
             maxLength={40}
             autoFocus
           />
           <div className="maps__row">
             <button className="maps__btn maps__btn--ghost" onClick={() => setPending(null)}>
-              Cancel
+              {t('maps.cancel')}
             </button>
             <button className="maps__btn maps__btn--primary" onClick={savePending}>
-              Save
+              {t('maps.save')}
             </button>
           </div>
         </div>
@@ -305,10 +305,10 @@ export default function MapsApp() {
           </div>
           <div className="maps__row">
             <button className="maps__btn maps__btn--primary" onClick={setWaypoint}>
-              Set Waypoint
+              {t('maps.setWaypoint')}
             </button>
             <button className="maps__btn maps__btn--danger" onClick={removeSelected}>
-              Delete
+              {t('maps.delete')}
             </button>
           </div>
         </div>

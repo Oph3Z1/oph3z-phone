@@ -147,6 +147,8 @@ local function notifBody(mtype, body, meta)
     elseif mtype == 'location' then return '📍 Location'
     elseif mtype == 'money' then return ('You received $%s'):format(meta and meta.amount or body)
     elseif mtype == 'request' then return ('Requested $%s'):format(meta and meta.amount or body)
+    elseif mtype == 'contact' then return ('👤 %s'):format((meta and meta.name) or 'Contact')
+    elseif mtype == 'appshare' then return (meta and meta.title) or 'Shared item'
     else return body end
 end
 

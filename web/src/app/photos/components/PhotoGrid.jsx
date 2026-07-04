@@ -1,11 +1,13 @@
 import PhotoThumb from './PhotoThumb';
+import { useT } from '../../../i18n/useT';
 
 export default function PhotoGrid({ items, selectMode, selected, onOpen, onToggleSelect }) {
+  const t = useT();
   if (items.length === 0) {
     return (
       <div className="ph-empty">
-        <div className="ph-empty__title">No Photos</div>
-        <div>Photos and videos you take will appear here.</div>
+        <div className="ph-empty__title">{t('photos.noPhotos')}</div>
+        <div>{t('photos.noPhotosHint')}</div>
       </div>
     );
   }

@@ -27,12 +27,30 @@ Config.DataFolder = 'data'
 -- 555 + 4 digits -> displayed as "555-0142".
 Config.PhoneNumberPrefix = '555'
 
+-- Localization --------------------------------------------------------------
+-- UI/text language. Files live in locales/<code>.lua (e.g. locales/en.lua).
+-- This is the DEFAULT for new players; each player can change it in
+-- Settings > Language (stored per-player in settings.language).
+Config.DefaultLocale = 'en'
+
 -- Mail ----------------------------------------------------------------------
 -- Every player gets an auto-generated mail address on first phone open, built as
 -- firstname.lastname@<Config.MailDomain>   e.g. "barbara.orton@lsmail.com"
 -- Duplicates (same first + last name) get a numeric suffix ("barbara.orton2@").
 -- The Mail app (added later) reads/writes this same inbox.
 Config.MailDomain = 'mail.com'
+
+-- AirDrop (nearby sharing) --------------------------------------------------
+-- Share contacts, your own card and photos/videos with nearby players (and it's
+-- open to third-party apps too). A player must turn AirDrop ON (Control Center)
+-- to be discoverable and to receive.
+Config.Airdrop = {
+    Range        = 8.0,    -- metres: who counts as "nearby" when sharing
+    MaxPhotos    = 20,     -- max photos/videos in a single AirDrop
+    RequirePhone = false,  -- true = receiver must have their phone open to be discoverable
+                           -- (false = discoverable whenever AirDrop is on; misses go to
+                           --  the Notification Center for later)
+}
 
 -- Default phone settings written on first use for a citizen.
 Config.DefaultSettings = {
@@ -42,9 +60,10 @@ Config.DefaultSettings = {
     airdrop    = false,                    -- AirDrop receiving toggle (Control Center)
     locked     = true,                     -- start locked when opened
     airplane   = false,                    -- airplane mode (unreachable + can't call)
-    scale      = 100,                      -- phone size on screen (50-100; Display & Brightness)
+    scale      = 100,                      -- phone size on screen (85-100; Display & Brightness)
     notifSound = true,                     -- play a sound on new notifications
     notifMaster = true,                    -- master switch: off = silence ALL notifications
+    language   = 'en',                     -- selected UI language (see locales/, Settings > Language)
     -- notifApps: per-app enable map { [appId] = false } (missing = enabled). Set
     -- from the Settings > Notifications screen; not seeded here (all on by default).
 }

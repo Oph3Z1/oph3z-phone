@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { CATEGORIES, ALL_EMOJIS } from './emojiData';
+import { useT } from '../../../i18n/useT';
 
 const RECENTS_KEY = 'oph3z:emojiRecents';
 const loadRecents = () => {
@@ -20,6 +21,7 @@ const SearchIcon = () => (
 // field, a Recents tab, and category tabs. Tapping an emoji inserts it and
 // remembers it in Recents.
 export default function EmojiPicker({ onSelect, onClose }) {
+  const tr = useT();
   const [recents, setRecents] = useState(loadRecents);
   const [cat, setCat] = useState('recents');
   const [query, setQuery] = useState('');
@@ -56,13 +58,13 @@ export default function EmojiPicker({ onSelect, onClose }) {
             className="msg-emoji__search"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search emoji…"
+            placeholder={tr('messages.searchEmoji')}
           />
         </div>
 
         {items.length === 0 ? (
           <div className="msg-emoji__empty">
-            {q ? 'No Emoji Found' : "You haven't used any emoji yet"}
+            {q ? tr('messages.noEmoji') : tr('messages.noRecentEmoji')}
           </div>
         ) : (
           <div className="msg-emoji__grid">

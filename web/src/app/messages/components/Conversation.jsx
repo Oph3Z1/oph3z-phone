@@ -4,7 +4,7 @@ import Avatar from './Avatar';
 import Bubble from './Bubble';
 import MessageInput from './MessageInput';
 import { ChevronLeftIcon, ChevronRightIcon, CameraIcon, GifIcon } from './icons';
-import { digitsOf, setContactFocus } from '../../../store/slices/contactsSlice';
+import { digitsOf, setContactFocus, addContact } from '../../../store/slices/contactsSlice';
 import {
   openThread,
   sendMessage,
@@ -16,6 +16,7 @@ import {
   setShareTo,
   setDraftAttach,
   setReturnProfile,
+  setResumeThread,
   sendLocation,
   stopLive,
 } from '../../../store/slices/messagesSlice';
@@ -23,16 +24,21 @@ import { openApp } from '../../../store/slices/phoneSlice';
 import { loadPhotos } from '../../../store/slices/photosSlice';
 import { setFocus } from '../../../store/slices/mapsSlice';
 import { clearNotifsFor } from '../../../store/slices/notificationsSlice';
+import { startAppShare } from '../../../store/slices/shareSlice';
+import { pushToast } from '../../../store/slices/toastSlice';
+import { fetchNui } from '../../../utils/fetchNui';
+import ContactPicker from './ContactPicker';
 import MediaViewer from './MediaViewer';
 import VoiceComposer from './VoiceComposer';
 import GifPicker from './GifPicker';
+import { useT } from '../../../i18n/useT';
 
-const MONEY_ERR = {
-  funds: 'Not enough bank balance.',
-  offline: "They're offline right now.",
-  recipient: "Can't send to this number.",
-  amount: 'Enter an amount.',
-  gone: 'That request is no longer available.',
+const MONEY_ERR_KEY = {
+  funds: 'messages.errFunds',
+  offline: 'messages.errOffline',
+  recipient: 'messages.errRecipient',
+  amount: 'messages.errAmount',
+  gone: 'messages.errGone',
 };
 const MAX_AMOUNT = 9999999;
 
@@ -53,10 +59,13 @@ function Keypad({ onDigit, onBack }) {
   );
 }
 
-export default function Conversation({ number, onBack }) {
+export default function Conversation({ number, onBack, onOpenThread }) {
   const dispatch = useDispatch();
+  const t = useT();
   const conv = useSelector((s) => s.messages.byNumber[number]);
   const selfNumber = digitsOf(useSelector((s) => s.contacts.number));
+  const contacts = useSelector((s) => s.contacts.contacts);
+  const shareApps = useSelector((s) => s.apps.external.filter((a) => a.share));
   const gallery = useSelector((s) => s.photos.items);
   const draft = useSelector((s) => s.messages.draftAttach[number]);
   const returnProfile = useSelector((s) => s.messages.returnProfile);
@@ -65,7 +74,8 @@ export default function Conversation({ number, onBack }) {
   // If we arrived here from a contact's profile, back returns there (captured once).
   const [backToProfile] = useState(() => returnProfile === number);
 
-  const [attach, setAttach] = useState(null); // null | 'menu' | 'money' | 'gallery'
+  const [attach, setAttach] = useState(null); // null | 'menu' | 'money' | 'gallery' | 'contact'
+  const [cardMenu, setCardMenu] = useState(null); // a tapped shared-contact card (action sheet)
   const [viewer, setViewer] = useState(null); // media message being viewed fullscreen
   const [showGif, setShowGif] = useState(false); // GIF picker sheet
   const [recording, setRecording] = useState(false); // voice note in progress
@@ -191,6 +201,42 @@ export default function Conversation({ number, onBack }) {
     setRecording(false);
   };
 
+  // Share a contact card into a conversation.
+  const contactMsg = (c) => ({ type: 'contact', body: c.name || c.number, meta: { name: c.name, number: c.number, img: c.img } });
+  const sendContactTo = (to, c) => dispatch(sendMessage(to, contactMsg(c)));
+  const pickContactToSend = (c) => {
+    sendContactTo(number, c);
+    closeAttach();
+  };
+  // Tap a third-party app in the Share sheet: open it to provide a shareable item.
+  const startShareApp = (a) => {
+    dispatch(startAppShare(a.id, number));
+    closeAttach();
+  };
+
+  // Shared-contact card actions (tapped bubble -> action sheet).
+  const cardIsSaved = (meta) => contacts.some((c) => digitsOf(c.number) === digitsOf(meta.number));
+  const cardCall = (meta) => { fetchNui('phone:call:start', { number: meta.number }, {}); setCardMenu(null); };
+  const cardMessage = (meta) => {
+    setCardMenu(null);
+    const digits = digitsOf(meta.number);
+    if (!digits) return;
+    // Switch the Messages view straight to this number's thread (works even if
+    // there's no existing chat yet — opens an empty one ready to message them).
+    if (onOpenThread) onOpenThread(digits);
+    else { dispatch(setResumeThread(digits)); dispatch(openApp('message')); }
+  };
+  const cardAdd = async (meta) => {
+    setCardMenu(null);
+    // Don't create a duplicate if it's already in the phonebook.
+    if (cardIsSaved(meta)) {
+      dispatch(pushToast({ app: 'message', title: t('messages.contactCard'), body: t('messages.cardExists') }));
+      return;
+    }
+    await dispatch(addContact({ name: meta.name, number: meta.number, img: meta.img }));
+    dispatch(pushToast({ app: 'message', title: t('messages.contactCard'), body: t('messages.cardAdded') }));
+  };
+
   // Tap the header → open this person's profile in the Phone app (back returns here).
   const openProfile = () => {
     dispatch(setContactFocus({ number, returnTo: number }));
@@ -210,26 +256,26 @@ export default function Conversation({ number, onBack }) {
   };
 
   const doSend = async () => {
-    if (amount <= 0) return setMoneyErr(MONEY_ERR.amount);
+    if (amount <= 0) return setMoneyErr(t('messages.errAmount'));
     setBusy(true);
     const res = await dispatch(sendMoney(number, amount));
     setBusy(false);
     if (res && res.ok) closeAttach();
-    else setMoneyErr(MONEY_ERR[res?.reason] || 'Could not send.');
+    else setMoneyErr(t(MONEY_ERR_KEY[res?.reason] || 'messages.errGeneric'));
   };
   const doRequest = () => {
-    if (amount <= 0) return setMoneyErr(MONEY_ERR.amount);
+    if (amount <= 0) return setMoneyErr(t('messages.errAmount'));
     dispatch(sendRequest(number, amount));
     closeAttach();
   };
 
   const settle = async (id) => {
     const res = await dispatch(settleNegotiation(number, id));
-    if (res && !res.ok) showNotice(MONEY_ERR[res.reason] || 'Could not complete.');
+    if (res && !res.ok) showNotice(t(MONEY_ERR_KEY[res.reason] || 'messages.errComplete'));
   };
   const decline = async (id) => {
     const res = await dispatch(declineNegotiation(number, id));
-    if (res && !res.ok) showNotice(MONEY_ERR[res.reason] || 'Could not decline.');
+    if (res && !res.ok) showNotice(t(MONEY_ERR_KEY[res.reason] || 'messages.errDecline'));
   };
 
   const name = conv?.name || number;
@@ -263,6 +309,7 @@ export default function Conversation({ number, onBack }) {
             onOpenMedia={setViewer}
             onOpenLocation={openLocation}
             onStopLive={stopLiveShare}
+            onOpenContact={setCardMenu}
           />
         ))}
       </div>
@@ -271,7 +318,7 @@ export default function Conversation({ number, onBack }) {
         <VoiceComposer
           onComplete={sendVoice}
           onCancel={() => setRecording(false)}
-          onError={() => showNotice('Microphone unavailable.')}
+          onError={() => showNotice(t('messages.micUnavailable'))}
         />
       ) : (
         <MessageInput
@@ -290,23 +337,27 @@ export default function Conversation({ number, onBack }) {
           <div className="msg-plus__list" onClick={(e) => e.stopPropagation()}>
             <button className="msg-plus__item" onClick={openCamera}>
               <span className="msg-plus__ico msg-plus__ico--cam"><CameraIcon /></span>
-              <span className="msg-plus__label">Camera</span>
+              <span className="msg-plus__label">{t('messages.camera')}</span>
             </button>
             <button className="msg-plus__item" onClick={openGallery}>
               <span className="msg-plus__ico msg-plus__ico--photos"><PhotosIcon /></span>
-              <span className="msg-plus__label">Gallery</span>
+              <span className="msg-plus__label">{t('messages.gallery')}</span>
             </button>
             <button className="msg-plus__item" onClick={() => { closeAttach(); setShowGif(true); }}>
               <span className="msg-plus__ico msg-plus__ico--gif"><GifIcon /></span>
-              <span className="msg-plus__label">GIF</span>
+              <span className="msg-plus__label">{t('messages.gif')}</span>
             </button>
             <button className="msg-plus__item" onClick={() => openMoney('send')}>
               <span className="msg-plus__ico msg-plus__ico--cash">$</span>
-              <span className="msg-plus__label">Money</span>
+              <span className="msg-plus__label">{t('messages.money')}</span>
             </button>
             <button className="msg-plus__item" onClick={() => setAttach('location')}>
               <span className="msg-plus__ico msg-plus__ico--loc"><PinIcon /></span>
-              <span className="msg-plus__label">Location</span>
+              <span className="msg-plus__label">{t('messages.locationMenu')}</span>
+            </button>
+            <button className="msg-plus__item" onClick={() => setAttach('share')}>
+              <span className="msg-plus__ico msg-plus__ico--share"><ShareGlyph /></span>
+              <span className="msg-plus__label">{t('messages.shareMenu')}</span>
             </button>
           </div>
           <button className="msg-plus__close" onClick={closeAttach} aria-label="Close">
@@ -326,13 +377,13 @@ export default function Conversation({ number, onBack }) {
                 className={`msg-cash__seg${moneyMode === 'send' ? ' is-on' : ''}`}
                 onClick={() => { setMoneyMode('send'); setMoneyErr(''); }}
               >
-                Send
+                {t('messages.send')}
               </button>
               <button
                 className={`msg-cash__seg${moneyMode === 'request' ? ' is-on' : ''}`}
                 onClick={() => { setMoneyMode('request'); setMoneyErr(''); }}
               >
-                Request
+                {t('messages.request')}
               </button>
             </div>
 
@@ -347,7 +398,7 @@ export default function Conversation({ number, onBack }) {
             </div>
 
             <button className="msg-cash__kbtoggle" onClick={() => setShowKeypad((v) => !v)}>
-              {showKeypad ? 'Hide Keypad' : 'Show Keypad'}
+              {showKeypad ? t('messages.hideKeypad') : t('messages.showKeypad')}
             </button>
 
             {moneyErr && <div className="msg-cash__err">{moneyErr}</div>}
@@ -364,15 +415,15 @@ export default function Conversation({ number, onBack }) {
 
             <div className="msg-cash__buttons">
               <button className="msg-cash__btn msg-cash__btn--cancel" onClick={closeAttach}>
-                Cancel
+                {t('messages.cancel')}
               </button>
               {moneyMode === 'request' ? (
                 <button className="msg-cash__btn msg-cash__btn--req" onClick={doRequest}>
-                  Request
+                  {t('messages.request')}
                 </button>
               ) : (
                 <button className="msg-cash__btn msg-cash__btn--send" onClick={doSend} disabled={busy}>
-                  {busy ? 'Sending…' : 'Send'}
+                  {busy ? t('messages.sending') : t('messages.send')}
                 </button>
               )}
             </div>
@@ -385,9 +436,9 @@ export default function Conversation({ number, onBack }) {
           <div className="msg-cash-backdrop" onClick={closeAttach} />
           <div className="msg-gallery">
             <button className="msg-cash__grab" onClick={closeAttach} aria-label="Close" />
-            <div className="msg-gallery__title">Choose a Photo or Video</div>
+            <div className="msg-gallery__title">{t('messages.choosePhotoVideo')}</div>
             <div className="msg-gallery__grid">
-              {gallery.length === 0 && <div className="msg-gallery__empty">No photos yet.</div>}
+              {gallery.length === 0 && <div className="msg-gallery__empty">{t('messages.noPhotos')}</div>}
               {[...gallery]
                 .sort((a, b) => (b.ts || 0) - (a.ts || 0))
                 .map((item) => (
@@ -415,29 +466,79 @@ export default function Conversation({ number, onBack }) {
                 <span className="msg-attach__ico msg-attach__ico--loc">
                   <PinIcon />
                 </span>
-                <span className="msg-attach__label">Send Current Location</span>
+                <span className="msg-attach__label">{t('messages.sendCurrentLocation')}</span>
               </button>
               <button className="msg-attach__item" onClick={() => shareLocation({ live: true, duration: 900 })}>
                 <span className="msg-attach__ico msg-attach__ico--live">
                   <LiveIcon />
                 </span>
-                <span className="msg-attach__label">Share Live · 15 min</span>
+                <span className="msg-attach__label">{t('messages.shareLive15')}</span>
               </button>
               <button className="msg-attach__item" onClick={() => shareLocation({ live: true, duration: 3600 })}>
                 <span className="msg-attach__ico msg-attach__ico--live">
                   <LiveIcon />
                 </span>
-                <span className="msg-attach__label">Share Live · 1 hour</span>
+                <span className="msg-attach__label">{t('messages.shareLive60')}</span>
               </button>
               <button className="msg-attach__item" onClick={() => shareLocation({ live: true, duration: 0 })}>
                 <span className="msg-attach__ico msg-attach__ico--live">
                   <LiveIcon />
                 </span>
-                <span className="msg-attach__label">Share Live · Until I stop</span>
+                <span className="msg-attach__label">{t('messages.shareLiveStop')}</span>
               </button>
             </div>
             <button className="msg-attach__cancel" onClick={closeAttach}>
-              Cancel
+              {t('messages.cancel')}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Share sheet: a contact, or an item from an airdrop-capable app. */}
+      {attach === 'share' && (
+        <div className="msg-attach" onClick={closeAttach}>
+          <div className="msg-attach__sheet" onClick={(e) => e.stopPropagation()}>
+            <div className="msg-attach__group">
+              <button className="msg-attach__item" onClick={() => setAttach('contact')}>
+                <span className="msg-attach__ico msg-attach__ico--contact"><ContactGlyph /></span>
+                <span className="msg-attach__label">{t('messages.contactMenu')}</span>
+              </button>
+              {shareApps.map((a) => (
+                <button key={a.id} className="msg-attach__item" onClick={() => startShareApp(a)}>
+                  <span className="msg-attach__appicon">{a.icon ? <img src={a.icon} alt="" /> : null}</span>
+                  <span className="msg-attach__label">{a.label}</span>
+                </button>
+              ))}
+            </div>
+            <button className="msg-attach__cancel" onClick={closeAttach}>
+              {t('messages.cancel')}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Pick one of my contacts to share into this conversation. */}
+      {attach === 'contact' && (
+        <ContactPicker title={t('messages.contactMenu')} onPick={pickContactToSend} onClose={closeAttach} />
+      )}
+
+      {/* Tapped a shared-contact card -> Call / Message / Save as Contact. */}
+      {cardMenu && (
+        <div className="msg-attach" onClick={() => setCardMenu(null)}>
+          <div className="msg-attach__sheet" onClick={(e) => e.stopPropagation()}>
+            <div className="msg-attach__group">
+              <button className="msg-attach__item" onClick={() => cardCall(cardMenu)}>
+                <span className="msg-attach__label">{t('messages.cardCall')}</span>
+              </button>
+              <button className="msg-attach__item" onClick={() => cardMessage(cardMenu)}>
+                <span className="msg-attach__label">{t('messages.cardMessage')}</span>
+              </button>
+              <button className="msg-attach__item" onClick={() => cardAdd(cardMenu)}>
+                <span className="msg-attach__label">{t('messages.cardSave')}</span>
+              </button>
+            </div>
+            <button className="msg-attach__cancel" onClick={() => setCardMenu(null)}>
+              {t('messages.cancel')}
             </button>
           </div>
         </div>
@@ -472,5 +573,19 @@ const PhotosIcon = () => (
 const XIcon = () => (
   <svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round">
     <path d="M6 6l12 12M18 6L6 18" />
+  </svg>
+);
+
+const ContactGlyph = () => (
+  <svg width="1em" height="1em" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+    <circle cx="12" cy="8.5" r="3.6" />
+    <path d="M4.5 20a7.5 7.5 0 0 1 15 0z" />
+  </svg>
+);
+
+const ShareGlyph = () => (
+  <svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+    <path d="M12 3v13M12 3L8.5 6.5M12 3l3.5 3.5" />
+    <path d="M6 11H5a1 1 0 0 0-1 1v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7a1 1 0 0 0-1-1h-1" />
   </svg>
 );

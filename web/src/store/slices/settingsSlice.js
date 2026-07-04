@@ -6,7 +6,7 @@ const initialState = {
   loaded: false,
   wallpaper: 'blackTitanium',
   brightness: 100, // 20-100 (Control Center)
-  scale: 100,      // 50-100 phone size on screen (Display & Brightness)
+  scale: 100,      // 85-100 phone size on screen (Display & Brightness)
   volume: 70,      // 0-100 media volume
   airdrop: false,  // AirDrop receiving toggle
   airplane: false,
@@ -14,6 +14,7 @@ const initialState = {
   notifMaster: true,  // master switch: off = silence ALL notifications
   notifApps: {},      // per-app enable map { [appId]: false } (missing = enabled)
   ringtone: '',       // selected incoming-call ringtone URL ('' = Config default)
+  language: 'en',     // selected UI language code (Settings > Language)
 };
 
 const settingsSlice = createSlice({

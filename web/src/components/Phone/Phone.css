@@ -19,19 +19,26 @@
 
 .phone {
   --phone-height: 74vh;
-  --phone-scale: 1; /* Display & Brightness "Phone Size" (0.5–1); anchored bottom-right */
+  --phone-scale: 1; /* Display & Brightness "Phone Size" (0.85–1); scales layout height —
+                       the em UI auto-scales via the ResizeObserver font-size, stays crisp */
   --case-aspect: 399 / 803;
   --screen-width: 90.7%;
   --screen-height: 97%;
-  --screen-radius: 2.9vw;
+  /* Scale the corner rounding with the phone so it tracks the case's corners at
+     smaller sizes (2.9vw alone is viewport-relative and wouldn't shrink). */
+  --screen-radius: calc(2.9vw * var(--phone-scale));
 
   position: fixed;
   right: 2.5vh;
   bottom: 2.5vh;
-  height: calc(var(--phone-height) * var(--phone-scale));
+  height: var(--phone-height);
   aspect-ratio: var(--case-aspect);
   z-index: 1;
   filter: drop-shadow(0 1.5vh 3vh rgba(0, 0, 0, 0.55));
+  /* "Phone Size" resizes the layout height; the screen width follows, and the
+     ResizeObserver recomputes the em font-size so the whole UI scales crisply
+     and proportionally (no transform bitmap = no blur, no per-app tweaks). */
+  height: calc(var(--phone-height) * var(--phone-scale));
 }
 
 /* The case image: fills the frame, behind the screen, ignores clicks. */
