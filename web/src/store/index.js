@@ -18,6 +18,8 @@ import musicReducer from './slices/musicSlice';
 import toastReducer from './slices/toastSlice';
 import airdropReducer from './slices/airdropSlice';
 import shareReducer from './slices/shareSlice';
+import clockReducer from './slices/clockSlice';
+import calcReducer from './slices/calcSlice';
 
 export const store = configureStore({
   reducer: {
@@ -40,5 +42,7 @@ export const store = configureStore({
     toast: toastReducer,
     airdrop: airdropReducer,
     share: shareReducer,
+    clock: clockReducer,
+    calc: calcReducer,
   },
 });

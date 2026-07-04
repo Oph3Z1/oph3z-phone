@@ -198,6 +198,17 @@
 }
 .set-grouptitle__val { color: #fff; font-variant-numeric: tabular-nums; }
 
+/* Section header above a settings card group (e.g. Ringtone / Alarm). */
+.set-grouplabel {
+  color: #8e8e93;
+  font-size: 0.78em;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 0.4em 0.35em 0.5em;
+}
+.set__scroll > .set-grouplabel:not(:first-child) { padding-top: 1.1em; }
+
 .set-card--slider { padding: 0.5em; background: transparent; margin-bottom: 1.6em; }
 
 .set-hslider {

@@ -52,6 +52,16 @@ Config.Airdrop = {
                            --  the Notification Center for later)
 }
 
+-- Clock -------------------------------------------------------------------
+-- The Clock app's alarms + timers. Alarms fire on REAL-WORLD time (the player's
+-- local clock). When an alarm rings or a timer finishes, the sound plays in 3D
+-- via xsound at the player's ped, so the owner AND nearby players hear it.
+Config.Clock = {
+    Range       = 12.0,  -- metres: how far the alarm / timer sound carries (nearby players)
+    Volume      = 0.5,   -- xsound volume for the alarm / timer sound (0.0-1.0)
+    RingSeconds = 30,    -- auto-stop a ringing alarm / finished timer after this many seconds
+}
+
 -- Default phone settings written on first use for a citizen.
 Config.DefaultSettings = {
     wallpaper  = 'blackTitanium',          -- preset key (see WALLPAPER_PRESETS) or a custom URL

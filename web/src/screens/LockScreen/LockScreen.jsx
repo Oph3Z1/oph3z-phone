@@ -9,6 +9,7 @@ import { unlock, setFlashlight, openApp } from '../../store/slices/phoneSlice';
 import { openRoute, clearNotification } from '../../store/slices/notificationsSlice';
 import NotificationList from '../../components/Notifications/NotificationList';
 import AirdropPendingCard from '../../components/Airdrop/AirdropPendingCard';
+import LockTimerWidget from '../../components/Clock/LockTimerWidget';
 import { fetchNui } from '../../utils/fetchNui';
 import { useNow } from '../../hooks/useNow';
 import { formatClock, formatLongDate } from '../../utils/datetime';
@@ -24,6 +25,7 @@ export default function LockScreen({ exiting = false, onExited }) {
   const flashlightOn = useSelector((s) => s.phone.flashlightOn);
   const notifs = useSelector((s) => s.notifications.items);
   const airdrops = useSelector((s) => s.airdrop.pending);
+  const hasTimer = useSelector((s) => !!s.clock.timer);
 
   const startY = useRef(null);
 
@@ -77,7 +79,7 @@ export default function LockScreen({ exiting = false, onExited }) {
 
       {/* Waiting notifications. Stop pointer propagation so scrolling/swiping the
           list doesn't trigger the swipe-to-unlock gesture on the lock screen. */}
-      {(notifs.length > 0 || airdrops.length > 0) && (
+      {(notifs.length > 0 || airdrops.length > 0 || hasTimer) && (
         <div
           className="lockscreen__notifs"
           onPointerDown={(e) => e.stopPropagation()}
@@ -92,6 +94,7 @@ export default function LockScreen({ exiting = false, onExited }) {
             )}
           </div>
           <div className="lockscreen__notifscroll">
+            {hasTimer && <LockTimerWidget />}
             {airdrops.length > 0 && (
               <div className="notif-center__airdrops">
                 {airdrops.map((tr) => (

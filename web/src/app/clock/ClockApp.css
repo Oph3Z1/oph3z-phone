@@ -1,0 +1,606 @@
+/* ===========================================================================
+   Clock app — Alarm / Stopwatch / Timer
+   =========================================================================== */
+.clockapp {
+  position: absolute;
+  inset: 0;
+  background: #000;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  user-select: none !important;
+  font-size: 1em;
+  --clk-item: 2.55em;
+  --clk-amber: #ff9f0a;
+  --clk-green: #30d158;
+  --clk-red: #ff453a;
+}
+
+.clockapp__body {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  padding-top: var(--safe-top);
+  padding-bottom: calc(var(--safe-bottom) + 6.6em);
+}
+
+/* ---- Tab bar — identical glass pill to the Phone app --------------------- */
+.clockapp__tabbar {
+  position: absolute;
+  left: calc(0.7em + (1 - var(--phone-scale, 1)) * 3.5em);
+  right: calc(0.7em + (1 - var(--phone-scale, 1)) * 3.5em);
+  bottom: calc(var(--safe-bottom) + 0.35em);
+  display: flex;
+  border-radius: 1.8em;
+  padding: 0.12em 0.2em;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.05));
+  backdrop-filter: blur(3.2em) saturate(220%) brightness(1.18);
+  -webkit-backdrop-filter: blur(3.2em) saturate(220%) brightness(1.18);
+  border: 0.5px solid rgba(255, 255, 255, 0.11);
+  box-shadow:
+    0 0.5em 1.6em rgba(0, 0, 0, 0.45),
+    inset 0 0.7px 0 rgba(255, 255, 255, 0.45),
+    inset 0 -0.7px 0 rgba(255, 255, 255, 0.08);
+  z-index: 6;
+}
+.clockapp__tab {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.32em;
+  padding: 0.85em 0 0.8em;
+  color: #d6d6da;
+  font-size: 0.7em;
+  font-weight: 500;
+  border-radius: 1.5em;
+  transition: color 0.15s ease;
+}
+.clockapp__tabicon {
+  width: 1.55em;
+  height: 1.55em;
+  filter: drop-shadow(0 0.05em 0.15em rgba(0, 0, 0, 0.3));
+}
+.clockapp__tab.is-active {
+  color: var(--clk-amber);
+}
+.clockapp__tab.is-active .clockapp__tabicon {
+  filter: drop-shadow(0 0 0.4em rgba(255, 159, 10, 0.5));
+}
+.clockapp__tab:active {
+  color: #fff;
+}
+
+/* ---- Screens ------------------------------------------------------------ */
+.clk-screen {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+.clk-screen--center {
+  justify-content: center;
+  align-items: center;
+  gap: 1.6em;
+}
+.clk-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 0 1.1em;
+}
+.clk-scroll--timer {
+  display: flex;
+  flex-direction: column;
+}
+
+.clk-title {
+  font-size: 2.15em;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin: 0.1em 0 0.5em;
+}
+.clk-empty {
+  color: #8e8e93;
+  font-size: 0.95em;
+  padding: 2em 0;
+  text-align: center;
+}
+.clk-empty--sm {
+  padding: 1em 0;
+  text-align: left;
+}
+
+/* ---- Alarm head (Edit / +) ---------------------------------------------- */
+.clk-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.3em 1.1em 0.1em;
+  min-height: 2.2em;
+}
+.clk-head__edit {
+  color: var(--clk-amber);
+  font-size: 1.05em;
+  font-weight: 400;
+}
+.clk-head__edit:disabled {
+  opacity: 0;
+  pointer-events: none;
+}
+.clk-head__add {
+  width: 2em;
+  height: 2em;
+  color: var(--clk-amber);
+  display: grid;
+  place-items: center;
+}
+.clk-head__add svg {
+  width: 1.5em;
+  height: 1.5em;
+}
+
+/* ---- Alarm rows --------------------------------------------------------- */
+.clk-alarms {
+  display: flex;
+  flex-direction: column;
+}
+.clk-alarm {
+  display: flex;
+  align-items: center;
+  gap: 0.8em;
+  padding: 0.7em 0;
+  border-bottom: 0.5px solid rgba(255, 255, 255, 0.12);
+}
+.clk-alarm__del {
+  width: 1.55em;
+  height: 1.55em;
+  border-radius: 50%;
+  background: var(--clk-red);
+  color: #fff;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+.clk-alarm__del svg {
+  width: 1.1em;
+  height: 1.1em;
+}
+.clk-alarm__main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  line-height: 1;
+}
+.clk-alarm__time {
+  font-size: 2.6em;
+  font-weight: 300;
+  letter-spacing: -0.01em;
+}
+.clk-alarm__time.is-off {
+  color: #8e8e93;
+}
+.clk-alarm__label {
+  font-size: 0.9em;
+  color: #b6b6bb;
+  margin-top: 0.35em;
+}
+
+/* ---- Toggle switch ------------------------------------------------------ */
+.clk-switch {
+  width: 3.2em;
+  height: 1.95em;
+  border-radius: 1em;
+  background: #39393d;
+  padding: 0.13em;
+  flex-shrink: 0;
+  transition: background 0.2s ease;
+  display: flex;
+}
+.clk-switch.is-on {
+  background: var(--clk-green);
+}
+.clk-switch__knob {
+  width: 1.7em;
+  height: 1.7em;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 0.1em 0.25em rgba(0, 0, 0, 0.35);
+  transition: transform 0.2s ease;
+}
+.clk-switch.is-on .clk-switch__knob {
+  transform: translateX(1.24em);
+}
+
+/* ---- Round action buttons (Start / Stop / Lap / Pause / Cancel) --------- */
+.clk-btnrow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  max-width: 20em;
+  padding: 0 1.6em;
+  margin: 0 auto;
+}
+.clk-rbtn {
+  width: 5.3em;
+  height: 5.3em;
+  border-radius: 50%;
+  font-size: 1em;
+  font-weight: 400;
+  display: grid;
+  place-items: center;
+  border: 2px solid transparent;
+  transition: filter 0.12s ease, transform 0.1s ease;
+}
+.clk-rbtn:active {
+  filter: brightness(0.85);
+}
+.clk-rbtn:disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+.clk-rbtn--soft {
+  background: #2a2a2c;
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.06);
+}
+.clk-rbtn--green {
+  background: rgba(48, 209, 88, 0.22);
+  color: var(--clk-green);
+  border-color: rgba(48, 209, 88, 0.35);
+}
+.clk-rbtn--red {
+  background: rgba(255, 69, 58, 0.22);
+  color: var(--clk-red);
+  border-color: rgba(255, 69, 58, 0.35);
+}
+.clk-rbtn--amber {
+  background: rgba(255, 159, 10, 0.22);
+  color: var(--clk-amber);
+  border-color: rgba(255, 159, 10, 0.35);
+}
+
+/* ---- Stopwatch ---------------------------------------------------------- */
+.clk-sw__display {
+  font-size: 4.4em;
+  font-weight: 200;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+.clk-laps {
+  width: 100%;
+  flex: 0 1 auto;
+  max-height: 40%;
+}
+.clk-lap {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.65em 0;
+  border-bottom: 0.5px solid rgba(255, 255, 255, 0.12);
+  font-size: 1em;
+  color: #d6d6da;
+  font-variant-numeric: tabular-nums;
+}
+.clk-lap__t {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---- Countdown ring ----------------------------------------------------- */
+.clk-ring {
+  position: relative;
+  width: 17em;
+  height: 17em;
+  display: grid;
+  place-items: center;
+}
+.clk-ring__svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.clk-ring__track {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.12);
+  stroke-width: 3;
+}
+.clk-ring__bar {
+  fill: none;
+  stroke: var(--clk-amber);
+  stroke-width: 3.4;
+  transition: stroke-dashoffset 0.3s linear;
+}
+.clk-ring__inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35em;
+}
+.clk-ring__time {
+  font-size: 3.1em;
+  font-weight: 200;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+.clk-ring__ends {
+  color: #8e8e93;
+  font-size: 1em;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3em;
+}
+
+/* ---- Timer setup pickers ------------------------------------------------ */
+.clk-picker {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  margin: 0.4em auto 0.6em;
+}
+.clk-picker--dur {
+  gap: 0.2em;
+}
+.clk-picker--time {
+  gap: 0.1em;
+}
+/* Center selection band — a fixed neutral iOS fill (looks the same on the black
+   Timer screen and the lighter Add-Alarm sheet), not a background-tinted white. */
+.clk-picker::before {
+  content: '';
+  position: absolute;
+  left: 0.4em;
+  right: 0.4em;
+  top: 50%;
+  transform: translateY(-50%);
+  height: var(--clk-item);
+  background: rgba(120, 120, 128, 0.3);
+  border-radius: 0.7em;
+  pointer-events: none;
+}
+/* Timer (duration) band runs wider — closer to the screen edges. */
+.clk-picker--dur::before {
+  left: -0.7em;
+  right: -0.7em;
+}
+.clk-picker__colon {
+  align-self: center;
+  font-size: 2em;
+  font-weight: 300;
+  color: #fff;
+  padding: 0 0.1em;
+}
+
+.clk-wheel-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.clk-wheel {
+  height: calc(5 * var(--clk-item));
+  overflow-y: auto;
+  /* Snapping is handled in JS on scroll-settle / drag-release — CSS scroll-snap
+     + smooth-behavior made the mouse wheel feel laggy (it fought each tick). */
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  cursor: grab;
+  user-select: none;
+  touch-action: pan-y;
+  -webkit-mask-image: linear-gradient(
+    180deg,
+    transparent,
+    #000 22%,
+    #000 78%,
+    transparent
+  );
+  mask-image: linear-gradient(180deg, transparent, #000 22%, #000 78%, transparent);
+}
+.clk-wheel::-webkit-scrollbar {
+  display: none;
+}
+.clk-wheel:active {
+  cursor: grabbing;
+}
+.clk-wheel__pad {
+  height: calc(2 * var(--clk-item));
+}
+/* The ROW stays at the base font size so its `--clk-item` height matches the
+   padding, viewport and selection band (all base-em). The big number lives in an
+   inner span — otherwise the row's own 1.9em font would inflate its em height and
+   push the selected number below the centered band. */
+.clk-wheel__item {
+  height: var(--clk-item);
+  display: grid;
+  place-items: center;
+  color: #6a6a6e;
+  transition: color 0.15s ease;
+}
+.clk-wheel__item.is-sel {
+  color: #fff;
+}
+.clk-wheel__num {
+  font-size: 1.9em;
+  font-weight: 400;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  min-width: 1.7em;
+  text-align: center;
+}
+.clk-wheel__label {
+  position: absolute;
+  right: -0.2em;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 1.05em;
+  font-weight: 600;
+  color: #fff;
+  pointer-events: none;
+  padding-left: 0.15em;
+}
+/* For duration wheels, tuck the label right after the number. */
+.clk-picker--dur .clk-wheel-wrap {
+  padding-right: 2.8em;
+}
+.clk-picker--dur .clk-wheel__label {
+  right: 0.2em;
+}
+/* Time picker (HH:MM) has no side labels — give each column room to breathe. */
+.clk-picker--time .clk-wheel__num {
+  min-width: 2.4em;
+}
+
+/* ---- Recents ------------------------------------------------------------ */
+.clk-recents {
+  margin-top: 1.4em;
+  border-top: 0.5px solid rgba(255, 255, 255, 0.14);
+  padding-top: 0.6em;
+}
+.clk-recents__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: #fff;
+  font-size: 1.35em;
+  font-weight: 700;
+  padding: 0.3em 0 0.5em;
+}
+.clk-recents__edit {
+  color: var(--clk-amber);
+  font-size: 0.72em;
+  font-weight: 400;
+}
+.clk-recents__list {
+  display: flex;
+  flex-direction: column;
+}
+.clk-recent {
+  display: flex;
+  align-items: center;
+  gap: 0.8em;
+  padding: 0.6em 0;
+  border-bottom: 0.5px solid rgba(255, 255, 255, 0.1);
+}
+.clk-recent__del {
+  width: 1.5em;
+  height: 1.5em;
+  border-radius: 50%;
+  background: var(--clk-red);
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+.clk-recent__del span {
+  width: 0.75em;
+  height: 0.16em;
+  background: #fff;
+  border-radius: 1px;
+}
+.clk-recent__main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  line-height: 1.1;
+}
+.clk-recent__time {
+  font-size: 1.9em;
+  font-weight: 300;
+}
+.clk-recent__sub {
+  font-size: 0.85em;
+  color: #8e8e93;
+  margin-top: 0.2em;
+}
+.clk-recent__go {
+  width: 2.9em;
+  height: 2.9em;
+  border-radius: 50%;
+  background: rgba(48, 209, 88, 0.22);
+  border: 1.5px solid rgba(48, 209, 88, 0.35);
+  color: var(--clk-green);
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+.clk-recent__go svg {
+  width: 1.2em;
+  height: 1.2em;
+  margin-left: 0.1em;
+}
+
+/* ---- Add-alarm bottom sheet --------------------------------------------- */
+.clk-sheet {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: flex-end;
+  animation: clk-fade 0.2s ease-out;
+}
+.clk-sheet__panel {
+  width: 100%;
+  background: #1c1c1e;
+  border-radius: 1.4em 1.4em 0 0;
+  padding: 0.4em 1em calc(var(--safe-bottom) + 1.2em);
+  animation: clk-slide 0.28s cubic-bezier(0.2, 0.9, 0.3, 1);
+}
+.clk-sheet__bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.7em 0.2em 0.4em;
+}
+.clk-sheet__title {
+  font-weight: 600;
+  font-size: 1.05em;
+}
+.clk-sheet__cancel {
+  color: var(--clk-amber);
+  font-size: 1.02em;
+}
+.clk-sheet__save {
+  color: var(--clk-amber);
+  font-size: 1.02em;
+  font-weight: 600;
+}
+.clk-sheet__field {
+  display: flex;
+  align-items: center;
+  gap: 0.8em;
+  background: #2c2c2e;
+  border-radius: 0.8em;
+  padding: 0.85em 1em;
+  margin-top: 0.9em;
+  font-size: 1em;
+}
+.clk-sheet__field span {
+  color: #fff;
+}
+.clk-sheet__field input {
+  flex: 1;
+  min-width: 0;
+  text-align: right;
+  color: #fff;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-size: 1em;
+}
+.clk-sheet__field input::placeholder {
+  color: #8e8e93;
+}
+
+@keyframes clk-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes clk-slide {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}

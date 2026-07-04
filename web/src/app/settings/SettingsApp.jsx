@@ -7,6 +7,7 @@ import { openPrompt } from '../../store/slices/promptSlice';
 import { openDialog } from '../../store/slices/dialogSlice';
 import { loadPhotos } from '../../store/slices/photosSlice';
 import { loadRingtones, addRingtone, deleteRingtone } from '../../store/slices/ringtonesSlice';
+import { loadClock, setAlarmTone, addAlarmTone, deleteAlarmTone } from '../../store/slices/clockSlice';
 import { setShareTo } from '../../store/slices/messagesSlice';
 import { openShare } from '../../store/slices/airdropSlice';
 import { useAvailableApps } from '../useAvailableApps';
@@ -367,7 +368,10 @@ function RingtonesScreen({ onBack }) {
   const items = useSelector((s) => s.ringtones.items);
   const selected = useSelector((s) => s.settings.ringtone) || '';
   const volume = useSelector((s) => s.settings.volume);
-  const [playing, setPlaying] = useState(null); // id currently previewing
+  const alarmTones = useSelector((s) => s.clock.alarmTones);
+  const alarmSelected = useSelector((s) => s.clock.alarmRingtone) || '';
+  const [playing, setPlaying] = useState(null); // ringtone id currently previewing
+  const [playingAlarm, setPlayingAlarm] = useState(null); // alarm tone id previewing
   const audioRef = useRef(null);
   const previewTimer = useRef(null);
   const pressTimer = useRef(null);
@@ -380,10 +384,12 @@ function RingtonesScreen({ onBack }) {
       audioRef.current = null;
     }
     setPlaying(null);
+    setPlayingAlarm(null);
   };
 
   useEffect(() => {
     dispatch(loadRingtones());
+    dispatch(loadClock()); // alarm sounds live in the clock state
     return () => stopPreview();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dispatch]);
@@ -464,6 +470,76 @@ function RingtonesScreen({ onBack }) {
     select(rt);
   };
 
+  // ---- Alarm sound (mirrors the ringtone handlers, but for the Clock alarm) --
+  const isAlarmSelected = (rt) => (alarmSelected ? rt.url && rt.url === alarmSelected : rt.builtin);
+  const selectAlarm = (rt) => dispatch(setAlarmTone(rt.url));
+
+  const togglePreviewAlarm = (rt, e) => {
+    e.stopPropagation();
+    if (playingAlarm === rt.id) return stopPreview();
+    stopPreview();
+    if (!rt.url) return;
+    try {
+      const a = new Audio(rt.url);
+      a.volume = Math.max(0, Math.min(1, (volume ?? 70) / 100));
+      a.onended = () => setPlayingAlarm(null);
+      const p = a.play();
+      if (p && p.catch) p.catch(() => {});
+      audioRef.current = a;
+      setPlayingAlarm(rt.id);
+      previewTimer.current = setTimeout(stopPreview, 5000);
+    } catch (err) {
+      /* preview unavailable */
+    }
+  };
+
+  const addAlarmFlow = async () => {
+    const res = await dispatch(
+      openPrompt({
+        title: t('ringtones.addAlarmTitle'),
+        message: t('ringtones.addAlarmMsg'),
+        confirmText: t('common.add'),
+        fields: [
+          { key: 'name', placeholder: t('ringtones.name'), maxLength: 40 },
+          { key: 'url', placeholder: t('ringtones.pasteUrl'), maxLength: 512 },
+        ],
+      })
+    );
+    if (res && res.name && res.url) dispatch(addAlarmTone(res.name, res.url));
+  };
+
+  const removeAlarmFlow = async (rt) => {
+    const ok = await dispatch(
+      openDialog({
+        title: t('ringtones.deleteTitle'),
+        message: t('ringtones.deleteMsg', { name: rt.name }),
+        buttons: [
+          { text: t('common.cancel'), style: 'cancel', value: false },
+          { text: t('common.delete'), style: 'destructive', value: true },
+        ],
+      })
+    );
+    if (!ok) return;
+    if (playingAlarm === rt.id) stopPreview();
+    dispatch(deleteAlarmTone(rt.id));
+  };
+
+  const startPressAlarm = (rt) => {
+    longFired.current = false;
+    if (rt.builtin) return;
+    pressTimer.current = setTimeout(() => {
+      longFired.current = true;
+      removeAlarmFlow(rt);
+    }, 550);
+  };
+  const rowClickAlarm = (rt) => {
+    if (longFired.current) {
+      longFired.current = false;
+      return;
+    }
+    selectAlarm(rt);
+  };
+
   return (
     <div className="set">
       <div className="set__navbar set__navbar--center">
@@ -475,6 +551,7 @@ function RingtonesScreen({ onBack }) {
       </div>
 
       <div className="set__scroll">
+        <div className="set-grouplabel">{t('ringtones.ringtoneSection')}</div>
         <div className="set-card">
           <button className="set-row" onClick={addRingtoneFlow}>
             <SqIcon bg="#0a84ff"><MusicNoteG /></SqIcon>
@@ -505,6 +582,44 @@ function RingtonesScreen({ onBack }) {
                   aria-label="Select"
                 >
                   {isSelected(rt) && <CheckG />}
+                </button>
+              </div>
+            </Fragment>
+          ))}
+        </div>
+
+        {/* Alarm sound — used by the Clock app's alarms + finished timers. */}
+        <div className="set-grouplabel">{t('ringtones.alarmSection')}</div>
+        <div className="set-card">
+          <button className="set-row" onClick={addAlarmFlow}>
+            <SqIcon bg="#ff9f0a"><MusicNoteG /></SqIcon>
+            <span className="set-row__label">{t('ringtones.addAlarm')}</span>
+            <Chevron />
+          </button>
+        </div>
+
+        <div className="set-card set-card--rt">
+          {alarmTones.map((rt, i) => (
+            <Fragment key={rt.id}>
+              {i > 0 && <div className="set-sep" />}
+              <div
+                className="set-row set-row--static rt-row"
+                onPointerDown={() => startPressAlarm(rt)}
+                onPointerUp={endPress}
+                onPointerLeave={endPress}
+              >
+                <button className="rt-play" onClick={(e) => togglePreviewAlarm(rt, e)} aria-label="Preview">
+                  {playingAlarm === rt.id ? <PauseG /> : <PlayG />}
+                </button>
+                <button className="rt-body" onClick={() => rowClickAlarm(rt)}>
+                  {rt.name}
+                </button>
+                <button
+                  className={`rt-check${isAlarmSelected(rt) ? ' is-on' : ''}`}
+                  onClick={() => rowClickAlarm(rt)}
+                  aria-label="Select"
+                >
+                  {isAlarmSelected(rt) && <CheckG />}
                 </button>
               </div>
             </Fragment>

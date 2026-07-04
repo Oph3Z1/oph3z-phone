@@ -17,6 +17,7 @@ import { upsertPhoto, setLightbox } from './store/slices/photosSlice';
 import { presentNotification, loadNotifications, setPeek } from './store/slices/notificationsSlice';
 import { pushToast, clearToast } from './store/slices/toastSlice';
 import { presentIncoming, loadPending, stashIsland, applyStatus } from './store/slices/airdropSlice';
+import { loadClock, onTimerDone, onRing, setRinging, setAlarmEnabled } from './store/slices/clockSlice';
 
 export default function App() {
   const dispatch = useDispatch();
@@ -60,6 +61,7 @@ export default function App() {
       dispatch(setVisible(true));
       dispatch(loadNotifications()); // refresh the lock screen / center on open
       dispatch(loadPending()); // pending AirDrops waiting to be accepted
+      dispatch(loadClock()); // alarms / running timer / recents (also arms alarms)
     } else {
       dispatch(setVisible(false));
       dispatch(setLightbox(null));
@@ -97,6 +99,16 @@ export default function App() {
 
   // Lua -> the person you AirDropped to accepted/declined. Reflect it + toast.
   useNuiEvent('phone:airdrop:status', (status) => dispatch(applyStatus(status)));
+
+  // Lua -> Clock: a timer finished (banked recents come back), an alarm/timer is
+  // ringing (show overlay), or the ring stopped.
+  useNuiEvent('phone:clock:timerDone', (d) => dispatch(onTimerDone(d)));
+  useNuiEvent('phone:clock:ring', (d) => dispatch(onRing(d)));
+  useNuiEvent('phone:clock:ringStop', () => dispatch(setRinging(null)));
+  // One-shot alarms switch themselves off after ringing — reflect that in the UI.
+  useNuiEvent('phone:clock:alarmFire', (d) => {
+    if (d && d.id != null) dispatch(setAlarmEnabled({ id: d.id, enabled: false }));
+  });
 
   // Opening the phone ends any active peek (it becomes the lock-screen list).
   useEffect(() => {

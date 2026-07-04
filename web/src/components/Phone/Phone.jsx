@@ -15,6 +15,8 @@ import NotificationBanner from '../Notifications/NotificationBanner';
 import StatusToast from '../Notifications/StatusToast';
 import AirdropIsland from '../Airdrop/AirdropIsland';
 import AirdropPicker from '../Airdrop/AirdropPicker';
+import TimerIsland from '../Clock/TimerIsland';
+import AlarmRing from '../Clock/AlarmRing';
 import AlertDialog from '../AlertDialog/AlertDialog';
 import InputDialog from '../InputDialog/InputDialog';
 import ControlCenter from '../ControlCenter/ControlCenter';
@@ -104,6 +106,12 @@ export default function Phone() {
         {/* AirDrop receive prompt (Dynamic Island) — shows over the home OR lock
             screen while the phone is open, just like an incoming call. */}
         {!inCall && <AirdropIsland />}
+
+        {/* Timer Dynamic Island (home / other apps, not lock) + the ringing
+            overlay for a firing alarm / finished timer. Both sit BELOW the call
+            and AirDrop islands. */}
+        <TimerIsland />
+        <AlarmRing />
 
         {/* Call UI (incoming island / calling / in-call) on top of everything. */}
         <CallOverlay />
