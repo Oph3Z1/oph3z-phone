@@ -280,6 +280,15 @@ the player's `source`. Your iframe → your `client.lua` (`fetchNui`) → your
 | `PushNotification(src, data)` | Notify the phone. `data = { app, title, body, icon?, route? }`. Set `app` to **your app id** so the badge lands on your icon. `route = { app = 'myapp' }` makes tapping it open your app. |
 | `SendMessage(src, toNumber, payload)` | Send a message **from this player** to a number. `payload = { type?, body, meta? }` (`type` defaults to `'text'`). |
 | `PlaceCall(src, toNumber)` | Start a call from this player to a number. Returns the call id. |
+| `SendMail(src, opts)` | Drop **system mail** into this player's Mail inbox. `opts = { from = 'LS Bank', fromAddress? = 'noreply@lsbank.com', subject, body, attachments? = { { url, thumb? } } }`. Fires a phone notification. Returns the stored inbox item. |
+| `CreateBill(target, data)` | Add a **bill** to a player's Wallet. `target` = server id OR citizenid string. `data = { issuer = 'LS Water', label = 'Water bill', amount = 250 }`. Fires a phone notification. Returns the stored bill. *(This uses the default bills provider — see below.)* |
+
+**Swappable billing provider.** The Wallet reads/pays bills only through `server/app/wallet/bills_provider.lua`. Everyone's billing system differs, so to integrate your own, edit that one file to call your resource, keeping these functions + return shapes:
+- `BillsProvider.Get(citizenid)` → `{ { id, issuer, label, amount, ts, paid }, ... }`
+- `BillsProvider.Pay(citizenid, billId)` → `{ ok = true, amount, issuer, label }` or `{ ok = false, reason }` (the provider owns the charge)
+- `BillsProvider.CreateBill(citizenid, data)` → the stored bill (optional; drop it if bills come from your resource)
+
+The default provider stores bills in the phone DB and charges the player's bank.
 
 ```lua
 -- server.lua

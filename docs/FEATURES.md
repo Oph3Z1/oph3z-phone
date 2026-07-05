@@ -228,7 +228,7 @@ the 4 attachment features are the next phase.
 
 ---
 
-## Settings app  (web/src/app/settings/ + server/client/app/profile/)
+## Settings app  (web/src/app/settings/ + server/client/app/settings/)
 
 Dark iOS-style Settings. Screens are local `view` state; sub-screens use a circular
 back button + centred title (`set__backcircle` / `set__navbar--center`).
@@ -245,7 +245,7 @@ back button + centred title (`set__backcircle` / `set__navbar--center`).
   camera capture for the avatar is **not** saved to the gallery; it returns to the
   Profile screen via `launchTab = 'profile'`.
 - Storage: `doc.profile = { name, avatar }` (name seeds from the character name on
-  first open; renaming never touches QBox charinfo). Server: `server/app/profile/`.
+  first open; renaming never touches QBox charinfo). Server: `server/app/settings/profile.lua`.
   Shared with the UI + app iframes via `phone.identity { number, numberRaw,
   citizenid, name, email, avatar }`.
 
@@ -280,7 +280,7 @@ success/error/info popup, distinct from the saved notification system above.
   `exports['oph3z-phone']:Toast(type, title, body, app?)` (only shows while the
   phone is open). Not affected by the notification master/per-app switches.
 
-**AirDrop** (`server/client app/airdrop/`, `airdropSlice`, `components/Airdrop/`) —
+**AirDrop** (`server/airdrop.lua`, `client/airdrop.lua`, `airdropSlice`, `components/Airdrop/`) —
 nearby player-to-player sharing. A player must turn AirDrop **on** (Control Center)
 to be discoverable + receive. `Config.Airdrop = { Range, MaxPhotos, RequirePhone }`.
 - **Share what:** a contact (Contact detail → *Share Contact*), your own card
@@ -299,7 +299,7 @@ to be discoverable + receive. `Config.Airdrop = { Range, MaxPhotos, RequirePhone
   (`type:'contact'`, `ContactCard`); tapping the card opens Call / Add to Contacts
   (if new) / Share (AirDrop nearby or forward in Messages) / Message.
 
-**Ringtones** (`RingtonesScreen`, server/client `app/ringtones/`)
+**Ringtones** (`RingtonesScreen`, server/client `app/settings/ringtones.lua`)
 - Built-in ringtones from `Config.Ringtones` (`file` resolved to a bundled
   `web/build/audio/*.mp3`, or a full `url`) + player-added custom ones (name + URL),
   stored in `doc.ringtones = { items[], nextId }`.

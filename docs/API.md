@@ -39,7 +39,7 @@ Dev command: `/addphoto <url> [image|video]`. Redux slice: `photos { loaded, ite
 Reusable on the server: `Photos.Add(citizenid, {url,type})`. Server push to client:
 `oph3z-phone:client:photoAdded` (photo) → NUI `phone:photos:added`.
 
-### Profile app  (server/app/profile/main.lua, client/app/profile/main.lua)
+### Profile  (server/app/settings/profile.lua, client/app/settings/profile.lua)
 The phone "ID": display name + avatar, stored in `doc.profile = { name, avatar }`
 (independent of the QBox character name). Mail address is generated in
 `DB.EnsureMail` and is read-only here.
@@ -52,7 +52,7 @@ NUI callbacks: `phone:profile:setName {name}`, `phone:profile:setAvatar {url}`.
 Thunks (phoneSlice): `saveProfileName`, `saveAvatar` — both optimistically update
 `phone.identity` then persist.
 
-### Ringtones app  (server/app/ringtones/main.lua, client/app/ringtones/main.lua)
+### Ringtones  (server/app/settings/ringtones.lua, client/app/settings/ringtones.lua)
 Built-ins from `Config.Ringtones` + player custom ones in `doc.ringtones = {items[],
 nextId}`. Selection is `doc.settings.ringtone` (URL, saved via `saveSettings`).
 `Ringtones.UrlFor(cid)` resolves the callee's ringtone for `startRingtone`.
@@ -66,7 +66,7 @@ NUI callbacks: `phone:ringtones:get|add|delete`. Slice: `ringtones { loaded, ite
 (thunks `loadRingtones`, `addRingtone`, `deleteRingtone`; selection via
 `saveSetting('ringtone', url)`). Preview plays in the NUI `<audio>`.
 
-### Notifications  (server/app/notifications/main.lua)
+### Notifications  (server/notifications.lua, client/notifications.lua) — system service, not an app
 `Notif.Push(citizenid, { app, title, body, icon?, route? })` stores + live-pushes a
 notification — **unless** the player's settings suppress it: `settings.notifMaster
 == false` (master off) or `settings.notifApps[app] == false` (that app off) → the

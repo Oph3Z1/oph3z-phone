@@ -11,6 +11,8 @@ import cameraIcon from '../assets/icons/apps/camera.png';
 import photosIcon from '../assets/icons/apps/photos.png';
 import mapsIcon from '../assets/icons/apps/maps.png';
 import clockIcon from '../assets/icons/apps/clock.png';
+import mailIcon from '../assets/icons/apps/mail.png';
+import walletIcon from '../assets/icons/apps/wallet.png';
 import settingsIcon from '../assets/icons/apps/settings.png';
 import calculatorIcon from '../assets/icons/apps/calculator.png';
 import appstoreIcon from '../assets/icons/apps/appstore.png';
@@ -24,6 +26,8 @@ import AppStoreApp from './appstore/AppStoreApp';
 import SettingsApp from './settings/SettingsApp';
 import ClockApp from './clock/ClockApp';
 import CalculatorApp from './calculator/CalculatorApp';
+import MailApp from './mail/MailApp';
+import WalletApp from './wallet/WalletApp';
 
 /** @typedef {{ id:string, name:string, icon:string, component:(React.ComponentType|null) }} AppDef */
 
@@ -35,6 +39,8 @@ export const APPS = {
   photos:     { id: 'photos',     name: 'Photos',     icon: photosIcon,     component: PhotosApp },
   maps:       { id: 'maps',       name: 'Maps',       icon: mapsIcon,       component: MapsApp },
   clock:      { id: 'clock',      name: 'Clock',      icon: clockIcon,      component: ClockApp },
+  mail:       { id: 'mail',       name: 'Mail',       icon: mailIcon,       component: MailApp },
+  wallet:     { id: 'wallet',     name: 'Wallet',     icon: walletIcon,     component: WalletApp },
   settings:   { id: 'settings',   name: 'Settings',   icon: settingsIcon,   component: SettingsApp },
   calculator: { id: 'calculator', name: 'Calculator', icon: calculatorIcon, component: CalculatorApp },
   appstore:   { id: 'appstore',   name: 'App Store',  icon: appstoreIcon,   component: AppStoreApp },

@@ -219,6 +219,7 @@ function DB.EnsureMail(citizenid, doc, firstname, lastname)
     doc.mail = doc.mail or {}
     local m = doc.mail
     m.inbox  = m.inbox or {}          -- { {id, from, subject, body, read, ts}, ... }
+    m.sent   = m.sent or {}           -- { {id, to, subject, body, ts}, ... }
     m.nextId = m.nextId or 1
 
     if not m.address then
@@ -247,6 +248,14 @@ function DB.EnsureMail(citizenid, doc, firstname, lastname)
     end
 
     return doc
+end
+
+---Resolve a mail address -> citizenid via the mail registry (nil if unknown).
+---@param address string
+---@return string|nil citizenid
+function DB.GetCitizenIdByMail(address)
+    if type(address) ~= 'string' or address == '' then return nil end
+    return loadMailRegistry()[address:lower()]
 end
 
 -- ===========================================================================

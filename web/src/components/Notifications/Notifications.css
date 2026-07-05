@@ -5,7 +5,7 @@
 /* ---- Card --------------------------------------------------------------- */
 .notif-card {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 0.6em;
   padding: 0.65em 0.8em;
   border-radius: 1.3em;

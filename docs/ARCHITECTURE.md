@@ -46,11 +46,17 @@ oph3z-phone/
 │   ├── utils.lua             Phone.dbg / hasItem / getTimeData (time + weather category)
 │   ├── main.lua              lifecycle + prop/anim + flashlight + screen glow + CALLS
 │   ├── nui.lua               RegisterNUICallback handlers (UI actions -> server)
-│   └── app/<name>/<name>.lua MODULAR per-app client (e.g. app/photos/photos.lua)
+│   ├── airdrop.lua           system SERVICE (not an app) — AirDrop bridge
+│   ├── notifications.lua     system SERVICE (not an app) — notification relay
+│   └── app/<name>/main.lua   MODULAR per-app client (app/ is ONLY for real apps, e.g.
+│                             app/photos/main.lua). Sub-features live under their parent app:
+│                             app/messages/groups.lua, app/settings/{profile,ringtones}.lua
 ├── server/
 │   ├── database.lua          DB.* : load/save, number gen + registry, contacts, blocked, recents
 │   ├── main.lua              ox_lib callbacks + call manager
-│   └── app/<name>/<name>.lua MODULAR per-app server (e.g. app/photos/photos.lua)
+│   ├── airdrop.lua           system SERVICE (not an app) — nearby sharing
+│   ├── notifications.lua     system SERVICE (not an app) — Notif.Push store
+│   └── app/<name>/main.lua   MODULAR per-app server (same grouping as the client)
 ├── data/                     runtime JSON (per citizenid) + _numbers.json registry
 ├── docs/                     <- you are here
 └── web/                      React + Redux NUI (Vite)

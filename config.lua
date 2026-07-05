@@ -100,6 +100,8 @@ Config.Apps = {
     { id = 'photos',     label = 'Photos',     place = 'dock' },
     { id = 'maps',       label = 'Maps',       place = 'grid' },
     { id = 'clock',      label = 'Clock',      place = 'grid' },
+    { id = 'mail',       label = 'Mail',       place = 'grid' },
+    { id = 'wallet',     label = 'Wallet',     place = 'grid' },
     { id = 'settings',   label = 'Settings',   place = 'grid' },
     { id = 'calculator', label = 'Calculator', place = 'grid' },
     { id = 'appstore',   label = 'App Store',  place = 'grid' }

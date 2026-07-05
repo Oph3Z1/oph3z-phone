@@ -18,6 +18,8 @@ import { presentNotification, loadNotifications, setPeek } from './store/slices/
 import { pushToast, clearToast } from './store/slices/toastSlice';
 import { presentIncoming, loadPending, stashIsland, applyStatus } from './store/slices/airdropSlice';
 import { loadClock, onTimerDone, onRing, setRinging, setAlarmEnabled } from './store/slices/clockSlice';
+import { loadMail, receiveMail } from './store/slices/mailSlice';
+import { loadWallet, receiveIncoming as walletIncoming, receiveBill } from './store/slices/walletSlice';
 
 export default function App() {
   const dispatch = useDispatch();
@@ -62,6 +64,8 @@ export default function App() {
       dispatch(loadNotifications()); // refresh the lock screen / center on open
       dispatch(loadPending()); // pending AirDrops waiting to be accepted
       dispatch(loadClock()); // alarms / running timer / recents (also arms alarms)
+      dispatch(loadMail()); // refresh the mailbox on open
+      dispatch(loadWallet()); // balance / transactions / bills
     } else {
       dispatch(setVisible(false));
       dispatch(setLightbox(null));
@@ -109,6 +113,14 @@ export default function App() {
   useNuiEvent('phone:clock:alarmFire', (d) => {
     if (d && d.id != null) dispatch(setAlarmEnabled({ id: d.id, enabled: false }));
   });
+
+  // Lua -> a new mail arrived: add it to the inbox (the notification system shows
+  // the banner/peek separately).
+  useNuiEvent('phone:mail:incoming', (item) => dispatch(receiveMail(item)));
+
+  // Lua -> Wallet: money received (balance + transaction) or a new bill.
+  useNuiEvent('phone:wallet:incoming', (d) => dispatch(walletIncoming(d)));
+  useNuiEvent('phone:wallet:bill', (b) => dispatch(receiveBill(b)));
 
   // Opening the phone ends any active peek (it becomes the lock-screen list).
   useEffect(() => {

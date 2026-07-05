@@ -118,3 +118,23 @@ exports('PlaceCall', function(src, toNumber)
     if not PhoneCall then return nil end
     return PhoneCall.Start(src, toNumber)
 end)
+
+-- Send SYSTEM mail to this player's Mail inbox (jobs / bills / gov, etc.).
+-- opts = { from = 'LS Bank', fromAddress? = 'noreply@lsbank.com',
+--          subject = 'Your bill', body = '...', attachments? = { { url, thumb? } } }
+-- Returns the stored inbox item, or nil.
+exports('SendMail', function(src, opts)
+    local cid = cidOf(src)
+    if not cid or not Mail then return nil end
+    return Mail.SendSystem(cid, opts)
+end)
+
+-- Create a BILL in a player's Wallet (default billing provider). `target` may be a
+-- server id OR a citizenid string. data = { issuer = 'LS Water', label = 'Water bill',
+-- amount = 250 }. Returns the stored bill, or nil. (If you swap the bills provider
+-- for your own resource, create bills through that resource instead.)
+exports('CreateBill', function(target, data)
+    local cid = type(target) == 'string' and target or cidOf(target)
+    if not cid or not BillsProvider or not BillsProvider.CreateBill then return nil end
+    return BillsProvider.CreateBill(cid, data)
+end)

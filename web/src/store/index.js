@@ -20,6 +20,8 @@ import airdropReducer from './slices/airdropSlice';
 import shareReducer from './slices/shareSlice';
 import clockReducer from './slices/clockSlice';
 import calcReducer from './slices/calcSlice';
+import mailReducer from './slices/mailSlice';
+import walletReducer from './slices/walletSlice';
 
 export const store = configureStore({
   reducer: {
@@ -44,5 +46,7 @@ export const store = configureStore({
     share: shareReducer,
     clock: clockReducer,
     calc: calcReducer,
+    mail: mailReducer,
+    wallet: walletReducer,
   },
 });

@@ -3,6 +3,7 @@ import { fetchNui } from '../../utils/fetchNui';
 import { openApp, unlock, setLaunchTab } from './phoneSlice';
 import { setResumeThread } from './messagesSlice';
 import { setResumeGroup } from './groupsSlice';
+import { setFocusMail } from './mailSlice';
 
 const now = Math.floor(Date.now() / 1000);
 const MOCK = [
@@ -155,6 +156,9 @@ export const openRoute = (route, notifId) => (dispatch) => {
   } else if (route.app === 'call') {
     dispatch(setLaunchTab(route.tab || 'recents'));
     dispatch(openApp('call'));
+  } else if (route.app === 'mail') {
+    if (route.id != null) dispatch(setFocusMail(route.id));
+    dispatch(openApp('mail'));
   } else if (route.app) {
     dispatch(openApp(route.app));
   }
