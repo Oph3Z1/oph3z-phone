@@ -10,6 +10,7 @@ import { openRoute, clearNotification } from '../../store/slices/notificationsSl
 import NotificationList from '../../components/Notifications/NotificationList';
 import AirdropPendingCard from '../../components/Airdrop/AirdropPendingCard';
 import LockTimerWidget from '../../components/Clock/LockTimerWidget';
+import LockMusicWidget from '../../app/spotify/LockMusicWidget';
 import { fetchNui } from '../../utils/fetchNui';
 import { useNow } from '../../hooks/useNow';
 import { formatClock, formatLongDate } from '../../utils/datetime';
@@ -110,6 +111,9 @@ export default function LockScreen({ exiting = false, onExited }) {
           </div>
         </div>
       )}
+
+      {/* Now-playing media card (replaces the Dynamic Island while locked). */}
+      <LockMusicWidget />
 
       {/* Flashlight + camera quick actions (icons already include their bg). */}
       <div className="lockscreen__quickrow">

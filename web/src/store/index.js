@@ -24,6 +24,7 @@ import mailReducer from './slices/mailSlice';
 import walletReducer from './slices/walletSlice';
 import xReducer from './slices/xSlice';
 import marketplaceReducer from './slices/marketplaceSlice';
+import spotifyReducer from './slices/spotifySlice';
 
 export const store = configureStore({
   reducer: {
@@ -52,5 +53,6 @@ export const store = configureStore({
     wallet: walletReducer,
     x: xReducer,
     marketplace: marketplaceReducer,
+    spotify: spotifyReducer,
   },
 });

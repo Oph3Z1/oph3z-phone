@@ -117,6 +117,11 @@ Config.Apps = {
         id = 'marketplace', label = 'Marketplace', place = 'grid', store = true,
         developer   = 'Los Santos Classifieds',
         description = 'Buy and sell across the city. Post cars, houses and items with photos, set your price and let buyers call or message you directly.',
+    },
+    {
+        id = 'spotify', label = 'Spotify', place = 'grid', store = true,
+        developer   = 'Spotify AB',
+        description = 'Music for everyone. Search millions of songs, build playlists, share tracks with friends and play out loud so everyone nearby can vibe with you.',
     }
 }
 
@@ -179,5 +184,40 @@ Config.Camera = {
 -- the picker shows a friendly "set up your key" notice.
 Config.Gif = {
     apiKey = 'fbkCoWNVgakEayeG0G9hDALim5pwNWr8',   -- <-- paste your GIPHY API key here
+}
+
+-- Music (Spotify app) -------------------------------------------------------
+-- The Music app searches an external API for songs (there is no local catalog).
+-- Playback runs through xsound (the same 3D audio used for ringtones), so music
+-- keeps playing while the phone is closed AND can be heard by nearby players.
+--
+-- Pick the search backend with `Provider`:
+--   'youtube' = FULL songs. xsound plays the YouTube audio directly. Needs a
+--               YouTube Data API v3 key (free). Note the default API quota is
+--               ~100 searches/day — raise it in Google Cloud if needed.
+--               Get a key: https://console.cloud.google.com  (enable "YouTube
+--               Data API v3", then Credentials -> API key).
+--   'spotify' = Official Spotify catalogue/metadata, BUT Spotify only exposes
+--               30-second PREVIEW clips (full tracks are DRM-locked and cannot be
+--               streamed), and some tracks have no preview. Needs a Spotify app's
+--               Client ID + Secret: https://developer.spotify.com/dashboard
+Config.Spotify = {
+    Provider = 'youtube',   -- 'youtube' or 'spotify'
+
+    YouTube = {
+        apiKey = 'AIzaSyAo41rsOkmsNUV0E--psc7IAmKsVvuan-8',        -- YouTube Data API v3 key
+    },
+    
+    Spotify = {
+        clientId     = '',  -- Spotify app Client ID
+        clientSecret = '',  -- Spotify app Client Secret
+    },
+
+    SearchLimit = 25,
+
+    -- Let players broadcast their music to nearby players (an in-app speaker
+    -- toggle appears only when this is true; otherwise music is always private).
+    AllowNearby = true,
+    NearbyRange = 12.0,   -- metres nearby players can hear the music
 }
 

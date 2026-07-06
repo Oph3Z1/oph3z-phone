@@ -7,6 +7,7 @@ import { loadPhotos } from './photosSlice';
 import { pushToast } from './toastSlice';
 import { translateFrom } from '../../i18n/useT';
 import { AIRDROP_TOAST_ICON, describeAirdrop } from '../../components/Airdrop/airdropShared';
+import { getApp } from '../../app/registry';
 
 // AirDrop: nearby player-to-player sharing (contacts / your card / photos, plus
 // third-party payloads). Sender side = the share picker; receiver side = the
@@ -170,9 +171,10 @@ export const acceptAirdrop = (transfer) => async (dispatch, getState) => {
     dispatch(loadPhotos());
     dispatch(pushToast({ icon: AIRDROP_TOAST_ICON, title: tr('airdrop.title'), body: tr('airdrop.savedPhotos') }));
   } else if (res.kind === 'app' && res.app) {
-    // Route the payload into the same app on this phone (if installed).
+    // Route the payload into the same app on this phone — a registered third-party
+    // app OR a built-in one (e.g. Spotify track shares).
     const app = res.app;
-    const installed = getState().apps.external.some((a) => a.id === app.id);
+    const installed = getState().apps.external.some((a) => a.id === app.id) || !!getApp(app.id);
     if (installed) {
       dispatch(setDeliver({ appId: app.id, payload: app.payload }));
       dispatch(unlock()); // accepting from the Notification Center unlocks the phone

@@ -129,3 +129,35 @@
   opacity: 0.95;
   cursor: pointer;
 }
+
+/* ---- Now Playing card (lock screen) ------------------------------------- */
+.lockmusic {
+  margin-top: auto;                   /* bottom, above the quick row */
+  align-self: center;                 /* narrower than the notifications, centred */
+  width: 100%;
+  max-width: 23em;
+  padding: 0.7em 0.85em 0.55em;
+  border-radius: 1.1em;
+  background: rgba(30, 30, 32, 0.55);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #fff;
+}
+.lockmusic + .lockscreen__quickrow { margin-top: 1em; }  /* sit just below the card */
+
+.lockmusic__head { display: flex; align-items: center; gap: 0.7em; }
+.lockmusic__art { width: 3em; height: 3em; border-radius: 0.5em; overflow: hidden; display: grid; place-items: center; color: rgba(255,255,255,0.85); flex-shrink: 0; box-shadow: 0 0.3em 0.8em rgba(0,0,0,0.4); }
+.lockmusic__art img { width: 100%; height: 100%; object-fit: cover; }
+.lockmusic__meta { flex: 1; min-width: 0; }
+.lockmusic__title { font-weight: 700; font-size: 1.02em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lockmusic__artist { color: rgba(255,255,255,0.65); font-size: 0.85em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.lockmusic__seek { -webkit-appearance: none; appearance: none; width: 100%; height: 5px; border-radius: 999px; background: rgba(255,255,255,0.25); outline: none; margin: 0.7em 0 0; }
+.lockmusic__seek::-webkit-slider-thumb { -webkit-appearance: none; width: 12px; height: 12px; border-radius: 50%; background: #fff; }
+.lockmusic__seek::-moz-range-thumb { width: 12px; height: 12px; border: none; border-radius: 50%; background: #fff; }
+.lockmusic__times { display: flex; justify-content: space-between; color: rgba(255,255,255,0.55); font-size: 0.7em; margin-top: 0.25em; }
+
+.lockmusic__ctl { display: flex; align-items: center; justify-content: center; gap: 2.6em; margin-top: 0.15em; }
+.lockmusic__ctl button { background: none; border: none; color: #fff; display: grid; place-items: center; padding: 0.3em; }
+.lockmusic__ctl button:disabled { opacity: 0.35; }

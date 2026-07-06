@@ -21,6 +21,8 @@ import { presentIncoming, loadPending, stashIsland, applyStatus } from './store/
 import { loadClock, onTimerDone, onRing, setRinging, setAlarmEnabled } from './store/slices/clockSlice';
 import { loadMail, receiveMail } from './store/slices/mailSlice';
 import { loadWallet, receiveIncoming as walletIncoming, receiveBill } from './store/slices/walletSlice';
+import { setPlaying as setMusicPlaying, clearTrack } from './store/slices/musicSlice';
+import { applyTrack, applyTick, clearNow, loadSpotifyState } from './store/slices/spotifySlice';
 
 export default function App() {
   const dispatch = useDispatch();
@@ -71,6 +73,7 @@ export default function App() {
       dispatch(loadClock()); // alarms / running timer / recents (also arms alarms)
       dispatch(loadMail()); // refresh the mailbox on open
       dispatch(loadWallet()); // balance / transactions / bills
+      dispatch(loadSpotifyState()); // restore the music player (may be playing while closed)
     } else {
       dispatch(setVisible(false));
       dispatch(setLightbox(null));
@@ -110,6 +113,21 @@ export default function App() {
 
   // Lua -> transient status toast (success / error / info). Not saved anywhere.
   useNuiEvent('phone:toast', (d) => dispatch(pushToast(d)));
+
+  // Lua (Spotify engine) -> now-playing sync. These fire even while the phone is
+  // closed (music keeps playing via xsound), keeping redux ready for reopen.
+  useNuiEvent('phone:spotify:track', (d) => d && dispatch(applyTrack(d)));
+  useNuiEvent('phone:spotify:tick', (d) => d && dispatch(applyTick(d)));
+  useNuiEvent('phone:spotify:playing', (d) => d && dispatch(setMusicPlaying(!!d.playing)));
+  useNuiEvent('phone:spotify:stopped', () => { dispatch(clearTrack()); dispatch(clearNow()); });
+
+  // Media volume (Control Center / Now Playing slider) drives the music engine.
+  const mediaVolume = useSelector((s) => s.settings.volume);
+  const volInit = useRef(true);
+  useEffect(() => {
+    if (volInit.current) { volInit.current = false; return; }
+    fetchNui('phone:spotify:setVolume', { volume: mediaVolume }, {});
+  }, [mediaVolume]);
 
   // Lua -> an AirDrop transfer arrived (island if open+unlocked, else it waits in
   // the Notification Center).
@@ -162,19 +180,35 @@ export default function App() {
   });
 
   // Lua -> call events (incoming / outgoing / active / ended / failed).
+  // callPhaseRef tracks the phase SYNCHRONOUSLY (events can arrive back-to-back
+  // faster than React re-renders), so we can tell an unanswered incoming call from
+  // an answered one.
+  const callPhaseRef = useRef(null);
   useNuiEvent('phone:call', (data) => {
     if (!data) return;
-    dispatch(applyCall(data));
-    // Refresh contacts/recents after a call so new history shows up (a failed call
-    // to an offline number still logs an outgoing entry server-side).
-    if (data.type === 'ended' || data.type === 'failed') {
-      dispatch(loadPhoneState());
-      // If the phone is closed when the call resolves, the CallOverlay (which owns
-      // the auto-clear timer) is unmounted — so the 'ended' state would linger and
-      // pop a stale "call ended" screen next time the phone opens. Clear it now.
-      // The missed call is still logged in Recents + notified by the server.
-      if (!visible) dispatch(clearCall());
+    const prev = callPhaseRef.current;
+
+    if (data.type === 'incoming' || data.type === 'outgoing' || data.type === 'active') {
+      // Pause any playing music once, when the call first starts.
+      if (prev === null) fetchNui('phone:spotify:pauseFor', {}, {});
+      callPhaseRef.current = data.type;
+      dispatch(applyCall(data));
+      return;
     }
+
+    if (data.type === 'ended' || data.type === 'failed') {
+      const unansweredIncoming = prev === 'incoming'; // rang, never answered
+      callPhaseRef.current = null;
+      dispatch(loadPhoneState()); // refresh Recents (missed call is logged server-side)
+      fetchNui('phone:spotify:resumeAuto', {}, {}); // resume music we paused for the call
+      // Don't show a "call ended" screen for a call you never answered (or if the
+      // phone is closed) — just clear it. Answered calls still get the brief screen.
+      if (unansweredIncoming || !visible) dispatch(clearCall());
+      else dispatch(applyCall(data));
+      return;
+    }
+
+    dispatch(applyCall(data));
   });
 
   // Tell Lua to close the phone (and release NUI focus).

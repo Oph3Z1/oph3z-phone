@@ -18,6 +18,7 @@ import calculatorIcon from '../assets/icons/apps/calculator.png';
 import appstoreIcon from '../assets/icons/apps/appstore.png';
 import xIcon from '../assets/icons/apps/x.png';
 import marketplaceIcon from '../assets/icons/apps/marketplace.png';
+import spotifyIcon from '../assets/icons/apps/spotify.png';
 
 import PhoneApp from './phone/PhoneApp';
 import PhotosApp from './photos/PhotosApp';
@@ -32,6 +33,7 @@ import MailApp from './mail/MailApp';
 import WalletApp from './wallet/WalletApp';
 import XApp from './x/XApp';
 import MarketApp from './marketplace/MarketApp';
+import SpotifyApp from './spotify/SpotifyApp';
 
 /** @typedef {{ id:string, name:string, icon:string, component:(React.ComponentType|null) }} AppDef */
 
@@ -50,6 +52,7 @@ export const APPS = {
   appstore:   { id: 'appstore',   name: 'App Store',  icon: appstoreIcon,   component: AppStoreApp },
   x:          { id: 'x',          name: 'X',          icon: xIcon,          component: XApp },
   marketplace:{ id: 'marketplace', name: 'Marketplace', icon: marketplaceIcon, component: MarketApp },
+  spotify:    { id: 'spotify',    name: 'Spotify',     icon: spotifyIcon,     component: SpotifyApp },
 };
 
 export const getApp = (id) => APPS[id] || null;

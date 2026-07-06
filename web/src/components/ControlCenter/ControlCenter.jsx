@@ -4,7 +4,7 @@ import './ControlCenter.css';
 import { fetchNui } from '../../utils/fetchNui';
 import { setControlCenter, setFlashlight } from '../../store/slices/phoneSlice';
 import { saveSetting, saveSettingLive, flushSettings, setAirplane } from '../../store/slices/settingsSlice';
-import { togglePlaying, setPosition } from '../../store/slices/musicSlice';
+import { setPosition } from '../../store/slices/musicSlice';
 import { useT } from '../../i18n/useT';
 
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
@@ -200,7 +200,7 @@ export default function ControlCenter() {
             value={music.position}
             max={music.duration}
             disabled={!hasTrack || !music.duration}
-            onChange={(v) => dispatch(setPosition(v))}
+            onChange={(v) => { dispatch(setPosition(v)); fetchNui('phone:spotify:seek', { position: v }, {}); }}
           />
           <span className="cc-music__time cc-music__time--end">
             {hasTrack && music.duration ? `-${fmtTime(music.duration - music.position)}` : fmtTime(music.duration)}
@@ -208,11 +208,11 @@ export default function ControlCenter() {
         </div>
 
         <div className="cc-music__controls">
-          <button className="cc-music__btn" disabled={!hasTrack}><PrevGlyph /></button>
-          <button className="cc-music__btn cc-music__btn--play" disabled={!hasTrack} onClick={() => dispatch(togglePlaying())}>
+          <button className="cc-music__btn" disabled={!hasTrack} onClick={() => fetchNui('phone:spotify:prev', {}, {})}><PrevGlyph /></button>
+          <button className="cc-music__btn cc-music__btn--play" disabled={!hasTrack} onClick={() => fetchNui('phone:spotify:toggle', {}, {})}>
             {music.playing ? <PauseGlyph /> : <PlayGlyph />}
           </button>
-          <button className="cc-music__btn" disabled={!hasTrack}><NextGlyph /></button>
+          <button className="cc-music__btn" disabled={!hasTrack} onClick={() => fetchNui('phone:spotify:next', {}, {})}><NextGlyph /></button>
         </div>
       </div>
     </div>

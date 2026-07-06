@@ -22,6 +22,10 @@ export default function StatusBar() {
   const airplane = useSelector((s) => s.settings.airplane);
   // Home-screen edit mode replaces the right-side icons with a "Done" button (iOS).
   const editing = useSelector((s) => s.home.editing && !s.phone.activeApp && !s.phone.locked);
+  // The music Dynamic Island sits over the notch — hide the wifi icon to give it room.
+  const islandOn = useSelector((s) =>
+    !!s.music.title && s.music.playing && s.phone.activeApp !== 'spotify' && !s.phone.locked && !s.call.state
+  );
 
   const clock = formatClock(useNow());
 
@@ -56,7 +60,7 @@ export default function StatusBar() {
             ) : (
               <>
                 <img className="statusbar__icon" src={signalIcon} alt="signal" />
-                <img className="statusbar__icon" src={wifiIcon} alt="wifi" />
+                {!islandOn && <img className="statusbar__icon" src={wifiIcon} alt="wifi" />}
               </>
             )}
             <img className="statusbar__icon statusbar__battery" src={batteryIcon} alt="battery" />
