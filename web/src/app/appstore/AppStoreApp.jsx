@@ -5,6 +5,14 @@ import { openApp } from '../../store/slices/phoneSlice';
 import { startDownload, cancelDownload, folderFlat } from '../../store/slices/homeSlice';
 import { ChevronLeftIcon } from '../messages/components/icons';
 import { useT } from '../../i18n/useT';
+import { useAvailableApps } from '../useAvailableApps';
+
+// The App Store catalog: registered third-party apps PLUS store-gated built-ins
+// (e.g. X) — anything not pre-installed on the home screen.
+function useStoreCatalog() {
+  const { list } = useAvailableApps();
+  return useMemo(() => list.filter((a) => a.external || a.store), [list]);
+}
 
 // Set of app ids currently on the home screen (dock + pages + folders).
 function useInstalledSet() {
@@ -126,7 +134,7 @@ function StoreDetail({ app, installed, onBack }) {
 }
 
 export default function AppStoreApp() {
-  const apps = useSelector((s) => s.apps.external);
+  const apps = useStoreCatalog();
   const installed = useInstalledSet();
   const [detail, setDetail] = useState(null);
 

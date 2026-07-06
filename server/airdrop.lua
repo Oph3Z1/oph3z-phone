@@ -153,6 +153,15 @@ lib.callback.register('oph3z-phone:server:airdrop:send', function(source, data)
         transfer.photos = cleanPhotos(data.photos)
         if not transfer.photos then return { ok = false, reason = 'bad' } end
         transfer.preview = transfer.photos[1].thumb or transfer.photos[1].url
+    elseif data.kind == 'xprofile' then
+        local xp = data.xprofile
+        if type(xp) ~= 'table' or type(xp.handle) ~= 'string' or xp.handle == '' then return { ok = false, reason = 'bad' } end
+        transfer.xprofile = {
+            handle = tostring(xp.handle):sub(1, 20),
+            name   = tostring(xp.name or xp.handle):sub(1, 40),
+            avatar = xp.avatar and tostring(xp.avatar):sub(1, 512) or nil,
+        }
+        transfer.preview = transfer.xprofile.avatar
     elseif data.kind == 'app' then
         if type(data.app) ~= 'table' or type(data.app.id) ~= 'string' then return { ok = false, reason = 'bad' } end
         local payload = data.app.payload
@@ -242,6 +251,9 @@ lib.callback.register('oph3z-phone:server:airdrop:accept', function(source, id)
         -- Nothing to save server-side; the receiver's client routes the payload
         -- into the app. Hand the payload back so the client can deliver it.
         result.app = t.app
+    elseif t.kind == 'xprofile' then
+        -- Shared X profile: hand it back so the client opens X to that profile.
+        result.xprofile = t.xprofile
     end
 
     DB.Save(cid, doc)

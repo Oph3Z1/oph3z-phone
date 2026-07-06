@@ -10,6 +10,8 @@ import { openApp, saveAvatar, setLaunchTab } from '../../store/slices/phoneSlice
 import { loadPhotos, upsertPhoto } from '../../store/slices/photosSlice';
 import { setShareTo, setResumeThread, setDraftAttach } from '../../store/slices/messagesSlice';
 import { setResumeGroup, setGroupDraft } from '../../store/slices/groupsSlice';
+import { setCapture } from '../../store/slices/xSlice';
+import { setCapture as marketSetCapture } from '../../store/slices/marketplaceSlice';
 import { FlipIcon } from './components/icons';
 import { useT } from '../../i18n/useT';
 
@@ -117,6 +119,22 @@ export default function CameraApp() {
     if (photo) dispatch(upsertPhoto(photo));
     else console.error('[camera] save returned no photo for', url);
 
+    // Launched from the X composer OR X edit-profile: hand the capture back to X.
+    if (to === 'x' || to === 'xedit') {
+      dispatch(setShareTo(null));
+      dispatch(setCapture({ url, type }));
+      dispatch(openApp('x'));
+      return;
+    }
+
+    // Launched from the Marketplace composer: hand the capture back to it.
+    if (to === 'market') {
+      dispatch(setShareTo(null));
+      dispatch(marketSetCapture({ url, type }));
+      dispatch(openApp('marketplace'));
+      return;
+    }
+
     // If launched from a chat, hand the capture back as a draft attachment so the
     // player can add a caption before sending (don't auto-send).
     if (to) {
@@ -197,6 +215,14 @@ export default function CameraApp() {
     if (to === 'profile') {
       dispatch(setLaunchTab('profile'));
       dispatch(openApp('settings'));
+      return;
+    }
+    if (to === 'x' || to === 'xedit') {
+      dispatch(openApp('x')); // X reopens the composer/editor (no capture)
+      return;
+    }
+    if (to === 'market') {
+      dispatch(openApp('marketplace')); // Marketplace reopens the composer (no capture)
       return;
     }
     if (to) {

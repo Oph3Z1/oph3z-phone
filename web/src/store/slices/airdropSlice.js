@@ -1,11 +1,12 @@
 import { createSlice } from '@reduxjs/toolkit';
 import { fetchNui } from '../../utils/fetchNui';
-import { openApp } from './phoneSlice';
+import { openApp, unlock } from './phoneSlice';
+import { setPeek } from './notificationsSlice';
 import { loadPhoneState } from './contactsSlice';
 import { loadPhotos } from './photosSlice';
 import { pushToast } from './toastSlice';
 import { translateFrom } from '../../i18n/useT';
-import { AIRDROP_TOAST_ICON } from '../../components/Airdrop/airdropShared';
+import { AIRDROP_TOAST_ICON, describeAirdrop } from '../../components/Airdrop/airdropShared';
 
 // AirDrop: nearby player-to-player sharing (contacts / your card / photos, plus
 // third-party payloads). Sender side = the share picker; receiver side = the
@@ -108,7 +109,7 @@ export const sendShare = (target) => async (dispatch, getState) => {
   dispatch(setSending({ to: target, state: 'sending' }));
   const res = await fetchNui(
     'phone:airdrop:send',
-    { to: target.id, kind: share.kind, contact: share.contact, photos: share.photos, app: share.app },
+    { to: target.id, kind: share.kind, contact: share.contact, photos: share.photos, app: share.app, xprofile: share.xprofile },
     { ok: true }
   );
   if (res && res.ok) dispatch(setSendState('waiting'));
@@ -118,10 +119,24 @@ export const sendShare = (target) => async (dispatch, getState) => {
 // A transfer arrived. If the phone is OPEN, show the Dynamic Island (exactly like
 // an incoming call — it shows over the home screen or the lock screen). Only when
 // the phone is CLOSED does it wait in the Notification Center for later.
+// Returns true if it played out as a "peek" (so the caller plays the sound).
 export const presentIncoming = (transfer) => (dispatch, getState) => {
-  if (!transfer) return;
-  if (getState().phone.visible) dispatch(setIsland(transfer));
-  else dispatch(addPending(transfer));
+  if (!transfer) return false;
+  // Phone open + unlocked: the Dynamic Island prompt handles it (no extra sound).
+  if (getState().phone.visible) { dispatch(setIsland(transfer)); return false; }
+  // Phone closed: keep it in the Notification Center AND peek the phone up with a
+  // sound, exactly like a normal notification, so the player actually notices.
+  dispatch(addPending(transfer));
+  const tr = (k, v) => translateFrom(getState(), k, v);
+  dispatch(setPeek({
+    id: `airdrop:${transfer.id}`,
+    app: null,
+    icon: AIRDROP_TOAST_ICON,
+    title: tr('airdrop.title'),
+    body: describeAirdrop(transfer, tr),
+    ts: Math.floor(Date.now() / 1000),
+  }));
+  return true;
 };
 
 // Closing the phone: an island that was never accepted/declined moves to the
@@ -160,10 +175,17 @@ export const acceptAirdrop = (transfer) => async (dispatch, getState) => {
     const installed = getState().apps.external.some((a) => a.id === app.id);
     if (installed) {
       dispatch(setDeliver({ appId: app.id, payload: app.payload }));
+      dispatch(unlock()); // accepting from the Notification Center unlocks the phone
       dispatch(openApp(app.id));
     } else {
       dispatch(pushToast({ icon: AIRDROP_TOAST_ICON, title: tr('airdrop.title'), body: tr('airdrop.cantOpenApp', { app: app.title || app.id }) }));
     }
+  } else if (res.kind === 'xprofile' && res.xprofile) {
+    // A shared X profile: unlock the phone and open X to that profile (X consumes
+    // airdrop.deliver on mount).
+    dispatch(setDeliver({ appId: 'x', payload: { handle: res.xprofile.handle } }));
+    dispatch(unlock());
+    dispatch(openApp('x'));
   }
 };
 

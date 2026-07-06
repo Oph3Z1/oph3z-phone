@@ -22,6 +22,8 @@ import clockReducer from './slices/clockSlice';
 import calcReducer from './slices/calcSlice';
 import mailReducer from './slices/mailSlice';
 import walletReducer from './slices/walletSlice';
+import xReducer from './slices/xSlice';
+import marketplaceReducer from './slices/marketplaceSlice';
 
 export const store = configureStore({
   reducer: {
@@ -48,5 +50,7 @@ export const store = configureStore({
     calc: calcReducer,
     mail: mailReducer,
     wallet: walletReducer,
+    x: xReducer,
+    marketplace: marketplaceReducer,
   },
 });

@@ -16,6 +16,8 @@ import walletIcon from '../assets/icons/apps/wallet.png';
 import settingsIcon from '../assets/icons/apps/settings.png';
 import calculatorIcon from '../assets/icons/apps/calculator.png';
 import appstoreIcon from '../assets/icons/apps/appstore.png';
+import xIcon from '../assets/icons/apps/x.png';
+import marketplaceIcon from '../assets/icons/apps/marketplace.png';
 
 import PhoneApp from './phone/PhoneApp';
 import PhotosApp from './photos/PhotosApp';
@@ -28,6 +30,8 @@ import ClockApp from './clock/ClockApp';
 import CalculatorApp from './calculator/CalculatorApp';
 import MailApp from './mail/MailApp';
 import WalletApp from './wallet/WalletApp';
+import XApp from './x/XApp';
+import MarketApp from './marketplace/MarketApp';
 
 /** @typedef {{ id:string, name:string, icon:string, component:(React.ComponentType|null) }} AppDef */
 
@@ -44,6 +48,8 @@ export const APPS = {
   settings:   { id: 'settings',   name: 'Settings',   icon: settingsIcon,   component: SettingsApp },
   calculator: { id: 'calculator', name: 'Calculator', icon: calculatorIcon, component: CalculatorApp },
   appstore:   { id: 'appstore',   name: 'App Store',  icon: appstoreIcon,   component: AppStoreApp },
+  x:          { id: 'x',          name: 'X',          icon: xIcon,          component: XApp },
+  marketplace:{ id: 'marketplace', name: 'Marketplace', icon: marketplaceIcon, component: MarketApp },
 };
 
 export const getApp = (id) => APPS[id] || null;

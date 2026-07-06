@@ -8,10 +8,11 @@ import { fetchNui } from './utils/fetchNui';
 import { isEnvBrowser } from './utils/misc';
 import { setVisible, setTime, closeApp, openApp, unlock, setIdentity } from './store/slices/phoneSlice';
 import { setLayout, setExternalApps } from './store/slices/appsSlice';
+import { bumpLive } from './store/slices/xSlice';
 import { setSaved, setDownloadMs } from './store/slices/homeSlice';
 import { hydrate } from './store/slices/settingsSlice';
 import { setI18n } from './store/slices/i18nSlice';
-import { applyCall } from './store/slices/callSlice';
+import { applyCall, clearCall } from './store/slices/callSlice';
 import { loadPhoneState } from './store/slices/contactsSlice';
 import { upsertPhoto, setLightbox } from './store/slices/photosSlice';
 import { presentNotification, loadNotifications, setPeek } from './store/slices/notificationsSlice';
@@ -30,6 +31,10 @@ export default function App() {
   const notifSound = useSelector((s) => s.settings.notifSound);
   const notifSoundRef = useRef(notifSound);
   notifSoundRef.current = notifSound;
+  // Latest call state, read inside NUI-event handlers (which close over renders).
+  const callState = useSelector((s) => s.call.state);
+  const callStateRef = useRef(callState);
+  callStateRef.current = callState;
 
   // Notification sound (notify.wav in web/public/audio/).
   const notifAudio = useRef(null);
@@ -71,11 +76,20 @@ export default function App() {
       dispatch(setLightbox(null));
       dispatch(clearToast()); // kill any on-screen toast so it can't resurface on reopen
       dispatch(stashIsland()); // an unacted AirDrop island moves to the Notification Center
+      // A finished call must not survive a phone close (the phone auto-opens for an
+      // incoming call, then auto-closes ~1.6s after it ends — which unmounts the
+      // CallOverlay and cancels its own clear timer). Purge it here so it can't
+      // reappear as a stale "call ended" screen on the next open. An ongoing
+      // (active/incoming/outgoing) call is left alone so reopening still shows it.
+      if (callStateRef.current === 'ended' || callStateRef.current === 'failed') dispatch(clearCall());
     }
   });
 
   // Lua -> the set of registered third-party apps changed (resource start/stop).
   useNuiEvent('phone:apps:external', (list) => dispatch(setExternalApps(list || [])));
+
+  // Lua -> a live X event (new bell notification): bump the tick so open X screens refresh.
+  useNuiEvent('phone:x:live', () => dispatch(bumpLive()));
 
   // Lua -> open a specific app (exports.OpenApp from another resource).
   useNuiEvent('phone:openApp', (d) => {
@@ -99,7 +113,12 @@ export default function App() {
 
   // Lua -> an AirDrop transfer arrived (island if open+unlocked, else it waits in
   // the Notification Center).
-  useNuiEvent('phone:airdrop:incoming', (transfer) => dispatch(presentIncoming(transfer)));
+  useNuiEvent('phone:airdrop:incoming', (transfer) => {
+    // When the phone is closed this peeks it up; play the notify sound like any
+    // other notification (honouring the sound toggle).
+    const shown = dispatch(presentIncoming(transfer));
+    if (shown && notifSoundRef.current !== false) playNotify();
+  });
 
   // Lua -> the person you AirDropped to accepted/declined. Reflect it + toast.
   useNuiEvent('phone:airdrop:status', (status) => dispatch(applyStatus(status)));
@@ -148,7 +167,14 @@ export default function App() {
     dispatch(applyCall(data));
     // Refresh contacts/recents after a call so new history shows up (a failed call
     // to an offline number still logs an outgoing entry server-side).
-    if (data.type === 'ended' || data.type === 'failed') dispatch(loadPhoneState());
+    if (data.type === 'ended' || data.type === 'failed') {
+      dispatch(loadPhoneState());
+      // If the phone is closed when the call resolves, the CallOverlay (which owns
+      // the auto-clear timer) is unmounted — so the 'ended' state would linger and
+      // pop a stale "call ended" screen next time the phone opens. Clear it now.
+      // The missed call is still logged in Recents + notified by the server.
+      if (!visible) dispatch(clearCall());
+    }
   });
 
   // Tell Lua to close the phone (and release NUI focus).

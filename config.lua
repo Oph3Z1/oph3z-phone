@@ -104,7 +104,20 @@ Config.Apps = {
     { id = 'wallet',     label = 'Wallet',     place = 'grid' },
     { id = 'settings',   label = 'Settings',   place = 'grid' },
     { id = 'calculator', label = 'Calculator', place = 'grid' },
-    { id = 'appstore',   label = 'App Store',  place = 'grid' }
+    { id = 'appstore',   label = 'App Store',  place = 'grid' },
+    -- X is a BUILT-IN app but store-gated: it isn't auto-placed on the home
+    -- screen; players install it from the App Store (and can uninstall it).
+    -- `store` = list it in the App Store; the extra fields are its store page.
+    {
+        id = 'x', label = 'X', place = 'grid', store = true,
+        developer   = 'X Corp.',
+        description = 'The town square. Post what\'s happening, follow people, reply, repost and see what everyone in the city is talking about.',
+    },
+    {
+        id = 'marketplace', label = 'Marketplace', place = 'grid', store = true,
+        developer   = 'Los Santos Classifieds',
+        description = 'Buy and sell across the city. Post cars, houses and items with photos, set your price and let buyers call or message you directly.',
+    }
 }
 
 -- App Store -----------------------------------------------------------------

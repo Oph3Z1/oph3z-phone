@@ -167,11 +167,13 @@ const homeSlice = createSlice({
           state.removed = [...(saved.removed || [])];
           state.nextFolder = saved.nextFolder || 1;
         } else {
-          // Default layout is built from BUILT-IN apps only; third-party apps are
-          // installed from the App Store (store-gated), not auto-placed.
-          const dock = apps.filter((a) => a.place === 'dock' && !a.external).map((a) => a.id).slice(0, DOCK_MAX);
+          // Default layout is built from pre-installed BUILT-IN apps only;
+          // third-party apps AND store-gated built-ins are installed from the
+          // App Store, not auto-placed.
+          const gated = (a) => a.external || a.store;
+          const dock = apps.filter((a) => a.place === 'dock' && !gated(a)).map((a) => a.id).slice(0, DOCK_MAX);
           const gridIds = apps
-            .filter((a) => a.place !== 'dock' && a.place !== 'hidden' && !a.external)
+            .filter((a) => a.place !== 'dock' && a.place !== 'hidden' && !gated(a))
             .map((a) => a.id);
           const dockSet = new Set(dock);
           const rest = gridIds.filter((id) => !dockSet.has(id));
@@ -201,13 +203,13 @@ const homeSlice = createSlice({
       state.pages.forEach((pg) => pg.forEach(noteApp));
       Object.values(state.folders).forEach((f) => folderFlat(f).forEach((id) => placed.add(id)));
 
-      // Auto-place brand-new BUILT-IN apps (respect Config order). Third-party apps
-      // are store-gated — they only reach the home screen once installed from the
-      // App Store, so they are NOT auto-appended here.
-      const isExternal = {};
-      apps.forEach((a) => { isExternal[a.id] = a.external; });
+      // Auto-place brand-new pre-installed BUILT-IN apps (respect Config order).
+      // Third-party apps and store-gated built-ins only reach the home screen
+      // once installed from the App Store, so they are NOT auto-appended here.
+      const isGated = {};
+      apps.forEach((a) => { isGated[a.id] = a.external || a.store; });
       for (const id of order) {
-        if (placed.has(id) || isExternal[id]) continue;
+        if (placed.has(id) || isGated[id]) continue;
         firstFreePage(state).push(id);
         placed.add(id);
       }

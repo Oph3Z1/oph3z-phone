@@ -43,6 +43,8 @@ export function describeAirdrop(transfer, t) {
     what = n === 1 ? t('airdrop.whatOnePhoto') : t('airdrop.whatPhotos', { count: n });
   } else if (kind === 'app') {
     what = t('airdrop.whatApp', { app: (transfer.app && transfer.app.title) || 'app' });
+  } else if (kind === 'xprofile') {
+    what = t('airdrop.whatXProfile', { handle: (transfer.xprofile && transfer.xprofile.handle) || '' });
   }
   return t('airdrop.wants', { name: transfer.from ? transfer.from.name : '', what });
 }

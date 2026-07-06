@@ -1,6 +1,7 @@
 import { useDispatch, useSelector } from 'react-redux';
 import { openApp } from '../../../store/slices/phoneSlice';
 import { setDeliver } from '../../../store/slices/airdropSlice';
+import { getApp } from '../../registry';
 
 // A shared item from a third-party app (sent via the Messages Share sheet). Shows
 // the app icon + optional image + title/subtitle. Tapping opens the app and hands
@@ -8,10 +9,14 @@ import { setDeliver } from '../../../store/slices/airdropSlice';
 export default function AppShareCard({ msg }) {
   const dispatch = useDispatch();
   const meta = msg.meta || {};
-  const appIcon = useSelector((s) => {
+  // Third-party apps carry their icon in the store; built-in apps (like X) live
+  // in the registry — fall back to that so their logo still badges the card.
+  const externalIcon = useSelector((s) => {
     const a = s.apps.external.find((x) => x.id === meta.appId);
     return a ? a.icon : null;
   });
+  const builtin = getApp(meta.appId);
+  const appIcon = externalIcon || (builtin ? builtin.icon : null);
 
   const open = () => {
     if (!meta.appId) return;
