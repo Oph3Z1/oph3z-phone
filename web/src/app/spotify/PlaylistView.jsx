@@ -8,10 +8,9 @@ import { useT } from '../../i18n/useT';
 import { useSpotify } from './ctx';
 import { gradientFor } from './util';
 import TrackRow from './TrackRow';
-import { BackArrow, PlayIcon, HeartIcon, MoreIcon, EditIcon, TrashIcon } from './icons';
+import { BackArrow, PlayIcon, HeartIcon, MoreIcon, EditIcon, TrashIcon, NoteIcon } from './icons';
 
-// A playlist (or the virtual 'liked' list). Play-all, plus rename/delete for
-// real playlists.
+// A playlist (or the virtual 'liked' list) with an immersive, art-driven header.
 export default function PlaylistView({ playlistId, onBack }) {
   const t = useT();
   const dispatch = useDispatch();
@@ -24,6 +23,7 @@ export default function PlaylistView({ playlistId, onBack }) {
   const pl = isLiked ? { id: 'liked', name: t('spotify.likedSongs'), tracks: library.liked || [] }
     : (library.playlists || []).find((p) => p.id === playlistId) || { id: playlistId, name: '', tracks: [] };
   const tracks = pl.tracks || [];
+  const cover = tracks.find((tk) => tk.artwork);
 
   const playAll = () => { if (tracks.length) sp.play(tracks[0], tracks, 1); };
 
@@ -47,26 +47,29 @@ export default function PlaylistView({ playlistId, onBack }) {
   };
 
   return (
-    <div className="sp-screen sp-scroll">
-      <div className="sp-plhero" style={{ background: isLiked ? 'linear-gradient(160deg,#4a1fb8,#0a0a0a 70%)' : gradientFor(pl.name) }}>
-        <div className="sp-plhero__bar">
-          <button className="sp-iconbtn" onClick={onBack}><BackArrow /></button>
-          {!isLiked && <button className="sp-iconbtn" onClick={() => setMenu(true)}><MoreIcon /></button>}
+    <div className={`sp-screen sp-pl${isLiked ? ' sp-pl--liked' : ''}`}>
+      <div className="sp-pl__hero">
+        <div className="sp-pl__bg" style={isLiked
+          ? { background: 'linear-gradient(160deg,#3ee07a,#0a3a22 70%)' }
+          : cover ? { backgroundImage: `url(${cover.artwork})` } : { background: gradientFor(pl.name) }} />
+        <div className="sp-pl__bgscrim" />
+        <div className="sp-pl__bar">
+          <button className="sp-round sp-round--dark" onClick={onBack}><BackArrow size={20} /></button>
+          {!isLiked && <button className="sp-round sp-round--dark" onClick={() => setMenu(true)}><MoreIcon size={20} /></button>}
         </div>
-        <div className="sp-plhero__art" style={{ background: isLiked ? 'linear-gradient(135deg,#8b5cf6,#c026d3)' : gradientFor(pl.name) }}>
-          <HeartIcon size={44} filled />
+        <div className="sp-pl__cover" style={isLiked
+          ? { background: 'linear-gradient(135deg,#3ee07a,#12a350)' }
+          : cover ? { backgroundImage: `url(${cover.artwork})` } : { background: gradientFor(pl.name) }}>
+          {isLiked ? <HeartIcon size={46} filled /> : (!cover && <NoteIcon size={40} />)}
         </div>
-        <h1 className="sp-plhero__name">{pl.name}</h1>
-        <div className="sp-plhero__sub">{t('spotify.songCount', { count: tracks.length })}</div>
+        <h1 className="sp-pl__name">{pl.name}</h1>
+        <div className="sp-pl__count">{t('spotify.songCount', { count: tracks.length })}</div>
+        <button className="sp-pl__play" onClick={playAll} disabled={!tracks.length}><PlayIcon size={26} /></button>
       </div>
 
-      <div className="sp-plbar">
-        <button className="sp-playfab" onClick={playAll} disabled={!tracks.length}><PlayIcon size={26} /></button>
-      </div>
-
-      <div className="sp-list">
+      <div className="sp-list sp-list--pl">
         {tracks.length === 0 ? (
-          <div className="sp-empty sp-empty--sm">{t('spotify.emptyPlaylist')}</div>
+          <div className="sp-empty sp-empty--center"><NoteIcon size={34} /><div className="sp-empty__sub">{t('spotify.emptyPlaylist')}</div></div>
         ) : (
           tracks.map((tr, i) => <TrackRow key={tr.id} track={tr} queue={tracks} index={i + 1} playlistId={pl.id} />)
         )}
@@ -75,9 +78,9 @@ export default function PlaylistView({ playlistId, onBack }) {
       {menu && (
         <div className="sp-sheet" onClick={() => setMenu(false)}>
           <div className="sp-sheet__panel" onClick={(e) => e.stopPropagation()}>
-            <button className="sp-sheet__item" onClick={() => { setMenu(false); setRenaming(pl.name); }}><EditIcon size={19} /> {t('spotify.rename')}</button>
-            <button className="sp-sheet__item sp-sheet__item--danger" onClick={doDelete}><TrashIcon size={19} /> {t('spotify.deletePlaylist')}</button>
-            <button className="sp-sheet__btn" onClick={() => setMenu(false)}>{t('common.cancel')}</button>
+            <button className="sp-sheet__griphit" onClick={() => setMenu(false)} aria-label={t('common.close')}><span className="sp-sheet__grip" /></button>
+            <button className="sp-item" onClick={() => { setMenu(false); setRenaming(pl.name); }}><EditIcon size={19} /> {t('spotify.rename')}</button>
+            <button className="sp-item sp-item--danger" onClick={doDelete}><TrashIcon size={19} /> {t('spotify.deletePlaylist')}</button>
           </div>
         </div>
       )}
@@ -85,11 +88,13 @@ export default function PlaylistView({ playlistId, onBack }) {
       {renaming !== null && (
         <div className="sp-sheet" onClick={() => setRenaming(null)}>
           <div className="sp-sheet__panel" onClick={(e) => e.stopPropagation()}>
+            <button className="sp-sheet__griphit" onClick={() => setRenaming(null)} aria-label={t('common.close')}><span className="sp-sheet__grip" /></button>
             <div className="sp-sheet__title">{t('spotify.rename')}</div>
-            <input className="sp-input" autoFocus maxLength={60} value={renaming} onChange={(e) => setRenaming(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && doRename()} />
+            <input className="sp-input" ref={(el) => { if (el && document.activeElement !== el) el.focus({ preventScroll: true }); }}
+              maxLength={60} value={renaming} onChange={(e) => setRenaming(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && doRename()} />
             <div className="sp-sheet__row">
-              <button className="sp-sheet__btn" onClick={() => setRenaming(null)}>{t('common.cancel')}</button>
-              <button className="sp-sheet__btn sp-sheet__btn--primary" disabled={!renaming.trim()} onClick={doRename}>{t('common.save')}</button>
+              <button className="sp-btn sp-btn--ghost" onClick={() => setRenaming(null)}>{t('common.cancel')}</button>
+              <button className="sp-btn sp-btn--green" disabled={!renaming.trim()} onClick={doRename}>{t('common.save')}</button>
             </div>
           </div>
         </div>

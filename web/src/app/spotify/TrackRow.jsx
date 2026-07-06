@@ -3,8 +3,7 @@ import { useSpotify } from './ctx';
 import { fmtTime, gradientFor } from './util';
 import { MoreIcon, NoteIcon, Waveform } from './icons';
 
-// One song row. Highlights + shows the animated bars when it's the playing track.
-// `queue` = the list this row belongs to (so playing it sets up next/prev).
+// One song row. Glows + shows animated bars when it's the playing track.
 export default function TrackRow({ track, queue, index, playlistId }) {
   const sp = useSpotify();
   const currentId = useSelector((s) => s.spotify.trackId);
@@ -13,8 +12,8 @@ export default function TrackRow({ track, queue, index, playlistId }) {
 
   return (
     <div className={`sp-row${isCurrent ? ' is-current' : ''}`} onClick={() => sp.play(track, queue, index)}>
-      <div className="sp-row__art" style={track.artwork ? undefined : { background: gradientFor(track.title) }}>
-        {track.artwork ? <img src={track.artwork} alt="" /> : <NoteIcon size={18} />}
+      <div className="sp-row__art" style={track.artwork ? { backgroundImage: `url(${track.artwork})` } : { background: gradientFor(track.title) }}>
+        {!track.artwork && <NoteIcon size={18} />}
         {isCurrent && <span className="sp-row__wave"><Waveform size={13} on={playing} /></span>}
       </div>
       <div className="sp-row__meta">

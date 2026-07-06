@@ -24,3 +24,12 @@ export function gradientFor(str) {
 export function colorFor(str) {
   return GRADS[hash(str) % GRADS.length][0];
 }
+
+// Time-of-day greeting for the home header.
+export function greeting(t) {
+  const h = new Date().getHours();
+  if (h < 5) return t('spotify.greetNight');
+  if (h < 12) return t('spotify.greetMorning');
+  if (h < 18) return t('spotify.greetAfternoon');
+  return t('spotify.greetEvening');
+}

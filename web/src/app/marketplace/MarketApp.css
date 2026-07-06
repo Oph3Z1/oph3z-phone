@@ -288,6 +288,15 @@
 .mkt-sheet__row { display: flex; gap: 0.6em; margin-top: 0.7em; }
 .mkt-sheet__row .mkt-sheet__btn { margin-bottom: 0; flex: 1; }
 
+/* share sheet: the item being shared, shown above the options */
+.mkt-share__item { display: flex; align-items: center; gap: 0.7em; padding: 0.2em 0.2em 0.9em; }
+.mkt-share__thumb { width: 3em; height: 3em; border-radius: 0.6em; flex-shrink: 0; background-size: cover; background-position: center;
+  background-color: var(--mkt-surface2); display: grid; place-items: center; }
+.mkt-share__ph { font-size: 1.3em; }
+.mkt-share__meta { flex: 1; min-width: 0; }
+.mkt-share__iname { font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mkt-share__isub { color: var(--mkt-y); font-weight: 700; font-size: 0.85em; margin-top: 0.1em; }
+
 /* ---- search -------------------------------------------------------------- */
 .mkt-topbar--search { gap: 0.5em; }
 .mkt-searchbar { flex: 1; display: flex; align-items: center; gap: 0.5em; background: var(--mkt-surface); border: 1px solid var(--mkt-line); border-radius: 999px; padding: 0.5em 0.85em; color: var(--mkt-dim); }

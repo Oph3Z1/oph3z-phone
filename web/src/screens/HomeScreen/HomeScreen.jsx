@@ -358,6 +358,10 @@ export default function HomeScreen() {
   const trackStyle = {
     transform: `translateX(calc(${-page * 100}% + ${swipeDx}px))`,
     transition: swipeDx ? 'none' : 'transform 0.45s cubic-bezier(0.32,0.72,0,1)',
+    // Only promote to a GPU layer WHILE swiping. A permanent will-change keeps the
+    // grid composited even at rest, which drops icons/labels to grayscale AA and
+    // makes them look slightly blurry. Left as 'auto' when idle so text stays crisp.
+    willChange: swipeDx ? 'transform' : 'auto',
   };
 
   // Confirm before uninstalling an app.

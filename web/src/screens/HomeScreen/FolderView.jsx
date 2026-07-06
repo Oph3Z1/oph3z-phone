@@ -215,6 +215,9 @@ export default function FolderView({ folderId, appMap }) {
   const trackStyle = {
     transform: `translateX(calc(${-page * 100}% + ${swipeDx}px))`,
     transition: swipeDx ? 'none' : 'transform 0.4s cubic-bezier(0.32,0.72,0,1)',
+    // Promote to a GPU layer only WHILE swiping; a permanent layer softens the
+    // folder icons/labels (grayscale AA). Idle = 'auto' so they stay crisp.
+    willChange: swipeDx ? 'transform' : 'auto',
   };
 
   return (

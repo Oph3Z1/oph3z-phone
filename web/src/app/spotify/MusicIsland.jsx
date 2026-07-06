@@ -41,7 +41,7 @@ export default function MusicIsland() {
     return (
       <div className="sp-isl sp-isl--compact" onClick={() => setExpanded(true)}>
         <Art size="1.5em" />
-        <span className="sp-isl__wave"><Waveform size={15} on={music.playing} /></span>
+        <span className="sp-isl__wave"><Waveform size={12} on={music.playing} /></span>
       </div>
     );
   }

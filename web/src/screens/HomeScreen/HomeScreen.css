@@ -4,7 +4,9 @@
   display: flex;
   flex-direction: column;
   padding: calc(var(--safe-top) + 0.4em) 1.2em 0.55em;
-  animation: home-in 0.32s ease both;
+  /* No `both`/`forwards`: once the intro finishes the element drops back to no
+     transform, so it isn't left permanently composited (which softens text). */
+  animation: home-in 0.32s ease;
 }
 @keyframes home-in {
   from { opacity: 0; transform: scale(1.06); }
@@ -21,7 +23,8 @@
 .hs-track {
   display: flex;
   height: 100%;
-  will-change: transform;
+  /* will-change is applied inline only while swiping (see HomeScreen.jsx). A
+     permanent layer here softens icons/labels to grayscale AA. */
 }
 .hs-page {
   position: relative;
@@ -297,7 +300,13 @@
   background: rgba(0, 0, 0, 0.35);
   backdrop-filter: blur(1.6em) saturate(130%);
   -webkit-backdrop-filter: blur(1.6em) saturate(130%);
-  animation: home-in 0.25s ease both;
+  /* Fade the blur in with OPACITY ONLY. Scaling a full-screen backdrop-filter
+     (the old `home-in`) re-computes the blur every frame = the laggy animation. */
+  animation: hs-folder-fade 0.2s ease;
+}
+@keyframes hs-folder-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 .hs-folderview__title,
 .hs-folderview__name {
@@ -330,9 +339,19 @@
   flex-direction: column;
   gap: 0.5em;
   touch-action: none;
+  /* The card carries the "open" motion now — a small, cheap pop. */
+  animation: hs-folder-pop 0.26s cubic-bezier(0.32, 0.72, 0, 1) both;
 }
-.hs-fpager { overflow: hidden; }
-.hs-ftrack { display: flex; will-change: transform; }
+@keyframes hs-folder-pop {
+  from { opacity: 0; transform: scale(0.9); }
+  to { opacity: 1; transform: scale(1); }
+}
+/* Vertical padding gives hover-scaled icons room to grow without being clipped
+   by the pager (overflow clips at the padding box, so the padding stays visible). */
+.hs-fpager { overflow: hidden; padding: 0.4em 0; }
+/* will-change applied inline only while swiping (see FolderView.jsx) — a permanent
+   layer here softens the folder icons/labels to grayscale AA. */
+.hs-ftrack { display: flex; }
 .hs-fpage {
   flex: 0 0 100%;
   display: grid;
@@ -353,6 +372,6 @@
   padding: 0;
 }
 .hs-folderview .hs-tile:hover .hs-tile__img {
-  transform: translateY(-0.1em) scale(1.05);
+  transform: scale(1.06);
   filter: brightness(1.08);
 }

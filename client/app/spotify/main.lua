@@ -7,7 +7,7 @@
     the controller: it sends commands and receives position ticks.
 --]]
 
-local CFG   = Config.Spotify or {}
+local CFG   = Config.Music or {}
 local LOCAL = 'oph3zlocalmusic'   -- xsound name for private (2D) playback
 
 local myId
@@ -94,16 +94,8 @@ local function playIndex(i)
     pushTrack()
 end
 
--- server -> owner: the 3D broadcast is live; keep it glued to our ped.
-RegisterNetEvent('oph3z-phone:client:spotify:nearbyLive', function(data)
-    if not data or not data.name then return end
-    CreateThread(function()
-        while exports.xsound:soundExists(data.name) do
-            exports.xsound:Position(data.name, GetEntityCoords(PlayerPedId()))
-            Wait(400)
-        end
-    end)
-end)
+-- (The broadcast is kept glued to our ped by the SERVER — see followPed there —
+--  so it stays with us for every listener even while the phone is closed.)
 
 -- server -> everyone in range: seek this broadcast to the given spot once our own
 -- player is ready (so switching to speaker mid-song doesn't restart it at 0:00).

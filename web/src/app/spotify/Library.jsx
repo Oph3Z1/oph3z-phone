@@ -1,76 +1,68 @@
-import { useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { fetchNui } from '../../utils/fetchNui';
-import { loadLibrary } from '../../store/slices/spotifySlice';
-import { pushToast } from '../../store/slices/toastSlice';
+import { useSelector } from 'react-redux';
 import { useT } from '../../i18n/useT';
-import { gradientFor } from './util';
+import { useSpotify } from './ctx';
+import { gradientFor, greeting } from './util';
 import { HeartIcon, PlusIcon, NoteIcon } from './icons';
 
-// Your Library: Liked Songs + player-made playlists, with a create sheet.
+// Home: a greeting, a standout Liked Songs hero, and your playlists as big tiles.
+// The create-playlist popup lives at the app root (SpotifyApp) — opened via ctx.
 export default function Library({ onOpenPlaylist }) {
   const t = useT();
-  const dispatch = useDispatch();
+  const sp = useSpotify();
   const library = useSelector((s) => s.spotify.library);
-  const [creating, setCreating] = useState(false);
-  const [name, setName] = useState('');
 
-  const create = async () => {
-    const nm = name.trim();
-    if (!nm) return;
-    const res = await fetchNui('phone:spotify:createPlaylist', { name: nm }, { ok: true, playlist: { id: 'pl1', name: nm, tracks: [] } });
-    setCreating(false); setName('');
-    if (res && res.ok) { dispatch(loadLibrary()); dispatch(pushToast({ type: 'success', title: t('spotify.playlistCreated'), body: '' })); }
-  };
+  const playlists = library.playlists || [];
+  const liked = library.liked || [];
+  const likedArt = liked[0] && liked[0].artwork;
 
   return (
-    <div className="sp-screen sp-scroll">
-      <div className="sp-libhead">
-        <h1 className="sp-libhead__title">{t('spotify.yourLibrary')}</h1>
-        <button className="sp-iconbtn" onClick={() => setCreating(true)} aria-label={t('spotify.newPlaylist')}><PlusIcon size={22} /></button>
+    <div className="sp-screen">
+      <div className="sp-home__head">
+        <div>
+          <div className="sp-home__hi">{greeting(t)}</div>
+          <div className="sp-home__sub">{t('spotify.yourLibrary')}</div>
+        </div>
+        <button className="sp-round" onClick={sp.openCreate} aria-label={t('spotify.newPlaylist')}><PlusIcon size={20} /></button>
       </div>
 
-      {/* Liked Songs */}
-      <button className="sp-liked" onClick={() => onOpenPlaylist({ id: 'liked' })}>
-        <span className="sp-liked__art"><HeartIcon size={26} filled /></span>
-        <div className="sp-liked__meta">
-          <div className="sp-liked__title">{t('spotify.likedSongs')}</div>
-          <div className="sp-liked__sub">{t('spotify.songCount', { count: (library.liked || []).length })}</div>
-        </div>
+      {/* Liked Songs hero */}
+      <button className="sp-hero" onClick={() => onOpenPlaylist({ id: 'liked' })}>
+        <span className="sp-hero__art" style={likedArt ? { backgroundImage: `url(${likedArt})` } : undefined}>
+          <span className="sp-hero__heart"><HeartIcon size={30} filled /></span>
+        </span>
+        <span className="sp-hero__body">
+          <span className="sp-hero__title">{t('spotify.likedSongs')}</span>
+          <span className="sp-hero__sub">{t('spotify.songCount', { count: liked.length })}</span>
+        </span>
+        <span className="sp-hero__glow" />
       </button>
 
-      {/* Playlists */}
-      {(library.playlists || []).length === 0 ? (
-        <div className="sp-empty">
+      <div className="sp-sect">{t('spotify.yourPlaylists')}</div>
+
+      {playlists.length === 0 ? (
+        <button className="sp-empty" onClick={sp.openCreate}>
           <NoteIcon size={40} />
           <div className="sp-empty__title">{t('spotify.noPlaylists')}</div>
           <div className="sp-empty__sub">{t('spotify.noPlaylistsSub')}</div>
-        </div>
+        </button>
       ) : (
-        <div className="sp-pllist">
-          {library.playlists.map((p) => (
-            <button className="sp-plrow" key={p.id} onClick={() => onOpenPlaylist(p)}>
-              <span className="sp-plrow__art" style={{ background: gradientFor(p.name) }}><NoteIcon size={20} /></span>
-              <div className="sp-plrow__meta">
-                <div className="sp-plrow__name">{p.name}</div>
-                <div className="sp-plrow__sub">{t('spotify.songCount', { count: (p.tracks || []).length })}</div>
-              </div>
-            </button>
-          ))}
-        </div>
-      )}
-
-      {creating && (
-        <div className="sp-sheet" onClick={() => setCreating(false)}>
-          <div className="sp-sheet__panel" onClick={(e) => e.stopPropagation()}>
-            <div className="sp-sheet__title">{t('spotify.newPlaylist')}</div>
-            <input className="sp-input" autoFocus maxLength={60} placeholder={t('spotify.playlistNamePh')}
-              value={name} onChange={(e) => setName(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && create()} />
-            <div className="sp-sheet__row">
-              <button className="sp-sheet__btn" onClick={() => setCreating(false)}>{t('common.cancel')}</button>
-              <button className="sp-sheet__btn sp-sheet__btn--primary" disabled={!name.trim()} onClick={create}>{t('spotify.create')}</button>
-            </div>
-          </div>
+        <div className="sp-tiles">
+          {playlists.map((p) => {
+            const cover = (p.tracks || []).find((tk) => tk.artwork);
+            return (
+              <button className="sp-tile" key={p.id} onClick={() => onOpenPlaylist(p)}>
+                <span className="sp-tile__art" style={cover ? { backgroundImage: `url(${cover.artwork})` } : { background: gradientFor(p.name) }}>
+                  {!cover && <NoteIcon size={26} />}
+                </span>
+                <span className="sp-tile__name">{p.name}</span>
+                <span className="sp-tile__sub">{t('spotify.songCount', { count: (p.tracks || []).length })}</span>
+              </button>
+            );
+          })}
+          <button className="sp-tile sp-tile--add" onClick={sp.openCreate}>
+            <span className="sp-tile__art sp-tile__art--add"><PlusIcon size={28} /></span>
+            <span className="sp-tile__name">{t('spotify.newPlaylist')}</span>
+          </button>
         </div>
       )}
     </div>

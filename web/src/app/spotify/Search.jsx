@@ -6,8 +6,7 @@ import { useT } from '../../i18n/useT';
 import TrackRow from './TrackRow';
 import { SearchIcon, CloseIcon, NoteIcon } from './icons';
 
-// Search songs via the external API (routed through Lua). Results are kept in
-// redux so switching tabs doesn't lose them.
+// Search songs on YouTube (routed through Lua). Results persist in redux.
 export default function Search() {
   const t = useT();
   const dispatch = useDispatch();
@@ -27,24 +26,24 @@ export default function Search() {
 
   return (
     <div className="sp-screen">
-      <div className="sp-searchhead">
-        <h1 className="sp-searchhead__title">{t('spotify.search')}</h1>
+      <div className="sp-search__head">
+        <h1 className="sp-h1">{t('spotify.search')}</h1>
         <div className="sp-searchbar">
-          <SearchIcon size={18} />
+          <SearchIcon size={19} />
           <input autoFocus value={q} placeholder={t('spotify.searchPh')} onChange={(e) => dispatch(setSearch({ q: e.target.value }))} />
           {q ? <button onClick={() => dispatch(setSearch({ q: '', results: [], done: false }))}><CloseIcon size={16} /></button> : null}
         </div>
       </div>
 
-      <div className="sp-scroll sp-scroll--list">
+      <div className="sp-list">
         {!q.trim() ? (
-          <div className="sp-empty"><SearchIcon size={38} /><div className="sp-empty__title">{t('spotify.searchHint')}</div></div>
+          <div className="sp-empty sp-empty--center"><SearchIcon size={40} /><div className="sp-empty__title">{t('spotify.searchHint')}</div></div>
         ) : loading ? (
-          <div className="sp-empty sp-empty--sm">{t('spotify.searching')}</div>
+          <div className="sp-loading"><span /><span /><span /></div>
         ) : reason === 'nokey' ? (
-          <div className="sp-empty"><NoteIcon size={34} /><div className="sp-empty__title">{t('spotify.noKeyTitle')}</div><div className="sp-empty__sub">{t('spotify.noKeySub')}</div></div>
+          <div className="sp-empty sp-empty--center"><NoteIcon size={36} /><div className="sp-empty__title">{t('spotify.noKeyTitle')}</div><div className="sp-empty__sub">{t('spotify.noKeySub')}</div></div>
         ) : results.length === 0 && done ? (
-          <div className="sp-empty sp-empty--sm"><NoteIcon size={34} /><div>{t('spotify.noResults')}</div></div>
+          <div className="sp-empty sp-empty--center"><NoteIcon size={36} /><div className="sp-empty__title">{t('spotify.noResults')}</div></div>
         ) : (
           results.map((tr, i) => <TrackRow key={tr.id} track={tr} queue={results} index={i + 1} />)
         )}

@@ -9,7 +9,7 @@ import { gradientFor } from './util';
 import { ShareIcon, NoteIcon } from './icons';
 
 // Share a track over AirDrop (nearby) or into Messages. On the receiver it opens
-// Spotify to the track (via airdrop.deliver -> the app consumes it).
+// the Music app to the track.
 export default function ShareSheet({ track, onClose }) {
   const t = useT();
   const dispatch = useDispatch();
@@ -23,7 +23,6 @@ export default function ShareSheet({ track, onClose }) {
     }));
     onClose();
   };
-
   const toContact = (contact) => {
     dispatch(sendMessage(contact.number, {
       type: 'appshare',
@@ -39,18 +38,18 @@ export default function ShareSheet({ track, onClose }) {
   return (
     <div className="sp-sheet" onClick={onClose}>
       <div className="sp-sheet__panel" onClick={(e) => e.stopPropagation()}>
-        <div className="sp-share__head">
-          <span className="sp-share__art" style={track.artwork ? undefined : { background: gradientFor(track.title) }}>
-            {track.artwork ? <img src={track.artwork} alt="" /> : <NoteIcon size={20} />}
+        <button className="sp-sheet__griphit" onClick={onClose} aria-label={t('common.close')}><span className="sp-sheet__grip" /></button>
+        <div className="sp-sheet__track">
+          <span className="sp-sheet__tart" style={track.artwork ? { backgroundImage: `url(${track.artwork})` } : { background: gradientFor(track.title) }}>
+            {!track.artwork && <NoteIcon size={20} />}
           </span>
-          <div className="sp-share__meta">
-            <div className="sp-share__title">{track.title}</div>
-            <div className="sp-share__artist">{track.artist || '—'}</div>
+          <div className="sp-sheet__tmeta">
+            <div className="sp-sheet__ttitle">{track.title}</div>
+            <div className="sp-sheet__tartist">{track.artist || '—'}</div>
           </div>
         </div>
-        <button className="sp-sheet__item" onClick={doAirdrop}><ShareIcon size={19} /> {t('spotify.shareAirdrop')}</button>
-        <button className="sp-sheet__item" onClick={() => setPicking(true)}><ShareIcon size={19} /> {t('spotify.shareMessages')}</button>
-        <button className="sp-sheet__btn" onClick={onClose}>{t('common.cancel')}</button>
+        <button className="sp-item" onClick={doAirdrop}><ShareIcon size={19} /> {t('spotify.shareAirdrop')}</button>
+        <button className="sp-item" onClick={() => setPicking(true)}><ShareIcon size={19} /> {t('spotify.shareMessages')}</button>
       </div>
     </div>
   );

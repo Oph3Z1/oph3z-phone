@@ -14,12 +14,9 @@ local function cidOf(src) return DB.GetCitizenId(src) end
 -- ===========================================================================
 -- SEARCH  (HTTP lives here — PerformHttpRequest is server-only)
 -- ===========================================================================
-local CFG      = Config.Spotify or {}
-local PROVIDER = (CFG.Provider or 'youtube'):lower()
-local YT_KEY   = (CFG.YouTube and CFG.YouTube.apiKey) or ''
-local SP_ID    = (CFG.Spotify and CFG.Spotify.clientId) or ''
-local SP_SECRET= (CFG.Spotify and CFG.Spotify.clientSecret) or ''
-local LIMIT    = CFG.SearchLimit or 25
+local CFG    = Config.Music or {}
+local YT_KEY = CFG.apiKey or ''
+local LIMIT  = 25
 
 local function urlencode(str)
     return (tostring(str or ''):gsub('([^%w%-%.%_%~])', function(c) return ('%%%02X'):format(c:byte()) end))
@@ -40,31 +37,17 @@ local function isoToSeconds(iso)
     return h * 3600 + m * 60 + s
 end
 
-local B64 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
-local function base64(data)
-    return ((data:gsub('.', function(x)
-        local r, byte = '', x:byte()
-        for i = 8, 1, -1 do r = r .. (byte % 2 ^ i - byte % 2 ^ (i - 1) > 0 and '1' or '0') end
-        return r
-    end) .. '0000'):gsub('%d%d%d?%d?%d?%d?', function(x)
-        if #x < 6 then return '' end
-        local c = 0
-        for i = 1, 6 do c = c + (x:sub(i, i) == '1' and 2 ^ (6 - i) or 0) end
-        return B64:sub(c + 1, c + 1)
-    end) .. ({ '', '==', '=' })[#data % 3 + 1])
-end
-
--- Blocking GET/POST via PerformHttpRequest, awaited on the callback's thread.
-local function http(method, url, body, headers)
+-- Blocking GET via PerformHttpRequest, awaited on the callback's thread.
+local function http(url, headers)
     local p = promise.new()
-    PerformHttpRequest(url, function(status, text) p:resolve({ status = status, text = text }) end, method, body or '', headers or {})
+    PerformHttpRequest(url, function(status, text) p:resolve({ status = status, text = text }) end, 'GET', '', headers or {})
     return Citizen.Await(p)
 end
 
 local function searchYouTube(q)
     if YT_KEY == '' then return { ok = false, reason = 'nokey', tracks = {} } end
-    local r = http('GET', ('https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&videoCategoryId=10&maxResults=%d&q=%s&key=%s')
-        :format(LIMIT, urlencode(q), YT_KEY), '', { ['Accept'] = 'application/json' })
+    local r = http(('https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&videoCategoryId=10&maxResults=%d&q=%s&key=%s')
+        :format(LIMIT, urlencode(q), YT_KEY), { ['Accept'] = 'application/json' })
     if r.status ~= 200 or not r.text then return { ok = false, tracks = {} } end
     local ok, parsed = pcall(json.decode, r.text)
     if not ok or type(parsed.items) ~= 'table' then return { ok = false, tracks = {} } end
@@ -84,8 +67,8 @@ local function searchYouTube(q)
     end
     -- One extra call to fill in real durations.
     if #ids > 0 then
-        local d = http('GET', ('https://www.googleapis.com/youtube/v3/videos?part=contentDetails&id=%s&key=%s')
-            :format(table.concat(ids, ','), YT_KEY), '', { ['Accept'] = 'application/json' })
+        local d = http(('https://www.googleapis.com/youtube/v3/videos?part=contentDetails&id=%s&key=%s')
+            :format(table.concat(ids, ','), YT_KEY), { ['Accept'] = 'application/json' })
         if d.status == 200 and d.text then
             local ok2, p2 = pcall(json.decode, d.text)
             if ok2 and type(p2.items) == 'table' then
@@ -98,50 +81,10 @@ local function searchYouTube(q)
     return { ok = true, tracks = tracks }
 end
 
-local spToken, spTokenExp = nil, 0
-local function spotifyToken()
-    if spToken and os.time() < spTokenExp then return spToken end
-    if SP_ID == '' or SP_SECRET == '' then return nil end
-    local r = http('POST', 'https://accounts.spotify.com/api/token', 'grant_type=client_credentials', {
-        ['Authorization'] = 'Basic ' .. base64(SP_ID .. ':' .. SP_SECRET),
-        ['Content-Type'] = 'application/x-www-form-urlencoded',
-    })
-    if r.status ~= 200 or not r.text then return nil end
-    local ok, p = pcall(json.decode, r.text)
-    if ok and p.access_token then
-        spToken = p.access_token
-        spTokenExp = os.time() + (p.expires_in or 3600) - 60
-        return spToken
-    end
-    return nil
-end
-
-local function searchSpotify(q)
-    local token = spotifyToken()
-    if not token then return { ok = false, reason = 'nokey', tracks = {} } end
-    local r = http('GET', ('https://api.spotify.com/v1/search?type=track&limit=%d&q=%s'):format(LIMIT, urlencode(q)),
-        '', { ['Authorization'] = 'Bearer ' .. token })
-    if r.status ~= 200 or not r.text then return { ok = false, tracks = {} } end
-    local ok, p = pcall(json.decode, r.text)
-    if not ok or not p.tracks or type(p.tracks.items) ~= 'table' then return { ok = false, tracks = {} } end
-    local tracks = {}
-    for _, t in ipairs(p.tracks.items) do
-        if t.preview_url then  -- only tracks with a playable 30s clip
-            local art = t.album and t.album.images and t.album.images[1] and t.album.images[1].url
-            tracks[#tracks + 1] = {
-                id = t.id, title = t.name or 'Unknown',
-                artist = (t.artists and t.artists[1] and t.artists[1].name) or '',
-                artwork = art, duration = 30, url = t.preview_url,
-            }
-        end
-    end
-    return { ok = true, tracks = tracks }
-end
-
 lib.callback.register('oph3z-phone:server:spotify:search', function(src, data)
     local q = data and data.q or ''
     if q == '' then return { ok = true, tracks = {} } end
-    if PROVIDER == 'spotify' then return searchSpotify(q) else return searchYouTube(q) end
+    return searchYouTube(q)
 end)
 
 -- ---- library --------------------------------------------------------------
@@ -267,6 +210,7 @@ end)
 -- NEARBY AUDIO (3D via xsound at the broadcaster's ped)
 -- ===========================================================================
 local nearby = {}  -- src -> sound name
+local moving = {}  -- src -> true while a follow thread is running
 
 local function soundName(src) return ('oph3zmusic_%s'):format(src) end
 
@@ -274,14 +218,33 @@ local function stopNearby(src)
     local name = nearby[src]
     if name then
         exports.xsound:Destroy(-1, name)  -- no-op if it's already gone
-        nearby[src] = nil
+        nearby[src] = nil                 -- also stops the follow thread below
     end
+end
+
+-- Keep the 3D sound glued to the broadcaster's ped for EVERY listener. This runs
+-- on the server (authoritative — no need to trust client coords) so the sound
+-- follows the player even while their phone is closed. One thread per broadcaster;
+-- it always repositions whatever sound is current and exits when playback stops.
+local function followPed(src)
+    if moving[src] then return end
+    moving[src] = true
+    CreateThread(function()
+        while nearby[src] do
+            local ped = GetPlayerPed(src)
+            if ped and ped ~= 0 then
+                exports.xsound:Position(-1, nearby[src], GetEntityCoords(ped))
+            end
+            Wait(400)
+        end
+        moving[src] = nil
+    end)
 end
 
 -- Start / switch the broadcast track for this player.
 RegisterNetEvent('oph3z-phone:server:spotify:nearbyPlay', function(data)
     local src = source
-    if not Config.Spotify.AllowNearby or type(data) ~= 'table' or type(data.url) ~= 'string' then return end
+    if not Config.Music.AllowNearby or type(data) ~= 'table' or type(data.url) ~= 'string' then return end
     stopNearby(src)
     local ped = GetPlayerPed(src)
     if ped == 0 then return end
@@ -289,10 +252,9 @@ RegisterNetEvent('oph3z-phone:server:spotify:nearbyPlay', function(data)
     local name = soundName(src)
     local vol = math.max(0, math.min(1, (tonumber(data.volume) or 70) / 100))
     exports.xsound:PlayUrlPos(-1, name, data.url, vol, coords, false)
-    exports.xsound:Distance(-1, name, Config.Spotify.NearbyRange or 12.0)
+    exports.xsound:Distance(-1, name, Config.Music.NearbyRange or 12.0)
     nearby[src] = name
-    -- Tell the owner the sound is live so their client keeps it glued to their ped.
-    TriggerClientEvent('oph3z-phone:client:spotify:nearbyLive', src, { name = name })
+    followPed(src)  -- server keeps the 3D sound on the player's ped for all listeners
     -- If we started mid-song, tell EVERYONE in range to seek to that spot (each
     -- client seeks its own instance once ready, so nearby players stay in sync).
     local position = tonumber(data.position) or 0

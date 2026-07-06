@@ -27,7 +27,8 @@ export function useAvailableApps() {
         deletable: store, // default apps can't be uninstalled; store apps can
         place: e.place || 'grid',
         // App Store page metadata (only meaningful for store-gated built-ins).
-        developer: e.developer,
+        // Developer is hard-coded: every built-in store app is by Oph3Z.
+        developer: store ? 'Oph3Z' : undefined,
         description: e.description,
         headerImage: e.headerImage,
         swiperItems: e.swiperItems,

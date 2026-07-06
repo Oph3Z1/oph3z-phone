@@ -12,7 +12,8 @@ import { fmtPrice, timeAgo, CATEGORY_ICON } from './util';
 import MediaCarousel from './MediaCarousel';
 import MediaViewer from './MediaViewer';
 import Avatar from './Avatar';
-import { BackArrow, PhoneIcon, MessageIcon, EditIcon, TrashIcon } from './icons';
+import ShareSheet from './ShareSheet';
+import { BackArrow, PhoneIcon, MessageIcon, EditIcon, TrashIcon, ShareIcon } from './icons';
 
 // Full ad: media slider, price, title, description, seller card and the contact
 // buttons (call / message, gated by the seller's toggles). Owner gets edit/delete.
@@ -23,6 +24,7 @@ export default function ListingDetail({ id, onBack, onChanged }) {
   const [l, setL] = useState(null);
   const [missing, setMissing] = useState(false);
   const [viewer, setViewer] = useState(null); // media item shown fullscreen (zoom)
+  const [sharing, setSharing] = useState(false);
 
   useEffect(() => {
     let alive = true;
@@ -76,7 +78,7 @@ export default function ListingDetail({ id, onBack, onChanged }) {
 
   return (
     <div className="mkt-screen">
-      <Topbar t={t} onBack={onBack} />
+      <Topbar t={t} onBack={onBack} onShare={() => setSharing(true)} />
       <div className="mkt-scroll mkt-detail">
         <MediaCarousel media={l.media} onOpen={(item) => setViewer(item)} />
 
@@ -117,16 +119,21 @@ export default function ListingDetail({ id, onBack, onChanged }) {
       </div>
 
       {viewer && <MediaViewer item={viewer} onClose={() => setViewer(null)} />}
+      {sharing && <ShareSheet kind="listing" listing={l} onClose={() => setSharing(false)} />}
     </div>
   );
 }
 
-function Topbar({ t, onBack }) {
+function Topbar({ t, onBack, onShare }) {
   return (
     <div className="mkt-topbar">
       <button className="mkt-iconbtn" onClick={onBack}><BackArrow /></button>
       <span className="mkt-topbar__title">{t('market.listing')}</span>
-      <span className="mkt-topbar__spacer" />
+      {onShare ? (
+        <button className="mkt-iconbtn" onClick={onShare} aria-label={t('market.share')}><ShareIcon /></button>
+      ) : (
+        <span className="mkt-topbar__spacer" />
+      )}
     </div>
   );
 }

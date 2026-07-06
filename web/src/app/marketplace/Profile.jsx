@@ -4,7 +4,8 @@ import { useT } from '../../i18n/useT';
 import { useMarketNav } from './MarketNav';
 import ListingCard from './ListingCard';
 import Avatar from './Avatar';
-import { BackArrow } from './icons';
+import ShareSheet from './ShareSheet';
+import { BackArrow, ShareIcon } from './icons';
 
 // A seller's page: identity card + the grid of their ads. `cid` null = my own
 // profile. Tapping an ad opens its detail (where the owner can edit / delete).
@@ -13,6 +14,7 @@ export default function Profile({ cid, reloadToken, onBack }) {
   const nav = useMarketNav();
   const [data, setData] = useState(null);
   const [missing, setMissing] = useState(false);
+  const [sharing, setSharing] = useState(false);
 
   useEffect(() => {
     let alive = true;
@@ -30,7 +32,11 @@ export default function Profile({ cid, reloadToken, onBack }) {
       <div className="mkt-topbar">
         <button className="mkt-iconbtn" onClick={onBack}><BackArrow /></button>
         <span className="mkt-topbar__title">{t('market.profile')}</span>
-        <span className="mkt-topbar__spacer" />
+        {seller ? (
+          <button className="mkt-iconbtn" onClick={() => setSharing(true)} aria-label={t('market.share')}><ShareIcon /></button>
+        ) : (
+          <span className="mkt-topbar__spacer" />
+        )}
       </div>
 
       <div className="mkt-scroll">
@@ -57,6 +63,10 @@ export default function Profile({ cid, reloadToken, onBack }) {
           </>
         )}
       </div>
+
+      {sharing && seller && (
+        <ShareSheet kind="profile" seller={{ ...seller, count: listings.length }} onClose={() => setSharing(false)} />
+      )}
     </div>
   );
 }

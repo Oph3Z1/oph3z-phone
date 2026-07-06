@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import './MarketApp.css';
 
 import { startDraft, setReopenCompose } from '../../store/slices/marketplaceSlice';
+import { clearDeliver } from '../../store/slices/airdropSlice';
 import { MarketNavContext } from './MarketNav';
 import Feed from './Feed';
 import ListingDetail from './ListingDetail';
@@ -13,6 +14,7 @@ import SearchScreen from './SearchScreen';
 export default function MarketApp() {
   const dispatch = useDispatch();
   const reopenCompose = useSelector((s) => s.marketplace.reopenCompose);
+  const deliver = useSelector((s) => s.airdrop.deliver);
 
   const [stack, setStack] = useState([{ name: 'feed' }]);
   const [reloadToken, setReloadToken] = useState(0);
@@ -29,6 +31,17 @@ export default function MarketApp() {
       dispatch(setReopenCompose(false));
     }
   }, [reopenCompose, dispatch]);
+
+  // A shared listing/profile was delivered (AirDrop accept or a Messages card tap):
+  // open Marketplace straight to it, with the feed underneath so Back works.
+  useEffect(() => {
+    if (deliver && deliver.appId === 'marketplace') {
+      const p = deliver.payload || {};
+      dispatch(clearDeliver());
+      if (p.listingId) setStack([{ name: 'feed' }, { name: 'listing', id: p.listingId }]);
+      else if (p.cid) setStack([{ name: 'feed' }, { name: 'profile', cid: p.cid }]);
+    }
+  }, [deliver, dispatch]);
 
   const nav = useMemo(() => ({
     openListing: (id) => push({ name: 'listing', id }),
