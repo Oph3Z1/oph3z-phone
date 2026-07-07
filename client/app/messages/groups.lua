@@ -1,35 +1,26 @@
---[[
-    oph3z-phone | Group chats — CLIENT (NUI bridge)
-
-    Relays Group UI actions to the server and pushes live group events into the NUI
-    (works whether or not the Messages app is currently open).
---]]
-
 RegisterNUICallback('phone:groups:create', function(data, cb)
-    cb(lib.callback.await('oph3z-phone:server:groups:create', false, data) or false)
+    cb(TriggerCallback('oph3z-phone:server:groups:create', data) or false)
 end)
 
 RegisterNUICallback('phone:groups:open', function(data, cb)
-    cb(lib.callback.await('oph3z-phone:server:groups:open', false, data) or false)
+    cb(TriggerCallback('oph3z-phone:server:groups:open', data) or false)
 end)
 
 RegisterNUICallback('phone:groups:send', function(data, cb)
-    cb(lib.callback.await('oph3z-phone:server:groups:send', false, data) or false)
+    cb(TriggerCallback('oph3z-phone:server:groups:send', data) or false)
 end)
 
 RegisterNUICallback('phone:groups:read', function(data, cb)
-    cb(lib.callback.await('oph3z-phone:server:groups:read', false, data) or false)
+    cb(TriggerCallback('oph3z-phone:server:groups:read', data) or false)
 end)
 
 RegisterNUICallback('phone:groups:react', function(data, cb)
-    cb(lib.callback.await('oph3z-phone:server:groups:react', false, data) or false)
+    cb(TriggerCallback('oph3z-phone:server:groups:react', data) or false)
 end)
 
 RegisterNUICallback('phone:groups:manage', function(data, cb)
-    cb(lib.callback.await('oph3z-phone:server:groups:manage', false, data) or { ok = false })
+    cb(TriggerCallback('oph3z-phone:server:groups:manage', data) or { ok = false })
 end)
-
--- ---- Group location sharing ----------------------------------------------
 
 local function getLoc()
     local ped = PlayerPedId()
@@ -45,7 +36,7 @@ local function getLoc()
     return { x = c.x, y = c.y, label = label }
 end
 
-local groupLoops = {} -- [sid] = true while actively streaming
+local groupLoops = {}
 
 local function startGroupLive(sid, duration)
     if not sid or groupLoops[sid] then return end
@@ -57,7 +48,7 @@ local function startGroupLive(sid, duration)
             TriggerServerEvent('oph3z-phone:server:groups:locupdate', sid, loc.x, loc.y, loc.label)
             if endTime and GetGameTimer() >= endTime then
                 groupLoops[sid] = nil
-                lib.callback.await('oph3z-phone:server:groups:locstop', false, { sid = sid, reason = 'expired' })
+                TriggerCallback('oph3z-phone:server:groups:locstop', { sid = sid, reason = 'expired' })
                 break
             end
             Wait(3000)
@@ -67,7 +58,7 @@ end
 
 RegisterNUICallback('phone:groups:location', function(data, cb)
     local loc = getLoc()
-    local msg = lib.callback.await('oph3z-phone:server:groups:location', false, {
+    local msg = TriggerCallback('oph3z-phone:server:groups:location', {
         gid = data and data.gid,
         live = data and data.live,
         duration = data and data.duration,
@@ -82,11 +73,9 @@ end)
 RegisterNUICallback('phone:groups:locstop', function(data, cb)
     local sid = data and data.sid
     if sid then groupLoops[sid] = nil end
-    cb(lib.callback.await('oph3z-phone:server:groups:locstop', false,
-        { sid = sid, reason = 'stopped' }) or { ok = false })
+    cb(TriggerCallback('oph3z-phone:server:groups:locstop', { sid = sid, reason = 'stopped' }) or { ok = false })
 end)
 
--- Server -> stop a group live loop (expired / ended elsewhere).
 RegisterNetEvent('oph3z-phone:client:loc:stop', function(data)
     if data and data.sid then groupLoops[data.sid] = nil end
 end)
@@ -96,8 +85,6 @@ AddEventHandler('onResourceStop', function(resource)
         for sid in pairs(groupLoops) do groupLoops[sid] = nil end
     end
 end)
-
--- ---- Live push from server -> UI -----------------------------------------
 
 RegisterNetEvent('oph3z-phone:client:groups:incoming', function(payload)
     if payload then SendNUIMessage({ action = 'phone:groups:incoming', data = payload }) end

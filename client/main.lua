@@ -1,21 +1,19 @@
---[[
-    oph3z-phone | Client entry point
-
-    Owns the open/close lifecycle: NUI focus, telling the React app to show/hide,
-    streaming the in-game clock while open, and the keybind / command / item hooks.
---]]
-
 Phone = Phone or {}
 Phone.isOpen = false
+Phone.language = nil
+
+function Phone.setLanguage(lang)
+    if type(lang) ~= 'string' or lang == '' or lang == Phone.language then return end
+    Phone.language = lang
+    TriggerEvent('oph3z-phone:languageChanged', lang)
+end
 
 local timeThread = nil
 
----Push the current time/weather to the NUI.
 local function sendTime()
     SendNUIMessage({ action = 'phone:time', data = Phone.getTimeData() })
 end
 
----Start a lightweight loop that streams the clock while the phone is open.
 local function startTimeLoop()
     if timeThread then return end
     timeThread = true
@@ -28,24 +26,20 @@ local function startTimeLoop()
     end)
 end
 
--- ===========================================================================
--- Phone prop + character animation
--- (kept in main.lua so it always loads with the lifecycle that calls it)
--- ===========================================================================
 local propEntity = nil
-
--- Fixed tunables (kept out of config to keep it lean).
-local PROP_BONE = 28422 -- SKEL_R_Hand
+local PROP_BONE = 28422
 local ANIM = {
     dict = 'cellphone@',
     enter = 'cellphone_text_in',
     idle = 'cellphone_text_read_base',
     exit = 'cellphone_text_out',
 }
+
 local FLASHLIGHT = {
     color = { r = 255, g = 250, b = 235 },
     forward = -0.4, distance = 25.0, brightness = 3.0, radius = 11.0, falloff = 28.0, tilt = -0.10,
 }
+
 local SCREEN_GLOW = { color = { r = 150, g = 180, b = 255 }, range = 0.7, intensity = 2.0 }
 
 local function loadAnimDict(dict)
@@ -94,7 +88,6 @@ local function removeProp()
     propEntity = nil
 end
 
----Raise the phone and hold the idle pose.
 function Phone.startAnim()
     if not Config.UseProp then return end
     local ped = PlayerPedId()
@@ -110,7 +103,6 @@ function Phone.startAnim()
     end)
 end
 
----Lower the phone and clean up the prop.
 function Phone.stopAnim()
     if not Config.UseProp then return end
     local ped = PlayerPedId()
@@ -125,13 +117,9 @@ function Phone.stopAnim()
     end)
 end
 
--- ===========================================================================
--- Flashlight (real spotlight beam from the phone, while the phone is open)
--- ===========================================================================
 Phone.flashlightOn = false
 local flashThread = false
 
----Toggle the flashlight on/off. The beam only renders while the phone is open.
 function Phone.setFlashlight(on)
     Phone.flashlightOn = on and true or false
 
@@ -141,17 +129,13 @@ function Phone.setFlashlight(on)
         CreateThread(function()
             while Phone.flashlightOn and Phone.isOpen do
                 local ped = PlayerPedId()
-                -- Base point = the phone prop (or hand if the prop isn't spawned).
                 local base
                 if propEntity and DoesEntityExist(propEntity) then
                     base = GetEntityCoords(propEntity)
                 else
                     base = GetPedBoneCoords(ped, PROP_BONE, 0.0, 0.0, 0.0)
                 end
-                -- Direction = where the phone/body faces (static, not the camera).
                 local fwd = GetEntityForwardVector(ped)
-                -- Start the beam slightly in front of the body so it never
-                -- lights the player's face, and the pool reads as "from the phone".
                 local ox = base.x + fwd.x * FLASHLIGHT.forward
                 local oy = base.y + fwd.y * FLASHLIGHT.forward
                 local oz = base.z
@@ -170,9 +154,6 @@ function Phone.setFlashlight(on)
     end
 end
 
--- ===========================================================================
--- Screen glow (soft light on the player's face while the phone is open)
--- ===========================================================================
 local glowThread = false
 
 local function startScreenGlow()
@@ -182,7 +163,6 @@ local function startScreenGlow()
     CreateThread(function()
         while Phone.isOpen do
             local ped = PlayerPedId()
-            -- Slightly above the hand, toward the face.
             local pos = GetPedBoneCoords(ped, PROP_BONE, 0.0, 0.05, 0.12)
             DrawLightWithRange(
                 pos.x, pos.y, pos.z,
@@ -195,15 +175,14 @@ local function startScreenGlow()
     end)
 end
 
----Open the phone: fetch the player's data once, focus NUI, show the app.
 function Phone.open()
     if Phone.isOpen then return end
     if not Phone.hasItem() then
-        exports.qbx_core:Notify('You don\'t have a phone.', 'error')
+        Notify('You don\'t have a phone.', 'error')
         return
     end
 
-    local data = lib.callback.await('oph3z-phone:server:getData', false)
+    local data = TriggerCallback('oph3z-phone:server:getData')
     if not data then
         Phone.dbg('failed to load phone data')
         return
@@ -218,6 +197,7 @@ function Phone.open()
         email     = data.email,
         avatar    = data.avatar,
     }
+    Phone.setLanguage((data.settings and data.settings.language) or Config.DefaultLocale)
     SetNuiFocus(true, true)
     SendNUIMessage({
         action = 'phone:setVisible',
@@ -225,24 +205,26 @@ function Phone.open()
             visible  = true,
             settings = data.settings,
             time     = Phone.getTimeData(),
-            apps     = Config.Apps,     -- built-in app layout (config-driven)
-            identity = Phone.identity,  -- shared with third-party app iframes
-            home     = data.home,       -- saved home-screen arrangement
-            appstore = Config.AppStore, -- App Store settings (download duration)
+            apps     = Config.Apps,
+            identity = Phone.identity,
+            home     = data.home,
+            appstore = Config.AppStore,
             i18n     = { languages = GetLanguages(), translations = GetFrontendLocales() },
         },
     })
-    if PhoneApps then PhoneApps.sync() end -- hand the NUI any registered third-party apps
+
+    if PhoneApps then PhoneApps.sync() end
+
     startTimeLoop()
     Phone.startAnim()
     startScreenGlow()
-    TriggerServerEvent('oph3z-phone:server:airdrop:presence', true) -- discoverable while open (RequirePhone)
+    TriggerServerEvent('oph3z-phone:server:airdrop:presence', true)
     Phone.dbg('opened')
 end
 
----Close the phone: release NUI focus and hide the app.
 function Phone.close()
     if not Phone.isOpen then return end
+
     Phone.isOpen = false
     SetNuiFocus(false, false)
     SendNUIMessage({ action = 'phone:setVisible', data = { visible = false } })
@@ -256,47 +238,28 @@ function Phone.toggle()
     if Phone.isOpen then Phone.close() else Phone.open() end
 end
 
--- Keybind -------------------------------------------------------------------
-RegisterCommand('+oph3z_phone', function() Phone.toggle() end, false)
-RegisterCommand('-oph3z_phone', function() end, false)
 RegisterKeyMapping('+oph3z_phone', 'Open / close phone', 'keyboard', Config.Keybind)
 
--- Chat command (QoL / dev) --------------------------------------------------
-RegisterCommand(Config.Command, function() Phone.toggle() end, false)
-
--- Dev command to toggle airplane mode (will become a Settings toggle later).
-RegisterCommand('airplane', function()
-    local on = lib.callback.await('oph3z-phone:server:phone:toggleAirplane', false)
-    SendNUIMessage({ action = 'phone:settings', data = { airplane = on } })
-    exports.qbx_core:Notify('Airplane mode: ' .. (on and 'ON' or 'OFF'), on and 'error' or 'success')
-end, false)
-
--- ox_inventory item hook ----------------------------------------------------
--- Add an item named Config.ItemName to ox_inventory with:
---   client = { export = 'oph3z-phone.usePhone' }
 exports('usePhone', function()
     Phone.open()
 end)
 
--- ===========================================================================
--- Calls (client)
--- ===========================================================================
 Phone.call = nil
-local mutedRemote = {}      -- serverId -> true (players we locally muted for this call)
+local mutedRemote = {}
 
 local function callMsg(payload)
     SendNUIMessage({ action = 'phone:call', data = payload })
 end
 
--- Open the phone UI specifically to present an incoming call (when closed).
 local function showPhoneForCall()
     if Phone.isOpen then return false end
     Phone.isOpen = true
     Phone.openedByCall = true
     SetNuiFocus(true, true)
-    local data = lib.callback.await('oph3z-phone:server:getData', false)
+    local data = TriggerCallback('oph3z-phone:server:getData')
     if data then
         Phone.identity = { number = data.number, numberRaw = data.numberRaw, citizenid = data.citizenid, name = data.name, email = data.email, avatar = data.avatar }
+        Phone.setLanguage((data.settings and data.settings.language) or Config.DefaultLocale)
     end
     SendNUIMessage({
         action = 'phone:setVisible',
@@ -317,7 +280,6 @@ local function showPhoneForCall()
     return true
 end
 
--- Undo any local mutes we applied for the remote party.
 local function clearRemoteMutes()
     for tgt in pairs(mutedRemote) do
         if exports['pma-voice']:isPlayerMuted(tgt) then
@@ -335,7 +297,6 @@ local function localCallCleanup()
     local openedByCall = Phone.openedByCall
     Phone.call = nil
     Phone.openedByCall = nil
-    -- If the phone only opened to show this call, close it again afterwards.
     if openedByCall then
         SetTimeout(1600, function()
             if not Phone.call then Phone.close() end
@@ -400,7 +361,6 @@ RegisterNetEvent('oph3z-phone:call:remoteMute', function(otherSrc, muted)
     end
 end)
 
--- Cleanup on resource stop --------------------------------------------------
 AddEventHandler('onResourceStop', function(resource)
     if resource ~= GetCurrentResourceName() then return end
     if Phone.isOpen then SetNuiFocus(false, false) end

@@ -1,21 +1,10 @@
---[[
-    oph3z-phone | Ringtones — SERVER
-
-    Built-in ringtones come from Config.Ringtones; players can add their own by URL,
-    stored per-citizenid in `doc.ringtones = { items = {{id,name,url}}, nextId }`.
-    The chosen ringtone is a URL saved in `doc.settings.ringtone` (via saveSettings);
-    it plays 3D (xsound) when the player receives a call — see startRingtone in
-    server/main.lua.
---]]
-
 local function ensureRingtones(doc)
     doc.ringtones = doc.ringtones or {}
-    doc.ringtones.items  = doc.ringtones.items or {}   -- custom: { {id,name,url}, ... }
+    doc.ringtones.items  = doc.ringtones.items or {} -- custom: { {id,name,url}, ... }
     doc.ringtones.nextId = doc.ringtones.nextId or 1
     return doc
 end
 
----Trim + cap a string.
 local function clean(value, maxLen)
     if type(value) ~= 'string' then return '' end
     value = value:gsub('^%s+', ''):gsub('%s+$', '')
@@ -23,7 +12,6 @@ local function clean(value, maxLen)
     return value
 end
 
----Resolve the built-in ringtones from config into playable URLs.
 local function builtinRingtones()
     local res = GetCurrentResourceName()
     local out = {}
@@ -39,8 +27,6 @@ local function builtinRingtones()
     return out
 end
 
----Resolve a player's selected ringtone URL (their pick, else the config fallback).
----Exposed for the call manager (server/main.lua startRingtone).
 Ringtones = Ringtones or {}
 function Ringtones.UrlFor(citizenid)
     local doc = citizenid and DB.Load(citizenid) or nil
@@ -49,8 +35,7 @@ function Ringtones.UrlFor(citizenid)
     return Config.RingtoneUrl
 end
 
--- Full list (built-in + the player's custom) + the currently selected URL.
-lib.callback.register('oph3z-phone:server:ringtones:get', function(src)
+RegisterCallback('oph3z-phone:server:ringtones:get', function(src)
     local cid = DB.GetCitizenId(src)
     if not cid then return { ringtones = {}, selected = '' } end
 
@@ -65,8 +50,7 @@ lib.callback.register('oph3z-phone:server:ringtones:get', function(src)
     }
 end)
 
--- Add a custom ringtone (name + URL). Returns the new item, or nil.
-lib.callback.register('oph3z-phone:server:ringtones:add', function(src, input)
+RegisterCallback('oph3z-phone:server:ringtones:add', function(src, input)
     local cid = DB.GetCitizenId(src)
     if not cid or type(input) ~= 'table' then return nil end
 
@@ -82,8 +66,7 @@ lib.callback.register('oph3z-phone:server:ringtones:add', function(src, input)
     return item
 end)
 
--- Delete a custom ringtone by id. If it was the selected one, clear the selection.
-lib.callback.register('oph3z-phone:server:ringtones:delete', function(src, id)
+RegisterCallback('oph3z-phone:server:ringtones:delete', function(src, id)
     local cid = DB.GetCitizenId(src)
     if not cid or type(id) ~= 'string' then return false end
 

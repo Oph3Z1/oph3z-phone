@@ -1,34 +1,7 @@
---[[
-    oph3z-phone | AirDrop — SERVER
-
-    Nearby player-to-player sharing (contacts, your own card, photos/videos, and
-    arbitrary third-party payloads). A receiver must have AirDrop turned ON
-    (doc.settings.airdrop) to be discoverable and to receive.
-
-    Flow:
-      sender NUI -> :nearby            -> list of nearby receivers (name + avatar)
-      sender NUI -> :send { to, kind } -> validates proximity, stores a pending
-                                          transfer in the target's doc, and pushes
-                                          it live to the target
-      target     -> island / center    -> :accept / :decline
-      :accept                          -> applies the payload (save contact/photos,
-                                          or hand a third-party payload back to the
-                                          app on the receiver) and tells the sender
-
-    Pending transfers are persisted in doc.airdrops.pending so a receiver who was
-    away from their phone can accept later — the payload is captured at send time,
-    so no proximity/online re-check is needed to accept.
---]]
-
 local AirdropCfg = Config.Airdrop or {}
 local RANGE      = AirdropCfg.Range or 8.0
 local MAX_PHOTOS = AirdropCfg.MaxPhotos or 20
-
--- Live presence: src -> true when that player's phone is open (only consulted if
--- Config.Airdrop.RequirePhone is set).
 local phoneOpen = {}
-
--- ---- helpers --------------------------------------------------------------
 
 local function coordsOf(src)
     local ped = GetPlayerPed(src)
@@ -37,11 +10,9 @@ local function coordsOf(src)
 end
 
 local function cidOf(src)
-    local player = exports.qbx_core:GetPlayer(src)
-    return player and player.PlayerData.citizenid or nil
+    return GetIdentifier(src)
 end
 
--- A player's public AirDrop identity (what shows in the picker / prompt).
 local function identityOf(src)
     local cid = cidOf(src)
     if not cid then return nil end
@@ -70,7 +41,6 @@ local function ensureAirdrops(doc)
     return doc
 end
 
--- Trim/clean a shared contact into just what we store.
 local function cleanContact(c)
     if type(c) ~= 'table' then return nil end
     local name = tostring(c.name or ''):sub(1, 60)
@@ -96,8 +66,6 @@ local function cleanPhotos(list)
     return out
 end
 
--- ---- presence -------------------------------------------------------------
-
 RegisterNetEvent('oph3z-phone:server:airdrop:presence', function(open)
     phoneOpen[source] = open and true or nil
 end)
@@ -106,9 +74,7 @@ AddEventHandler('playerDropped', function()
     phoneOpen[source] = nil
 end)
 
--- ---- discovery ------------------------------------------------------------
-
-lib.callback.register('oph3z-phone:server:airdrop:nearby', function(source)
+RegisterCallback('oph3z-phone:server:airdrop:nearby', function(source)
     local mine = coordsOf(source)
     if not mine then return {} end
 
@@ -128,14 +94,11 @@ lib.callback.register('oph3z-phone:server:airdrop:nearby', function(source)
     return out
 end)
 
--- ---- send -----------------------------------------------------------------
-
-lib.callback.register('oph3z-phone:server:airdrop:send', function(source, data)
+RegisterCallback('oph3z-phone:server:airdrop:send', function(source, data)
     if type(data) ~= 'table' then return { ok = false, reason = 'bad' } end
     local target = tonumber(data.to)
     if not target then return { ok = false, reason = 'bad' } end
 
-    -- Re-validate proximity + receiving at send time.
     local mine, theirs = coordsOf(source), coordsOf(target)
     if not mine or not theirs or #(mine - theirs) > RANGE then return { ok = false, reason = 'range' } end
     if not isReceiving(target) then return { ok = false, reason = 'off' } end
@@ -143,7 +106,6 @@ lib.callback.register('oph3z-phone:server:airdrop:send', function(source, data)
     local from = identityOf(source)
     if not from then return { ok = false, reason = 'bad' } end
 
-    -- Build the transfer by kind.
     local transfer = { kind = data.kind, ts = os.time() }
     if data.kind == 'contact' then
         transfer.contact = cleanContact(data.contact)
@@ -165,7 +127,6 @@ lib.callback.register('oph3z-phone:server:airdrop:send', function(source, data)
     elseif data.kind == 'app' then
         if type(data.app) ~= 'table' or type(data.app.id) ~= 'string' then return { ok = false, reason = 'bad' } end
         local payload = data.app.payload
-        -- Cap third-party payload size (stored + sent as-is).
         if payload ~= nil and #json.encode(payload) > 16000 then return { ok = false, reason = 'big' } end
         transfer.app = {
             id      = data.app.id,
@@ -178,26 +139,21 @@ lib.callback.register('oph3z-phone:server:airdrop:send', function(source, data)
         return { ok = false, reason = 'bad' }
     end
 
-    -- Store it as pending in the target's document (persists for "accept later").
     local tcid = cidOf(target)
     if not tcid then return { ok = false, reason = 'bad' } end
     local tdoc = ensureAirdrops(DB.EnsurePhone(tcid, DB.LoadOrCreate(tcid)))
     transfer.id      = tdoc.airdrops.nextId
     transfer.from    = { name = from.name, avatar = from.avatar, number = from.number }
-    transfer.fromSrc = source -- for live accept/decline status (this session only)
+    transfer.fromSrc = source
     tdoc.airdrops.nextId = tdoc.airdrops.nextId + 1
     tdoc.airdrops.pending[#tdoc.airdrops.pending + 1] = transfer
     DB.Save(tcid, tdoc)
 
-    -- Push it live to the target (their client decides island vs. notification).
     TriggerClientEvent('oph3z-phone:client:airdrop:incoming', target, transfer)
 
     return { ok = true, id = transfer.id }
 end)
 
--- ---- apply (accept) -------------------------------------------------------
-
--- Find + remove a pending transfer by id from a loaded doc. Returns the transfer.
 local function takePending(doc, id)
     local list = doc.airdrops and doc.airdrops.pending
     if not list then return nil end
@@ -211,7 +167,7 @@ local function takePending(doc, id)
     return nil
 end
 
-lib.callback.register('oph3z-phone:server:airdrop:accept', function(source, id)
+RegisterCallback('oph3z-phone:server:airdrop:accept', function(source, id)
     local cid = cidOf(source)
     if not cid then return { ok = false } end
     local doc = ensureAirdrops(DB.EnsurePhone(cid, DB.LoadOrCreate(cid)))
@@ -221,7 +177,6 @@ lib.callback.register('oph3z-phone:server:airdrop:accept', function(source, id)
     local result = { ok = true, kind = t.kind }
 
     if t.kind == 'contact' and t.contact then
-        -- Save the contact (dedupe by number).
         local digits = DB.Digits(t.contact.number)
         local exists = false
         for _, c in ipairs(doc.phone.contacts) do
@@ -237,35 +192,33 @@ lib.callback.register('oph3z-phone:server:airdrop:accept', function(source, id)
         end
         result.name = t.contact.name
     elseif t.kind == 'photos' and t.photos then
-        DB.Save(cid, doc) -- persist the pending removal before Photos.Add reloads the doc
+        DB.Save(cid, doc)
         local n = 0
+
         for _, p in ipairs(t.photos) do
             if Photos and Photos.Add(cid, p) then n = n + 1 end
         end
-        -- Photos.Add reloaded/saved the doc; re-notify sender below and return.
+
         if t.fromSrc then
             TriggerClientEvent('oph3z-phone:client:airdrop:status', t.fromSrc, { ok = true, accepted = true })
         end
+
         return { ok = true, kind = 'photos', count = n }
     elseif t.kind == 'app' then
-        -- Nothing to save server-side; the receiver's client routes the payload
-        -- into the app. Hand the payload back so the client can deliver it.
         result.app = t.app
     elseif t.kind == 'xprofile' then
-        -- Shared X profile: hand it back so the client opens X to that profile.
         result.xprofile = t.xprofile
     end
 
     DB.Save(cid, doc)
 
-    -- Tell the sender it was accepted (best-effort, this session).
     if t.fromSrc then
         TriggerClientEvent('oph3z-phone:client:airdrop:status', t.fromSrc, { ok = true, accepted = true })
     end
     return result
 end)
 
-lib.callback.register('oph3z-phone:server:airdrop:decline', function(source, id)
+RegisterCallback('oph3z-phone:server:airdrop:decline', function(source, id)
     local cid = cidOf(source)
     if not cid then return false end
     local doc = ensureAirdrops(DB.EnsurePhone(cid, DB.LoadOrCreate(cid)))
@@ -278,8 +231,7 @@ lib.callback.register('oph3z-phone:server:airdrop:decline', function(source, id)
     return true
 end)
 
--- All still-pending transfers (loaded when the phone opens, for the center).
-lib.callback.register('oph3z-phone:server:airdrop:pending', function(source)
+RegisterCallback('oph3z-phone:server:airdrop:pending', function(source)
     local cid = cidOf(source)
     if not cid then return {} end
     local doc = ensureAirdrops(DB.EnsurePhone(cid, DB.LoadOrCreate(cid)))

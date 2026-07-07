@@ -14,7 +14,7 @@ import {
   createFolder,
   addToFolder,
   setOpenFolder,
-  deleteApp,
+  removeApp,
   addPage,
   endDrag,
   folderFlat,
@@ -377,7 +377,7 @@ export default function HomeScreen() {
         ],
       })
     );
-    if (ok) { dispatch(deleteApp(id)); dispatch(saveHome()); }
+    if (ok) dispatch(removeApp(id));
   };
 
   const renderTile = (itemId, container, index) => {

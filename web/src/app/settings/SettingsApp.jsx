@@ -251,7 +251,7 @@ function DisplayScreen({ onBack }) {
   useEffect(() => () => dispatch(flushSettings()), [dispatch]);
 
   const setBrightness = (v) => dispatch(saveSettingLive('brightness', clamp(v, 20, 100)));
-  const setScale = (v) => dispatch(saveSettingLive('scale', clamp(v, 85, 100)));
+  const setScale = (v) => dispatch(saveSettingLive('scale', clamp(v, 75, 100)));
 
   return (
     <div className="set">
@@ -274,7 +274,7 @@ function DisplayScreen({ onBack }) {
           <span className="set-grouptitle__val">{Math.round(scale)}%</span>
         </div>
         <div className="set-card set-card--slider">
-          <ThickSlider value={scale} min={85} max={100} onChange={setScale} icon={<PhoneSizeG />} />
+          <ThickSlider value={scale} min={75} max={100} onChange={setScale} icon={<PhoneSizeG />} />
         </div>
         <p className="set-hint">{t('display.hint')}</p>
       </div>

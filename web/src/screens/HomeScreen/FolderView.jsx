@@ -9,7 +9,7 @@ import {
   removeFromFolder,
   swapInFolder,
   moveInFolder,
-  deleteApp,
+  removeApp,
   saveHome,
 } from '../../store/slices/homeSlice';
 import { openDialog } from '../../store/slices/dialogSlice';
@@ -64,7 +64,7 @@ export default function FolderView({ folderId, appMap }) {
         ],
       })
     );
-    if (ok) { dispatch(deleteApp(appId)); dispatch(saveHome()); }
+    if (ok) dispatch(removeApp(appId));
   };
 
   const cloneXY = (cx, cy) => {

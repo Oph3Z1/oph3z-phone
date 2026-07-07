@@ -1,13 +1,6 @@
---[[
-    oph3z-phone | Marketplace (classifieds) — CLIENT bridge
-
-    Plumbs the Marketplace UI to the server callbacks (feed, listings, profiles,
-    create/update/delete).
---]]
-
 local function bridge(nuiEvent, serverEvent, wrap)
     RegisterNUICallback(nuiEvent, function(data, cb)
-        cb(lib.callback.await(serverEvent, false, wrap and wrap(data) or data) or { ok = false })
+        cb(TriggerCallback(serverEvent, wrap and wrap(data) or data) or { ok = false })
     end)
 end
 

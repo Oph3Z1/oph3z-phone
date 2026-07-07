@@ -1,19 +1,4 @@
---[[
-    oph3z-phone | Spotify (music) — SERVER
-
-    Two jobs:
-      1. Per-character library: playlists + Liked Songs, stored in the player's
-         phone doc (doc.spotify). Tracks are stored as snapshots
-         { id, title, artist, artwork, url, duration }.
-      2. Nearby audio: when a player broadcasts, the track is played in 3D via
-         xsound at their ped so nearby players hear it too (gated by Config).
---]]
-
 local function cidOf(src) return DB.GetCitizenId(src) end
-
--- ===========================================================================
--- SEARCH  (HTTP lives here — PerformHttpRequest is server-only)
--- ===========================================================================
 local CFG    = Config.Music or {}
 local YT_KEY = CFG.apiKey or ''
 local LIMIT  = 25
@@ -37,7 +22,6 @@ local function isoToSeconds(iso)
     return h * 3600 + m * 60 + s
 end
 
--- Blocking GET via PerformHttpRequest, awaited on the callback's thread.
 local function http(url, headers)
     local p = promise.new()
     PerformHttpRequest(url, function(status, text) p:resolve({ status = status, text = text }) end, 'GET', '', headers or {})
@@ -65,7 +49,7 @@ local function searchYouTube(q)
             ids[#ids + 1] = vid
         end
     end
-    -- One extra call to fill in real durations.
+
     if #ids > 0 then
         local d = http(('https://www.googleapis.com/youtube/v3/videos?part=contentDetails&id=%s&key=%s')
             :format(table.concat(ids, ','), YT_KEY), { ['Accept'] = 'application/json' })
@@ -81,18 +65,17 @@ local function searchYouTube(q)
     return { ok = true, tracks = tracks }
 end
 
-lib.callback.register('oph3z-phone:server:spotify:search', function(src, data)
+RegisterCallback('oph3z-phone:server:spotify:search', function(src, data)
     local q = data and data.q or ''
     if q == '' then return { ok = true, tracks = {} } end
     return searchYouTube(q)
 end)
 
--- ---- library --------------------------------------------------------------
 local function libOf(cid)
     local doc = DB.LoadOrCreate(cid)
     doc.spotify = doc.spotify or {}
-    doc.spotify.liked = doc.spotify.liked or {}       -- array of tracks
-    doc.spotify.playlists = doc.spotify.playlists or {} -- array of { id, name, tracks }
+    doc.spotify.liked = doc.spotify.liked or {}
+    doc.spotify.playlists = doc.spotify.playlists or {}
     return doc, doc.spotify
 end
 
@@ -117,14 +100,14 @@ local function nextPlaylistId(sp)
     return ('pl%d'):format(n + 1)
 end
 
-lib.callback.register('oph3z-phone:server:spotify:library', function(src)
+RegisterCallback('oph3z-phone:server:spotify:library', function(src)
     local cid = cidOf(src)
     if not cid then return { ok = false } end
     local _, sp = libOf(cid)
     return { ok = true, playlists = sp.playlists, liked = sp.liked }
 end)
 
-lib.callback.register('oph3z-phone:server:spotify:createPlaylist', function(src, data)
+RegisterCallback('oph3z-phone:server:spotify:createPlaylist', function(src, data)
     local cid = cidOf(src)
     if not cid or type(data) ~= 'table' then return { ok = false } end
     local name = tostring(data.name or ''):sub(1, 60)
@@ -136,7 +119,7 @@ lib.callback.register('oph3z-phone:server:spotify:createPlaylist', function(src,
     return { ok = true, playlist = pl }
 end)
 
-lib.callback.register('oph3z-phone:server:spotify:renamePlaylist', function(src, data)
+RegisterCallback('oph3z-phone:server:spotify:renamePlaylist', function(src, data)
     local cid = cidOf(src)
     if not cid or type(data) ~= 'table' then return { ok = false } end
     local name = tostring(data.name or ''):sub(1, 60)
@@ -148,7 +131,7 @@ lib.callback.register('oph3z-phone:server:spotify:renamePlaylist', function(src,
     return { ok = false, reason = 'notfound' }
 end)
 
-lib.callback.register('oph3z-phone:server:spotify:deletePlaylist', function(src, data)
+RegisterCallback('oph3z-phone:server:spotify:deletePlaylist', function(src, data)
     local cid = cidOf(src)
     if not cid or type(data) ~= 'table' then return { ok = false } end
     local doc, sp = libOf(cid)
@@ -158,8 +141,7 @@ lib.callback.register('oph3z-phone:server:spotify:deletePlaylist', function(src,
     return { ok = true }
 end)
 
--- Add a track to a playlist ('liked' targets Liked Songs). No duplicates.
-lib.callback.register('oph3z-phone:server:spotify:addTrack', function(src, data)
+RegisterCallback('oph3z-phone:server:spotify:addTrack', function(src, data)
     local cid = cidOf(src)
     if not cid or type(data) ~= 'table' then return { ok = false } end
     local track = cleanTrack(data.track)
@@ -178,7 +160,7 @@ lib.callback.register('oph3z-phone:server:spotify:addTrack', function(src, data)
     return { ok = true }
 end)
 
-lib.callback.register('oph3z-phone:server:spotify:removeTrack', function(src, data)
+RegisterCallback('oph3z-phone:server:spotify:removeTrack', function(src, data)
     local cid = cidOf(src)
     if not cid or type(data) ~= 'table' then return { ok = false } end
     local doc, sp = libOf(cid)
@@ -191,8 +173,7 @@ lib.callback.register('oph3z-phone:server:spotify:removeTrack', function(src, da
     return { ok = true }
 end)
 
--- Toggle a track in Liked Songs. Returns the new liked state.
-lib.callback.register('oph3z-phone:server:spotify:toggleLike', function(src, data)
+RegisterCallback('oph3z-phone:server:spotify:toggleLike', function(src, data)
     local cid = cidOf(src)
     if not cid or type(data) ~= 'table' then return { ok = false } end
     local track = cleanTrack(data.track)
@@ -206,26 +187,19 @@ lib.callback.register('oph3z-phone:server:spotify:toggleLike', function(src, dat
     return { ok = true, liked = true }
 end)
 
--- ===========================================================================
--- NEARBY AUDIO (3D via xsound at the broadcaster's ped)
--- ===========================================================================
-local nearby = {}  -- src -> sound name
-local moving = {}  -- src -> true while a follow thread is running
+local nearby = {}
+local moving = {}
 
 local function soundName(src) return ('oph3zmusic_%s'):format(src) end
 
 local function stopNearby(src)
     local name = nearby[src]
     if name then
-        exports.xsound:Destroy(-1, name)  -- no-op if it's already gone
-        nearby[src] = nil                 -- also stops the follow thread below
+        exports.xsound:Destroy(-1, name)
+        nearby[src] = nil
     end
 end
 
--- Keep the 3D sound glued to the broadcaster's ped for EVERY listener. This runs
--- on the server (authoritative — no need to trust client coords) so the sound
--- follows the player even while their phone is closed. One thread per broadcaster;
--- it always repositions whatever sound is current and exits when playback stops.
 local function followPed(src)
     if moving[src] then return end
     moving[src] = true
@@ -241,7 +215,6 @@ local function followPed(src)
     end)
 end
 
--- Start / switch the broadcast track for this player.
 RegisterNetEvent('oph3z-phone:server:spotify:nearbyPlay', function(data)
     local src = source
     if not Config.Music.AllowNearby or type(data) ~= 'table' or type(data.url) ~= 'string' then return end
@@ -254,16 +227,13 @@ RegisterNetEvent('oph3z-phone:server:spotify:nearbyPlay', function(data)
     exports.xsound:PlayUrlPos(-1, name, data.url, vol, coords, false)
     exports.xsound:Distance(-1, name, Config.Music.NearbyRange or 12.0)
     nearby[src] = name
-    followPed(src)  -- server keeps the 3D sound on the player's ped for all listeners
-    -- If we started mid-song, tell EVERYONE in range to seek to that spot (each
-    -- client seeks its own instance once ready, so nearby players stay in sync).
+    followPed(src)
     local position = tonumber(data.position) or 0
     if position > 0 then
         TriggerClientEvent('oph3z-phone:client:spotify:nearbySeek', -1, { name = name, position = math.floor(position) })
     end
 end)
 
--- Control the live broadcast (pause / resume / seek / volume).
 RegisterNetEvent('oph3z-phone:server:spotify:nearbyControl', function(data)
     local src = source
     local name = nearby[src]

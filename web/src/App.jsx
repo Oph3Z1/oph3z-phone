@@ -38,6 +38,11 @@ export default function App() {
   const callStateRef = useRef(callState);
   callStateRef.current = callState;
 
+  // Airplane mode queues notifications server-side (stored & hidden, not delivered
+  // live). When it's switched off the server releases them and fires this, so we
+  // reload and they drop into the Notification Center.
+  useNuiEvent('phone:notifRefresh', () => dispatch(loadNotifications()));
+
   // Notification sound (notify.wav in web/public/audio/).
   const notifAudio = useRef(null);
   const playNotify = () => {

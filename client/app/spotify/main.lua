@@ -1,23 +1,13 @@
---[[
-    oph3z-phone | Spotify (music) — CLIENT
-
-    Search is done on the SERVER (PerformHttpRequest is server-only) and bridged.
-    Playback runs on xsound so it keeps going while the phone is closed and — in
-    "speaker" mode — is heard by nearby players (3D at our ped). The NUI is just
-    the controller: it sends commands and receives position ticks.
---]]
-
 local CFG   = Config.Music or {}
-local LOCAL = 'oph3zlocalmusic'   -- xsound name for private (2D) playback
+local LOCAL = 'oph3zlocalmusic'
 
 local myId
 local function serverId() myId = myId or GetPlayerServerId(PlayerId()); return myId end
 local function nearbyName() return ('oph3zmusic_%s'):format(serverId()) end
-
--- ---- playback engine ------------------------------------------------------
 local M = { track = nil, queue = {}, index = 0, playing = false, nearby = false, volume = 70 }
 
 local function activeName() return M.nearby and nearbyName() or LOCAL end
+
 local function posNow()
     local n = activeName()
     if exports.xsound:soundExists(n) then return exports.xsound:getTimeStamp(n) or 0 end
@@ -36,25 +26,16 @@ local function stopAudio()
     if M.nearby then TriggerServerEvent('oph3z-phone:server:spotify:nearbyStop') end
 end
 
--- Seek only once THIS client's YouTube player is fully ready. getTimeStamp can't
--- be trusted (xsound syncs it across clients, so it may report a peer's value
--- before our own player exists). We wait for BOTH signals that mean our local
--- player is up: isPlaying() (it's actually playing) AND getMaxDuration() > 0 (it
--- has loaded metadata — which only happens once seekTo is bound), then settle a
--- beat before seeking. Otherwise setTimeStamp throws "yPlayer.seekTo is not a
--- function".
 local function seekWhenReady(name, position)
     if not position or position <= 0 then return end
     CreateThread(function()
         local playingFor = 0
-        for _ = 1, 75 do          -- up to ~15s to spin up
+        for _ = 1, 75 do
             Wait(200)
             if not exports.xsound:soundExists(name) then return end
             local playing = exports.xsound:isPlaying(name)
             local dur = exports.xsound:getMaxDuration(name) or -1
             playingFor = playing and (playingFor + 1) or 0
-            -- Ready = actually playing AND metadata loaded (seekTo is bound by then);
-            -- fallback: steadily playing for ~1s (safe even if no duration reported).
             if playing and (dur > 0 or playingFor >= 5) then
                 Wait(150)         -- final settle before seeking
                 if exports.xsound:soundExists(name) then
@@ -70,9 +51,6 @@ local function startAudio(position)
     local url = M.track and M.track.url
     if not url then return end
     if M.nearby then
-        -- Server broadcasts + tells EVERYONE in range (incl. us) to seek to the
-        -- current spot when their player is ready — so nearby players hear it from
-        -- the same position, not from 0:00.
         TriggerServerEvent('oph3z-phone:server:spotify:nearbyPlay', { url = url, volume = M.volume, position = position or 0 })
     else
         exports.xsound:PlayUrl(LOCAL, url, M.volume / 100, false)
@@ -94,17 +72,11 @@ local function playIndex(i)
     pushTrack()
 end
 
--- (The broadcast is kept glued to our ped by the SERVER — see followPed there —
---  so it stays with us for every listener even while the phone is closed.)
-
--- server -> everyone in range: seek this broadcast to the given spot once our own
--- player is ready (so switching to speaker mid-song doesn't restart it at 0:00).
 RegisterNetEvent('oph3z-phone:client:spotify:nearbySeek', function(data)
     if not data or not data.name then return end
     seekWhenReady(data.name, data.position)
 end)
 
--- Position ticks + auto-advance at end of track.
 CreateThread(function()
     while true do
         Wait(1000)
@@ -117,7 +89,6 @@ CreateThread(function()
     end
 end)
 
--- ---- NUI commands ---------------------------------------------------------
 RegisterNUICallback('phone:spotify:play', function(data, cb)
     if type(data) ~= 'table' or type(data.track) ~= 'table' then cb({ ok = false }); return end
     M.queue = (type(data.queue) == 'table' and #data.queue > 0) and data.queue or { data.track }
@@ -143,8 +114,6 @@ RegisterNUICallback('phone:spotify:toggle', function(_, cb)
     cb({ ok = true, playing = M.playing })
 end)
 
--- Auto-pause for an incoming call (idempotent), remembering we did it so we can
--- auto-resume when the call ends.
 RegisterNUICallback('phone:spotify:pauseFor', function(_, cb)
     if M.track and M.playing then
         M.playing = false
@@ -212,7 +181,6 @@ end)
 
 RegisterNUICallback('phone:spotify:stop', function(_, cb) playIndex(0); cb({ ok = true }) end)
 
--- Full snapshot so the NUI can restore its UI when the phone is (re)opened.
 RegisterNUICallback('phone:spotify:state', function(_, cb)
     cb({
         ok = true, track = M.track, index = M.index, count = #M.queue, playing = M.playing,
@@ -221,12 +189,12 @@ RegisterNUICallback('phone:spotify:state', function(_, cb)
     })
 end)
 
--- ---- server bridges (search + library) ------------------------------------
 local function bridge(nui, srv)
     RegisterNUICallback(nui, function(data, cb)
-        cb(lib.callback.await(srv, false, data) or { ok = false })
+        cb(TriggerCallback(srv, data) or { ok = false })
     end)
 end
+
 bridge('phone:spotify:search',         'oph3z-phone:server:spotify:search')
 bridge('phone:spotify:library',        'oph3z-phone:server:spotify:library')
 bridge('phone:spotify:createPlaylist', 'oph3z-phone:server:spotify:createPlaylist')
@@ -236,7 +204,6 @@ bridge('phone:spotify:addTrack',       'oph3z-phone:server:spotify:addTrack')
 bridge('phone:spotify:removeTrack',    'oph3z-phone:server:spotify:removeTrack')
 bridge('phone:spotify:toggleLike',     'oph3z-phone:server:spotify:toggleLike')
 
--- Stop the music if the phone resource restarts.
 AddEventHandler('onResourceStop', function(res)
     if res == GetCurrentResourceName() then stopAudio() end
 end)

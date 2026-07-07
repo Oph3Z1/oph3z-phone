@@ -1,13 +1,6 @@
---[[
-    oph3z-phone | X (social) — CLIENT bridge
-
-    Plumbs the X UI to the server callbacks and relays live events (new bell
-    notification) into the NUI.
---]]
-
 local function bridge(nuiEvent, serverEvent, wrap)
     RegisterNUICallback(nuiEvent, function(data, cb)
-        cb(lib.callback.await(serverEvent, false, wrap and wrap(data) or data) or { ok = false })
+        cb(TriggerCallback(serverEvent, wrap and wrap(data) or data) or { ok = false })
     end)
 end
 
@@ -48,7 +41,6 @@ bridge('phone:x:topics', 'oph3z-phone:server:x:topics')
 bridge('phone:x:topic',  'oph3z-phone:server:x:topic')
 bridge('phone:x:notifs', 'oph3z-phone:server:x:notifs')
 
--- server -> UI: a live event (new notification -> refresh the bell badge).
 RegisterNetEvent('oph3z-phone:client:x:live', function(payload)
     SendNUIMessage({ action = 'phone:x:live', data = payload })
 end)

@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { closeApp } from '../../store/slices/phoneSlice';
 import { openDialog } from '../../store/slices/dialogSlice';
@@ -7,6 +7,7 @@ import { pushToast } from '../../store/slices/toastSlice';
 import { clearNotifsFor } from '../../store/slices/notificationsSlice';
 import { openShare, clearDeliver } from '../../store/slices/airdropSlice';
 import { finishAppShare, cancelAppShare } from '../../store/slices/shareSlice';
+import ExternalShareSheet from './ExternalShareSheet';
 import './ExternalApp.css';
 
 // Renders a third-party app inside the phone as an iframe (the dev's own resource
@@ -14,8 +15,10 @@ import './ExternalApp.css';
 // player's identity on load and lets it ask the phone to go home.
 //
 // Bridge messages:
-//   phone  -> app : { type:'oph3z:init', identity:{ number, numberRaw, citizenid, name, email, avatar }, app:{ id, label } }
+//   phone  -> app : { type:'oph3z:init', identity:{ number, numberRaw, citizenid, name, email, avatar }, app:{ id, label }, language }
 //   app    -> phone: { type:'oph3z:ready' }   request a (re)send of the init payload
+//   phone  -> app : { type:'oph3z:language', language }   the player switched the phone
+//                     language — sync your app's UI (also included in oph3z:init).
 //   app    -> phone: { type:'oph3z:close' }   go back to the home screen
 //   app    -> phone: { type:'oph3z:prompt', id, title, message?, placeholder?, value?, confirmText?, cancelText? }
 //                     -> phone replies { type:'oph3z:prompt:result', id, value }  (value is string or null)
@@ -24,6 +27,10 @@ import './ExternalApp.css';
 //   app    -> phone: { type:'oph3z:airdrop', title?, payload }   AirDrop something to a
 //                     nearby player; on accept the SAME app opens on their phone and
 //                     receives { type:'oph3z:airdrop:received', payload }.
+//   app    -> phone: { type:'oph3z:share', item:{ title, subtitle?, image?, payload } }
+//                     Opens the native Share sheet (AirDrop to Nearby OR Send in
+//                     Messages). Either way `payload` round-trips: the receiver opens
+//                     THIS app and gets { type:'oph3z:airdrop:received', payload }.
 //   phone  -> app : { type:'oph3z:shareRequest' }   the app was opened from the Messages
 //                     Share sheet (register with share:true) to provide a shareable item.
 //   app    -> phone: { type:'oph3z:shareResult', item:{ title, subtitle?, image?, data? } }
@@ -41,6 +48,7 @@ function toFrameSrc(url) {
 export default function ExternalApp({ app }) {
   const dispatch = useDispatch();
   const identity = useSelector((s) => s.phone.identity);
+  const language = useSelector((s) => s.settings.language); // phone language, for i18n sync
   const deliver = useSelector((s) => s.airdrop.deliver);
   const deliverRef = useRef(deliver);
   deliverRef.current = deliver;
@@ -49,6 +57,7 @@ export default function ExternalApp({ app }) {
   shareReqRef.current = shareReq;
   const sharePosted = useRef(false);
   const frameRef = useRef(null);
+  const [shareItem, setShareItem] = useState(null); // app-initiated Share sheet
 
   const postToApp = (msg) => {
     const win = frameRef.current && frameRef.current.contentWindow;
@@ -76,10 +85,17 @@ export default function ExternalApp({ app }) {
   const sendInit = () => {
     const win = frameRef.current && frameRef.current.contentWindow;
     if (!win) return;
-    win.postMessage({ type: 'oph3z:init', app: { id: app.id, label: app.label }, identity }, '*');
+    win.postMessage({ type: 'oph3z:init', app: { id: app.id, label: app.label }, identity, language }, '*');
     deliverAirdrop();
     postShareRequest();
   };
+
+  // Push the phone language to the app whenever the player switches it, so a
+  // third-party app can keep its own UI in sync (also sent in oph3z:init).
+  useEffect(() => {
+    postToApp({ type: 'oph3z:language', language });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [language]);
 
   // Opening the app clears its notifications — badge AND the entries in the
   // Notification Center — exactly like opening a chat in Messages. Also covers
@@ -112,6 +128,9 @@ export default function ExternalApp({ app }) {
       } else if (d.type === 'oph3z:airdrop') {
         // AirDrop a payload to a nearby player; the same app receives it on accept.
         dispatch(openShare({ kind: 'app', app: { id: app.id, title: d.title || app.label, icon: app.icon, payload: d.payload } }));
+      } else if (d.type === 'oph3z:share') {
+        // App-initiated Share: open the native sheet (AirDrop / Send in Messages).
+        setShareItem(d.item || {});
       } else if (d.type === 'oph3z:shareResult') {
         // The app returned a shareable item -> post it into the conversation.
         dispatch(finishAppShare(d.item));
@@ -171,6 +190,9 @@ export default function ExternalApp({ app }) {
         onLoad={sendInit}
         allow="autoplay; microphone; camera; clipboard-read; clipboard-write"
       />
+      {shareItem && (
+        <ExternalShareSheet app={app} item={shareItem} onClose={() => setShareItem(null)} />
+      )}
     </div>
   );
 }

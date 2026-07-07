@@ -19,7 +19,7 @@
 
 .phone {
   --phone-height: 74vh;
-  --phone-scale: 1; /* Display & Brightness "Phone Size" (0.85–1); scales layout height —
+  --phone-scale: 1; /* Display & Brightness "Phone Size" (0.75–1); scales layout height —
                        the em UI auto-scales via the ResizeObserver font-size, stays crisp */
   --case-aspect: 399 / 803;
   --screen-width: 90.7%;

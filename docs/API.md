@@ -78,18 +78,23 @@ push is dropped entirely (nothing stored/delivered/badged). The
 | `oph3z-phone:server:notifications:read` | `{all}\|{id}\|{app}\|{number}\|{gid}` | `bool` |
 | `oph3z-phone:server:notifications:clear` | `{id}\|{app}\|{number}\|{gid}\|{}` | `bool` |
 
-### Camera app  (server/app/camera/main.lua, client/app/camera/main.lua)
-Captures via the **screencapture** resource, uploads to Discord/Fivemanage
-(`Config.Camera.provider`), saves the URL via `Photos.Add`.
+### Camera app  (client/app/camera/main.lua, web/src/app/camera/CameraApp.jsx)
+Capture happens **entirely in the NUI — no `screencapture` resource, no server-side
+capture.** The phone-view canvas (`.camera__feed`, rendered via `CfxTexture`) is
+grabbed in-browser: **photo** = `canvas.toDataURL()` (JPEG), **video** =
+`captureStream()` + `MediaRecorder` (webm). The bytes are uploaded **client-side**
+(browser `fetch` + `FormData`, binary-safe) to `Config.Camera.provider`
+(Discord webhook / Fivemanage); the returned URL is then saved through the shared
+`oph3z-phone:server:photos:add` callback. Upload is client-side because FiveM's
+server `PerformHttpRequest` mangles binary data. `server/app/camera/main.lua` is an
+empty placeholder (all logic is in the client + NUI).
 | Direction | Name | Notes |
 |---|---|---|
-| server cb | `oph3z-phone:server:camera:photo` | capture+upload photo → returns the new photo |
-| C→S event | `oph3z-phone:server:camera:videoStart` / `videoStop` | start/stop recording |
-| S→C event | `oph3z-phone:client:camera:videoStarted` / `videoDone` | recording state |
-| NUI cb | `phone:camera:enter` / `exit` | enter/leave camera mode (keep-input, disable combat) |
-| NUI cb | `phone:camera:photo` | hide UI+cursor → capture → restore → returns photo |
-| NUI cb | `phone:camera:videoStart` / `videoStop` / `flip` | record + selfie toggle |
-| NUI msg | `phone:camera:capturing` (bool) / `phone:camera:videoState` ({recording}) | UI hints |
+| NUI cb | `phone:camera:enter` | Enter camera mode (root ped, keep-input, disable combat). Returns `{ camera = Config.Camera }` — the provider config the NUI uploads with. |
+| NUI cb | `phone:camera:exit` | Leave camera mode; restore the phone hold pose. |
+| NUI cb | `phone:camera:mode` `{ mode }` | `'photo'` = native phone cam (rooted, RMB-rotate); `'video'` = scripted free-move cam. |
+| NUI cb | `phone:camera:flip` | Toggle selfie (rear ↔ front). Returns `{ front }`. |
+| NUI cb | `phone:camera:save` `{ url, type, duration }` | Save an **already-uploaded** photo/video URL to the gallery via `oph3z-phone:server:photos:add`. Returns the new photo. |
 
 Camera renders **inside the phone**: in camera mode the screen goes transparent and the
 opaque case's center is **clip-path'd into a window** (`.phone--camera`) so the live game

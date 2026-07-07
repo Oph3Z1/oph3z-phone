@@ -607,7 +607,7 @@
   overflow-y: auto;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 5.5em 0.2em; /* more vertical (row) gap than horizontal */
+  gap: 8.1em 0.2em; /* more vertical (row) gap than horizontal */
   padding: 0.2em;
 }
 .mail-sheet__grid::-webkit-scrollbar {

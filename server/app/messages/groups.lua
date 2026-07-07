@@ -1,40 +1,9 @@
---[[
-    oph3z-phone | Group chats — SERVER
-
-    Unlike 1-on-1 threads (which each player stores their own copy of), a group is
-    canonical shared state stored in ONE file per group:
-
-        <resource>/data/group_<gid>.json
-
-    Each player's own document keeps a lightweight pointer list of the groups they
-    belong to (doc.messages.groupIds) so the Messages thread list can find them
-    without scanning every group file.
-
-    A group file:
-        {
-          gid, name, photo, owner(numberDigits), createdAt,
-          members = [ { number, name, joinedAt } ],   -- ordered; `number` is the key
-          items   = [ { id, from(numberDigits|''), type, body, meta, ts,
-                        reactions = { [number] = emoji } } ],
-          reads   = { [number] = lastSeenItemId },
-        }
-
-    Members are identified by phone-number digits (stable across relogs and valid
-    for offline players). The owning citizenid for a number is resolved on demand
-    from the number registry.
-
-    Names/avatars are resolved per-viewer from THAT player's contacts at read time,
-    so everyone sees their own saved names.
---]]
-
 local GROUP_PREFIX = 'group_'
 local MAX_ITEMS = 200
 
 local function genId()
     return ('%d%04d'):format(os.time(), math.random(0, 9999))
 end
-
--- ---- File I/O ------------------------------------------------------------
 
 local function groupPath(gid)
     return ('%s/%s%s.json'):format(Config.DataFolder, GROUP_PREFIX, gid)
@@ -66,8 +35,6 @@ local function deleteGroupFile(gid)
     end
 end
 
--- ---- Membership helpers --------------------------------------------------
-
 local function selfNumber(cid)
     return DB.Digits(DB.EnsurePhone(cid, DB.LoadOrCreate(cid)).phone.numberRaw)
 end
@@ -83,15 +50,13 @@ local function isMember(group, number)
     return memberEntry(group, number) ~= nil
 end
 
--- Resolve a connected player's source from a phone number (nil if offline).
 local function onlineSrc(number)
     local cid = DB.GetCitizenIdByNumber(number)
     if not cid then return nil, nil end
-    local p = exports.qbx_core:GetPlayerByCitizenId(cid)
+    local p = GetPlayerByCitizenId(cid)
     return p and p.PlayerData.source or nil, cid
 end
 
--- Add/remove a gid from a (possibly offline) player's pointer list.
 local function addGidToPlayer(number, gid)
     local cid = DB.GetCitizenIdByNumber(number)
     if not cid then return end
@@ -118,7 +83,6 @@ local function removeGidFromPlayer(number, gid)
     DB.Save(cid, doc)
 end
 
--- Index of an item id within a group's items (0 = not found / never read).
 local function indexOfId(items, id)
     if not id then return 0 end
     for i, m in ipairs(items) do
@@ -127,8 +91,6 @@ local function indexOfId(items, id)
     return 0
 end
 
--- Per-viewer display for a phone number: their saved contact name/avatar, else the
--- member's snapshot name, else the formatted number.
 local function resolvePerson(viewerCid, number, snapshotName)
     local contact = DB.ResolveContact(viewerCid, number)
     if contact then
@@ -137,10 +99,6 @@ local function resolvePerson(viewerCid, number, snapshotName)
     return snapshotName or DB.FormatNumber(number), nil
 end
 
--- ---- Live push -----------------------------------------------------------
-
--- Push a freshly-stored item to every member except the author, resolving the
--- sender name per recipient, and raise a notification for offline / not-open ones.
 local function broadcast(group, item)
     local preview = item.body or ''
     if item.type == 'image' then preview = '📷 Photo'
@@ -163,8 +121,7 @@ local function broadcast(group, item)
                     senderName = senderName,
                 })
             end
-            -- One notification per group (system lines from your own action don't
-            -- notify because `from` is your number — handled by the `~= item.from`).
+
             if cid and Notif and item.type ~= 'system' then
                 Notif.Push(cid, {
                     app = 'message',
@@ -177,14 +134,12 @@ local function broadcast(group, item)
     end
 end
 
--- Append + persist + broadcast an item. Returns the stored item.
 local function appendItem(group, from, mtype, body, meta)
     local item = {
         id = genId(), from = from, type = mtype, body = body, meta = meta, ts = os.time(),
     }
     group.items[#group.items + 1] = item
     if #group.items > MAX_ITEMS then table.remove(group.items, 1) end
-    -- The author has implicitly seen their own message.
     if from ~= '' then group.reads[from] = item.id end
     saveGroup(group)
     broadcast(group, item)
@@ -195,11 +150,6 @@ local function pushSystem(group, text)
     return appendItem(group, '', 'system', text, nil)
 end
 
--- ---- Per-viewer serialisation -------------------------------------------
-
--- Active live-location shares, keyed by share id. Latest position lives here and
--- is only persisted to the item when the share ends — so a group opened mid-share
--- must overlay the current position (declared up here so the serializer can read it).
 local groupShares = {} -- [sid] = { gid, senderNumber, senderSrc, id, lastX, lastY, lastLabel }
 
 local function applyGroupLive(items)
@@ -249,9 +199,6 @@ local function serializeItems(group, viewerCid, myNumber)
     return out
 end
 
--- ===========================================================================
--- Global helper: thread-list rows for a player (called by the Messages app).
--- ===========================================================================
 Groups = Groups or {}
 
 function Groups.ListForThreads(cid)
@@ -274,7 +221,6 @@ function Groups.ListForThreads(cid)
                 lastSender = select(1, resolvePerson(cid, last.from, nil))
             end
 
-            -- Unread: items after my last-seen marker that aren't mine / system.
             local fromIdx = indexOfId(group.items, group.reads[myNumber])
             local unread = 0
             for i = fromIdx + 1, #group.items do
@@ -298,19 +244,13 @@ function Groups.ListForThreads(cid)
         end
     end
 
-    -- Drop pointers to groups we're no longer part of / that vanished.
     if #stale > 0 then
         for _, gid in ipairs(stale) do removeGidFromPlayer(myNumber, gid) end
     end
     return rows
 end
 
--- ===========================================================================
--- Callbacks
--- ===========================================================================
-
--- Create a group. input = { name, members = { numberDigits... }, photo? }.
-lib.callback.register('oph3z-phone:server:groups:create', function(src, input)
+RegisterCallback('oph3z-phone:server:groups:create', function(src, input)
     local cid = DB.GetCitizenId(src)
     if not cid or type(input) ~= 'table' then return nil end
 
@@ -318,7 +258,6 @@ lib.callback.register('oph3z-phone:server:groups:create', function(src, input)
     local name = tostring(input.name or ''):gsub('^%s+', ''):gsub('%s+$', '')
     if name == '' then name = 'New Group' end
 
-    -- Build a de-duplicated member set: me + every valid number provided.
     local seen = { [myNumber] = true }
     local members = { { number = myNumber, name = nil, joinedAt = os.time() } }
     if type(input.members) == 'table' then
@@ -330,7 +269,7 @@ lib.callback.register('oph3z-phone:server:groups:create', function(src, input)
             end
         end
     end
-    if #members < 2 then return nil end -- need at least the creator + one other
+    if #members < 2 then return nil end
 
     local group = {
         gid = 'g' .. genId(),
@@ -346,7 +285,6 @@ lib.callback.register('oph3z-phone:server:groups:create', function(src, input)
 
     for _, m in ipairs(members) do addGidToPlayer(m.number, group.gid) end
 
-    -- Opening system line + notify everyone else they were added.
     pushSystem(group, 'Group created')
     for _, m in ipairs(members) do
         if m.number ~= myNumber then
@@ -366,8 +304,7 @@ lib.callback.register('oph3z-phone:server:groups:create', function(src, input)
     return { gid = group.gid }
 end)
 
--- Open a group: full detail (members + items resolved for me) and mark read.
-lib.callback.register('oph3z-phone:server:groups:open', function(src, input)
+RegisterCallback('oph3z-phone:server:groups:open', function(src, input)
     local cid = DB.GetCitizenId(src)
     local gid = input and input.gid
     if not cid or not gid then return nil end
@@ -377,7 +314,6 @@ lib.callback.register('oph3z-phone:server:groups:open', function(src, input)
     local myNumber = selfNumber(cid)
     if not isMember(group, myNumber) then return nil end
 
-    -- Mark read up to the newest item, and tell other members (seen-by).
     local last = group.items[#group.items]
     if last and group.reads[myNumber] ~= last.id then
         group.reads[myNumber] = last.id
@@ -405,8 +341,7 @@ lib.callback.register('oph3z-phone:server:groups:open', function(src, input)
     }
 end)
 
--- Send a message into a group (text or media/voice/location).
-lib.callback.register('oph3z-phone:server:groups:send', function(src, input)
+RegisterCallback('oph3z-phone:server:groups:send', function(src, input)
     local cid = DB.GetCitizenId(src)
     if not cid or type(input) ~= 'table' or not input.gid then return nil end
 
@@ -418,15 +353,13 @@ lib.callback.register('oph3z-phone:server:groups:send', function(src, input)
     local mtype = tostring(input.type or 'text')
     local meta = type(input.meta) == 'table' and input.meta or nil
     local item = appendItem(group, myNumber, mtype, tostring(input.body or ''), meta)
-    -- Return my own outgoing copy (mine = true).
     return {
         id = item.id, from = myNumber, mine = true, type = item.type,
         body = item.body, meta = item.meta, ts = item.ts,
     }
 end)
 
--- Mark a group read (when a message arrives while it's already open).
-lib.callback.register('oph3z-phone:server:groups:read', function(src, input)
+RegisterCallback('oph3z-phone:server:groups:read', function(src, input)
     local cid = DB.GetCitizenId(src)
     local gid = input and input.gid
     if not cid or not gid then return false end
@@ -450,8 +383,7 @@ lib.callback.register('oph3z-phone:server:groups:read', function(src, input)
     return true
 end)
 
--- React to a message (tapback). Sending the same emoji again clears it.
-lib.callback.register('oph3z-phone:server:groups:react', function(src, input)
+RegisterCallback('oph3z-phone:server:groups:react', function(src, input)
     local cid = DB.GetCitizenId(src)
     if not cid or type(input) ~= 'table' or not input.gid or not input.id then return false end
     local group = loadGroup(input.gid)
@@ -485,8 +417,7 @@ lib.callback.register('oph3z-phone:server:groups:react', function(src, input)
     return true
 end)
 
--- Group management: add / remove / leave / rename / setphoto / delete.
-lib.callback.register('oph3z-phone:server:groups:manage', function(src, input)
+RegisterCallback('oph3z-phone:server:groups:manage', function(src, input)
     local cid = DB.GetCitizenId(src)
     if not cid or type(input) ~= 'table' or not input.gid then return { ok = false } end
 
@@ -539,13 +470,14 @@ lib.callback.register('oph3z-phone:server:groups:manage', function(src, input)
         for _, m in ipairs(group.members) do
             if m.number ~= myNumber then out[#out + 1] = m end
         end
+
         group.members = out
         removeGidFromPlayer(myNumber, group.gid)
         if #group.members == 0 then
             deleteGroupFile(group.gid)
             return { ok = true, left = true }
         end
-        -- Hand ownership to the next member if the owner left.
+
         if group.owner == myNumber then group.owner = group.members[1].number end
         saveGroup(group)
         pushSystem(group, myName .. ' left the group')
@@ -579,7 +511,6 @@ lib.callback.register('oph3z-phone:server:groups:manage', function(src, input)
         return { ok = false, reason = 'action' }
     end
 
-    -- Return the refreshed detail for the caller's UI.
     return {
         ok = true,
         group = {
@@ -590,11 +521,6 @@ lib.callback.register('oph3z-phone:server:groups:manage', function(src, input)
         },
     }
 end)
-
--- ---- Group location / live location -------------------------------------
--- A live share streams the sender's position to every group member. The latest
--- position lives in `groupShares` (declared above) and is only persisted to the
--- item when the share ends.
 
 local function pushGroupLoc(group, data)
     for _, m in ipairs(group.members) do
@@ -632,7 +558,7 @@ local function endGroupShare(sid, reason)
     if sSrc then TriggerClientEvent('oph3z-phone:client:loc:stop', sSrc, { sid = sid }) end
 end
 
-lib.callback.register('oph3z-phone:server:groups:location', function(src, input)
+RegisterCallback('oph3z-phone:server:groups:location', function(src, input)
     local cid = DB.GetCitizenId(src)
     if not cid or type(input) ~= 'table' or not input.gid then return false end
     local group = loadGroup(input.gid)
@@ -675,7 +601,7 @@ RegisterNetEvent('oph3z-phone:server:groups:locupdate', function(sid, x, y, labe
     end
 end)
 
-lib.callback.register('oph3z-phone:server:groups:locstop', function(src, input)
+RegisterCallback('oph3z-phone:server:groups:locstop', function(src, input)
     local cid = DB.GetCitizenId(src)
     local sid = input and input.sid
     if not sid then return { ok = false } end

@@ -1,13 +1,3 @@
---[[
-    oph3z-phone | Notifications — SERVER
-
-    A generic, app-agnostic notification store persisted per citizenid
-    (`doc.notifications = { items = {...}, nextId }`). Any server module pushes via
-    the global `Notif.Push(citizenid, { app, title, body, icon?, route? })`. The
-    notification is saved (so it survives relogs / offline) and, if the player is
-    online, pushed live to their phone.
---]]
-
 local MAX_NOTIFS = 50
 
 local function ensureNotifs(doc)
@@ -17,17 +7,12 @@ local function ensureNotifs(doc)
     return doc
 end
 
--- Global entry point used by the messages / call modules (and future apps).
 Notif = Notif or {}
 
 function Notif.Push(citizenid, data)
     if not citizenid or type(data) ~= 'table' then return end
 
     local doc = ensureNotifs(DB.LoadOrCreate(citizenid))
-
-    -- Respect the player's Notifications settings: the master switch silences
-    -- everything, and each app can be turned off individually. When suppressed we
-    -- drop the notification entirely (nothing stored, delivered or badged).
     local s = doc.settings or {}
     if s.notifMaster == false then return end
     local appId = data.app or 'system'
@@ -39,37 +24,50 @@ function Notif.Push(citizenid, data)
         app   = data.app or 'system',
         title = tostring(data.title or ''),
         body  = tostring(data.body or ''),
-        icon  = data.icon,  -- optional icon override (key/url); NUI falls back to the app icon
-        route = data.route, -- optional { app, number, tab } for tap-to-open
+        icon  = data.icon,
+        route = data.route,
         ts    = os.time(),
         read  = false,
+        queued = (s.airplane == true) or nil,
     }
     n.nextId = n.nextId + 1
     n.items[#n.items + 1] = item
     while #n.items > MAX_NOTIFS do table.remove(n.items, 1) end
     DB.Save(citizenid, doc)
 
-    local player = exports.qbx_core:GetPlayerByCitizenId(citizenid)
+    if s.airplane == true then return end
+
+    local player = GetPlayerByCitizenId(citizenid)
     if player then
         TriggerClientEvent('oph3z-phone:client:notify', player.PlayerData.source, item)
     end
 end
 
--- List all notifications (newest first).
-lib.callback.register('oph3z-phone:server:notifications:get', function(src)
+function Notif.Release(citizenid)
+    if not citizenid then return false end
+    local doc = ensureNotifs(DB.LoadOrCreate(citizenid))
+    local changed = false
+    for _, it in ipairs(doc.notifications.items) do
+        if it.queued then it.queued = nil; changed = true end
+    end
+    if changed then DB.Save(citizenid, doc) end
+    return changed
+end
+
+RegisterCallback('oph3z-phone:server:notifications:get', function(src)
     local cid = DB.GetCitizenId(src)
     if not cid then return {} end
     local doc = ensureNotifs(DB.LoadOrCreate(cid))
     local out = {}
     for i = #doc.notifications.items, 1, -1 do
-        out[#out + 1] = doc.notifications.items[i]
+        if not doc.notifications.items[i].queued then
+            out[#out + 1] = doc.notifications.items[i]
+        end
     end
     return out
 end)
 
--- Mark notifications read: { all } | { id } | { app } | { number } | { gid }
--- (number / gid match against route.number / route.gid).
-lib.callback.register('oph3z-phone:server:notifications:read', function(src, input)
+RegisterCallback('oph3z-phone:server:notifications:read', function(src, input)
     local cid = DB.GetCitizenId(src)
     if not cid or type(input) ~= 'table' then return false end
     local doc = ensureNotifs(DB.LoadOrCreate(cid))
@@ -86,9 +84,7 @@ lib.callback.register('oph3z-phone:server:notifications:read', function(src, inp
     return true
 end)
 
--- Clear (REMOVE) notifications: { id } removes one; { number } | { gid } | { app }
--- removes all matching that conversation/app; otherwise clears everything.
-lib.callback.register('oph3z-phone:server:notifications:clear', function(src, input)
+RegisterCallback('oph3z-phone:server:notifications:clear', function(src, input)
     local cid = DB.GetCitizenId(src)
     if not cid then return false end
     local doc = ensureNotifs(DB.LoadOrCreate(cid))

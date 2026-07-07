@@ -1,19 +1,5 @@
---[[
-    oph3z-phone | Public SERVER export API
-
-    Lets other resources read phone data and perform a small, safe set of actions
-    WITHOUT touching this resource's code. Call from any server script:
-
-        local number = exports['oph3z-phone']:GetPhoneNumber(src)
-        exports['oph3z-phone']:PushNotification(src, { app = 'myapp', title = 'Hi', body = '...' })
-
-    Every function takes `src` = the player's server id. Reads return nil/empty on
-    a bad/unknown player. See docs/THIRD_PARTY_APPS.md for the full reference.
---]]
-
 local function cidOf(src)
-    local player = exports.qbx_core:GetPlayer(src)
-    return player and player.PlayerData.citizenid or nil
+    return GetIdentifier(src)
 end
 
 local function docOf(src)
@@ -21,8 +7,6 @@ local function docOf(src)
     if not cid then return nil, nil end
     return DB.EnsurePhone(cid, DB.LoadOrCreate(cid)), cid
 end
-
--- ---- Identity ------------------------------------------------------------
 
 exports('GetCitizenId', function(src)
     return cidOf(src)
@@ -39,8 +23,6 @@ exports('GetPhoneNumberRaw', function(src)
     local doc = docOf(src)
     return doc and DB.Digits(doc.phone.numberRaw) or nil
 end)
-
--- ---- Reads ---------------------------------------------------------------
 
 -- The player's saved contacts: { { id, name, number, notes, img, favorite }, ... }
 exports('GetContacts', function(src)
@@ -73,6 +55,11 @@ exports('IsAirplaneMode', function(src)
     return (doc and doc.settings and doc.settings.airplane) and true or false
 end)
 
+exports('GetLanguage', function(src)
+    local doc = docOf(src)
+    return (doc and doc.settings and doc.settings.language) or Config.DefaultLocale or 'en'
+end)
+
 -- Blocked numbers map: { [digits] = { number, name, ts }, ... }
 exports('GetBlockedNumbers', function(src)
     local doc = docOf(src)
@@ -85,11 +72,6 @@ exports('IsBlocked', function(src, number)
     return doc and DB.IsBlocked(doc, DB.Digits(number)) or false
 end)
 
--- ---- Writes (allowed actions) -------------------------------------------
-
--- Push a notification to the phone (persists + live-shows like the built-ins).
--- data = { app, title, body, icon?, route? }. `app` should be your app id so the
--- icon badges your app. Returns true on success.
 exports('PushNotification', function(src, data)
     local cid = cidOf(src)
     if not cid or type(data) ~= 'table' or not Notif then return false end
@@ -103,8 +85,6 @@ exports('PushNotification', function(src, data)
     return true
 end)
 
--- Send a phone message FROM this player TO a number. payload = { type?, body, meta? }
--- (type defaults to 'text'). Returns the stored outgoing message, or nil.
 exports('SendMessage', function(src, toNumber, payload)
     local cid = cidOf(src)
     if not cid or not Messages then return nil end
@@ -112,27 +92,17 @@ exports('SendMessage', function(src, toNumber, payload)
     return Messages.Send(cid, toNumber, payload.type or 'text', payload.body, payload.meta)
 end)
 
--- Place a call FROM this player TO a number (uses the phone's call system).
--- Returns the call id, or nil if it couldn't start.
 exports('PlaceCall', function(src, toNumber)
     if not PhoneCall then return nil end
     return PhoneCall.Start(src, toNumber)
 end)
 
--- Send SYSTEM mail to this player's Mail inbox (jobs / bills / gov, etc.).
--- opts = { from = 'LS Bank', fromAddress? = 'noreply@lsbank.com',
---          subject = 'Your bill', body = '...', attachments? = { { url, thumb? } } }
--- Returns the stored inbox item, or nil.
 exports('SendMail', function(src, opts)
     local cid = cidOf(src)
     if not cid or not Mail then return nil end
     return Mail.SendSystem(cid, opts)
 end)
 
--- Create a BILL in a player's Wallet (default billing provider). `target` may be a
--- server id OR a citizenid string. data = { issuer = 'LS Water', label = 'Water bill',
--- amount = 250 }. Returns the stored bill, or nil. (If you swap the bills provider
--- for your own resource, create bills through that resource instead.)
 exports('CreateBill', function(target, data)
     local cid = type(target) == 'string' and target or cidOf(target)
     if not cid or not BillsProvider or not BillsProvider.CreateBill then return nil end

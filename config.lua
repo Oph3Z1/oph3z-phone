@@ -1,98 +1,48 @@
---[[
-    oph3z-phone | Shared configuration
-    Edit values here; they are available on both client and server as `Config`.
---]]
-
 Config = {}
 
--- General -------------------------------------------------------------------
-Config.Debug = false                       -- prints extra info to console
+Config.Debug = false -- prints extra info to console
+Config.DataFolder = 'data' -- Dont touch if you dont know what you are doing
 
--- Opening the phone ---------------------------------------------------------
-Config.Command   = 'phone'                 -- chat command to toggle the phone (dev/QoL)
-Config.Keybind   = 'F1'                     -- default key (player can rebind in GTA settings)
-Config.ItemName  = 'phone'                 -- ox_inventory item that opens the phone
+Config.Framework = 'qbox' -- esx, oldesx, qb, oldqb, qbox
+Config.MySQL = 'oxmysql' -- oxmysql, ghmattimysql
+Config.Inventory = 'ox_inventory' -- ox_inventory, qb-inventory, qs-inventory, codem-inventory
 
--- Item integration ----------------------------------------------------------
--- If true, the phone can ONLY be opened while the player owns Config.ItemName.
--- If false, the keybind/command always works (handy during development).
-Config.RequireItem = false
+Config.Keybind   = 'F1' -- default key (player can rebind in GTA settings)
+Config.ItemName  = 'phone'-- ox_inventory item that opens the phone
+Config.RequireItem = false -- If true, the phone can ONLY be opened while the player owns Config.ItemName
 
--- Persistence (JSON "database") ---------------------------------------------
--- One JSON file per player is stored under: <resource>/data/<citizenid>.json
-Config.DataFolder = 'data'
-
--- Phone numbers -------------------------------------------------------------
--- The phone generates and owns each player's number (framework-agnostic).
--- 555 + 4 digits -> displayed as "555-0142".
-Config.PhoneNumberPrefix = '555'
-
--- Localization --------------------------------------------------------------
--- UI/text language. Files live in locales/<code>.lua (e.g. locales/en.lua).
--- This is the DEFAULT for new players; each player can change it in
--- Settings > Language (stored per-player in settings.language).
-Config.DefaultLocale = 'en'
-
--- Mail ----------------------------------------------------------------------
--- Every player gets an auto-generated mail address on first phone open, built as
--- firstname.lastname@<Config.MailDomain>   e.g. "barbara.orton@lsmail.com"
--- Duplicates (same first + last name) get a numeric suffix ("barbara.orton2@").
--- The Mail app (added later) reads/writes this same inbox.
+Config.PhoneNumberPrefix = '555' -- 555 + 4 digits -> displayed as "555-0142".
+Config.DefaultLocale = 'en' -- en
 Config.MailDomain = 'mail.com'
 
--- AirDrop (nearby sharing) --------------------------------------------------
--- Share contacts, your own card and photos/videos with nearby players (and it's
--- open to third-party apps too). A player must turn AirDrop ON (Control Center)
--- to be discoverable and to receive.
 Config.Airdrop = {
-    Range        = 8.0,    -- metres: who counts as "nearby" when sharing
-    MaxPhotos    = 20,     -- max photos/videos in a single AirDrop
-    RequirePhone = false,  -- true = receiver must have their phone open to be discoverable
-                           -- (false = discoverable whenever AirDrop is on; misses go to
-                           --  the Notification Center for later)
+    Range = 8.0, -- metres: who counts as "nearby" when sharing
+    MaxPhotos = 20, -- max photos/videos in a single AirDrop
+    RequirePhone = false, -- true = receiver must have their phone open to be discoverable
 }
 
--- Clock -------------------------------------------------------------------
--- The Clock app's alarms + timers. Alarms fire on REAL-WORLD time (the player's
--- local clock). When an alarm rings or a timer finishes, the sound plays in 3D
--- via xsound at the player's ped, so the owner AND nearby players hear it.
+-- The Clock app's alarms + timers.
 Config.Clock = {
-    Range       = 12.0,  -- metres: how far the alarm / timer sound carries (nearby players)
-    Volume      = 0.5,   -- xsound volume for the alarm / timer sound (0.0-1.0)
-    RingSeconds = 30,    -- auto-stop a ringing alarm / finished timer after this many seconds
+    Range = 12.0, -- metres: how far the alarm / timer sound carries (nearby players)
+    Volume = 0.5, -- xsound volume for the alarm / timer sound (0.0-1.0)
+    RingSeconds = 30, -- auto-stop a ringing alarm / finished timer after this many seconds
 }
 
 -- Default phone settings written on first use for a citizen.
 Config.DefaultSettings = {
-    wallpaper  = 'blackTitanium',          -- preset key (see WALLPAPER_PRESETS) or a custom URL
-    brightness = 100,                      -- screen brightness (Control Center, 20-100)
-    volume     = 70,                       -- media volume (Control Center / Music app)
-    airdrop    = false,                    -- AirDrop receiving toggle (Control Center)
-    locked     = true,                     -- start locked when opened
-    airplane   = false,                    -- airplane mode (unreachable + can't call)
-    scale      = 100,                      -- phone size on screen (85-100; Display & Brightness)
-    notifSound = true,                     -- play a sound on new notifications
-    notifMaster = true,                    -- master switch: off = silence ALL notifications
-    language   = 'en',                     -- selected UI language (see locales/, Settings > Language)
-    -- notifApps: per-app enable map { [appId] = false } (missing = enabled). Set
-    -- from the Settings > Notifications screen; not seeded here (all on by default).
+    wallpaper = 'blackTitanium', -- preset key (see WALLPAPER_PRESETS) or a custom URL
+    brightness = 100, -- screen brightness (Control Center, 20-100)
+    volume = 70, -- media volume (Control Center / Music app)
+    airdrop = false, -- AirDrop receiving toggle (Control Center)
+    locked = true, -- start locked when opened
+    airplane = false, -- airplane mode (unreachable + can't call)
+    scale = 100, -- phone size on screen (85-100; Display & Brightness)
+    notifSound = true, -- play a sound on new notifications
+    notifMaster = true, -- master switch: off = silence ALL notifications
+    language = 'en', -- selected UI language (see locales/, Settings > Language)
 }
 
--- Home screen apps ----------------------------------------------------------
--- The name, placement and order of every BUILT-IN app live here so you can edit
--- them without touching the UI code. Order in this list = display order.
---   id       must match the app's id in the UI (don't rename built-ins).
---   label    the name shown under the icon (rename freely).
---   place    'dock'  -> bottom bar (max 4)
---            'grid'  -> home-screen grid
---            'hidden'-> registered but not shown
---   enabled  set false to remove the app entirely.
--- These are DEFAULT apps: they can't be uninstalled and are never in the App Store.
--- `place`/`enabled` here are the DEFAULT layout; once a player rearranges their
--- home screen their own layout is saved and used instead (new apps drop into the
--- first free slot).
--- Third-party apps are NOT listed here — they add themselves at runtime via
--- exports['oph3z-phone']:RegisterApp{...} (see docs/THIRD_PARTY_APPS.md).
+-- Apps
 Config.Apps = {
     { id = 'call',       label = 'Phone',      place = 'dock' },
     { id = 'message',    label = 'Messages',   place = 'dock' },
@@ -105,65 +55,57 @@ Config.Apps = {
     { id = 'settings',   label = 'Settings',   place = 'grid' },
     { id = 'calculator', label = 'Calculator', place = 'grid' },
     { id = 'appstore',   label = 'App Store',  place = 'grid' },
-    -- X is a BUILT-IN app but store-gated: it isn't auto-placed on the home
-    -- screen; players install it from the App Store (and can uninstall it).
+    -- X is a BUILT-IN app but store-gated: it isn't auto-placed on the home screen.
+    -- Players install it from the App Store (and can uninstall it).
     -- `store` = list it in the App Store; the extra fields are its store page.
     {
-        id = 'x', label = 'X', place = 'grid', store = true,
+        id = 'x', 
+        label = 'X', 
+        place = 'grid', 
+        store = true,
         description = 'The town square. Post what\'s happening, follow people, reply, repost and see what everyone in the city is talking about.',
     },
+
     {
-        id = 'marketplace', label = 'Marketplace', place = 'grid', store = true,
+        id = 'marketplace', 
+        label = 'Marketplace', 
+        place = 'grid', 
+        store = true,
         description = 'Buy and sell across the city. Post cars, houses and items with photos, set your price and let buyers call or message you directly.',
     },
+
     {
-        id = 'spotify', label = 'Spotify', place = 'grid', store = true,
+        id = 'spotify', 
+        label = 'Spotify', 
+        place = 'grid', 
+        store = true,
         description = 'Music for everyone. Search millions of songs, build playlists, share tracks with friends and play out loud so everyone nearby can vibe with you.',
     }
 }
 
--- App Store -----------------------------------------------------------------
--- Third-party apps (registered via exports.RegisterApp) are always listed in the
--- App Store and installed with a "Get" download. Default apps above are never in
--- the store and can't be uninstalled.
 Config.AppStore = {
-    downloadSeconds = 5,   -- how long the fake download takes
+    downloadSeconds = 5, -- how long the download takes (seconds)
 }
 
 -- Phone prop ----------------------------------------------------------------
-Config.UseProp   = true                    -- attach a phone prop + play hand animation
-Config.PropModel = 'prop_amb_phone'        -- prop model to put in the player's hand
+Config.UseProp = true -- attach a phone prop + play hand animation
+Config.PropModel = 'prop_amb_phone' -- prop model to put in the player's hand
 
 -- Calls ---------------------------------------------------------------------
-Config.RingTimeout = 30                     -- seconds before an unanswered call is "missed"
-Config.MaxRecents  = 50                     -- how many recent-call entries to keep
+Config.RingTimeout = 30 -- seconds before an unanswered call is "missed"
+Config.MaxRecents  = 50 -- how many recent-call entries to keep
 -- Fallback ringtone (used when a player hasn't picked one in Settings > Ringtones).
 -- Played in 3D via xsound so the callee + nearby players hear it.
 Config.RingtoneUrl = 'https://cfx-nui-xsound/html/sounds/ringtone.mp3'
 
--- Ringtones -----------------------------------------------------------------
--- Built-in ringtones listed in Settings > Ringtones. Players can add their own by
--- URL on top of these; the selected one plays (3D, via xsound) on an incoming call.
---   `file` = a filename bundled in the phone's web/build/audio/ folder, OR give a
---   full `url` instead (any http(s)/cfx-nui URL playable by xsound + the browser).
+-- Ringtones
 Config.Ringtones = {
     { id = 'default', name = 'Default', file = 'ringtone.mp3' },
 }
 
--- Camera --------------------------------------------------------------------
--- The phone-view photo/video is uploaded to your chosen provider and the
--- returned URL is saved to Photos. Pick whichever you prefer:
---
---   provider = 'discord'     -> uploads straight to a Discord webhook. Free, no
---                               account. BUT some networks have Cloudflare block
---                               FiveM's browser from uploading to Discord
---                               (403 "internal network error"). If that happens,
---                               use fivemanage instead. Set discord.webhook.
---   provider = 'fivemanage'  -> uploads to Fivemanage (https://fivemanage.com).
---                               Needs a free API key, works everywhere. Set
---                               fivemanage.apiKey.
+-- Camera app
 Config.Camera = {
-    provider = 'fivemanage',                  -- 'discord' or 'fivemanage'
+    provider = 'fivemanage', -- 'discord' or 'fivemanage'
     
     discord = {
         webhook = '',
@@ -171,25 +113,18 @@ Config.Camera = {
     
     fivemanage = {
         apiKey = 'MaUggIdxK7oGR98qa7HjRWcFqveBP1pp',
-        url    = 'https://api.fivemanage.com/api/v3/file',
-    },
+        url = 'https://api.fivemanage.com/api/v3/file',
+    }
 }
 
--- GIFs (Messages) -----------------------------------------------------------
--- The GIF button in the Messages composer searches GIPHY. Get a free API key at
--- https://developers.giphy.com/ (create an app) and paste it below. Without a key
--- the picker shows a friendly "set up your key" notice.
+-- GIFs (Messages)
 Config.Gif = {
-    apiKey = 'fbkCoWNVgakEayeG0G9hDALim5pwNWr8',   -- <-- paste your GIPHY API key here
+    apiKey = 'fbkCoWNVgakEayeG0G9hDALim5pwNWr8', -- paste your GIPHY API key here
 }
 
--- Music app ----------------------------------------------------------------
--- Songs are searched on YouTube (full tracks) and played through xsound, so music
--- keeps playing while the phone is closed AND can be heard by nearby players.
--- `apiKey` = a free YouTube Data API v3 key: https://console.cloud.google.com
--- (enable "YouTube Data API v3", then Credentials -> API key).
+-- Music app / Spotify
 Config.Music = {
-    apiKey      = 'AIzaSyAo41rsOkmsNUV0E--psc7IAmKsVvuan-8',
-    AllowNearby = true,   -- let players broadcast to nearby players (in-app speaker toggle)
-    NearbyRange = 12.0,   -- metres nearby players can hear the music
+    apiKey = 'AIzaSyAo41rsOkmsNUV0E--psc7IAmKsVvuan-8', -- YouTube Data API v3 key: https://console.cloud.google.com
+    AllowNearby = true, -- let players broadcast to nearby players (in-app speaker toggle)
+    NearbyRange = 12.0, -- metres nearby players can hear the music
 }

@@ -55,8 +55,11 @@
 }
 
 .lockscreen__quick {
-  width: 3.7em;
-  height: 3.7em;
+  /* Size off --phone-scale (like --screen-radius) instead of a plain `em`, so
+     these shrink in lock-step with the "Phone Size" setting. 5.1vh matches the
+     old 3.7em at 100% on any resolution (the whole frame is vh-anchored). */
+  width: calc(5.1vh * var(--phone-scale));
+  height: calc(5.1vh * var(--phone-scale));
   display: flex;
   align-items: center;
   justify-content: center;

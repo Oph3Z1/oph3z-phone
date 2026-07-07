@@ -1,5 +1,6 @@
 import { createSlice } from '@reduxjs/toolkit';
 import { fetchNui } from '../../utils/fetchNui';
+import { doLogout } from './xSlice';
 
 export const PAGE_SIZE = 24; // 4 x 6
 export const DOCK_MAX = 4;
@@ -458,6 +459,15 @@ export const saveHome = () => (dispatch, getState) => {
       true
     );
   }, 500);
+};
+
+// Uninstall an app from the Home Screen (jiggle-mode delete) + persist. Some
+// apps clean up when removed — deleting X logs the account out so a reinstall
+// starts at the sign-in screen instead of a stale session.
+export const removeApp = (id) => (dispatch) => {
+  dispatch(deleteApp(id));
+  dispatch(saveHome());
+  if (id === 'x') dispatch(doLogout());
 };
 
 export default homeSlice.reducer;

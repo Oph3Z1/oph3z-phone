@@ -61,6 +61,9 @@ export default function MapsApp() {
   const focusMarker = useRef(null);
   const follow = useRef(true);
   const lastPos = useRef(null);
+  const blipMarkers = useRef([]); // saved-place markers (draggable only while Ctrl is held)
+  const ctrlHeld = useRef(false); // is Ctrl currently down?
+  const blipDragging = useRef(false); // a saved pin is mid-drag (don't yank its handler)
 
   const [pending, setPending] = useState(null); // { x, y }
   const [pendingName, setPendingName] = useState('');
@@ -117,7 +120,27 @@ export default function MapsApp() {
     fetchNui('phone:maps:enter', {}, {}); // start streaming our position
     dispatch(loadBlips());
 
+    // Saved pins only move while Ctrl is held: toggle each marker's drag handler
+    // as Ctrl goes down/up (enabling it before the mousedown, so the drag catches).
+    const setCtrl = (held) => {
+      if (held === ctrlHeld.current) return;
+      ctrlHeld.current = held;
+      blipMarkers.current.forEach((mk) => {
+        if (!mk.dragging) return;
+        if (held) mk.dragging.enable();
+        else if (!blipDragging.current) mk.dragging.disable();
+      });
+    };
+    const onKey = (e) => { if (e.key === 'Control') setCtrl(e.type === 'keydown'); };
+    const onBlur = () => setCtrl(false); // window lost focus with Ctrl down -> reset
+    window.addEventListener('keydown', onKey);
+    window.addEventListener('keyup', onKey);
+    window.addEventListener('blur', onBlur);
+
     return () => {
+      window.removeEventListener('keydown', onKey);
+      window.removeEventListener('keyup', onKey);
+      window.removeEventListener('blur', onBlur);
       fetchNui('phone:maps:exit', {}, {});
       m.remove();
       map.current = null;
@@ -174,17 +197,24 @@ export default function MapsApp() {
     const layer = blipLayer.current;
     if (!layer) return;
     layer.clearLayers();
+    blipMarkers.current = [];
     if (viewOnly) return;
     blips.forEach((b) => {
       const mk = L.marker(toLatLng(b.x, b.y), { icon: blipIcon, draggable: true }).addTo(layer);
+      // Locked by default — only draggable while Ctrl is held (see the key handler).
+      if (mk.dragging && !ctrlHeld.current) mk.dragging.disable();
       mk.on('click', () => {
         setPending(null);
         setSelected(b);
       });
+      mk.on('dragstart', () => { blipDragging.current = true; });
       mk.on('dragend', (e) => {
+        blipDragging.current = false;
         const ll = e.target.getLatLng();
-        dispatch(moveBlip(b.id, ll.lng, ll.lat)); // drag to reposition a saved place
+        dispatch(moveBlip(b.id, ll.lng, ll.lat)); // drag (Ctrl-held) to reposition a saved place
+        if (mk.dragging && !ctrlHeld.current) mk.dragging.disable();
       });
+      blipMarkers.current.push(mk);
     });
   }, [blips, viewOnly]);
 

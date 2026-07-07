@@ -3,26 +3,25 @@ game 'gta5'
 lua54 'yes'
 
 name 'oph3z-phone'
-author 'oph3z'
-description 'A custom iPhone-style phone for QBox (Qbox framework)'
+author 'Oph3Z'
+description 'Advanced phone script for FiveM made by Oph3Z'
 version '0.1.0'
 
--- Shared
 shared_scripts {
-    '@ox_lib/init.lua',
     'config.lua',
-    'locales/*.lua',      -- language files: Locales['en'] = {...} (add more here)
-    'shared/locale.lua',  -- Lang() helper (loads after the locale tables)
+    'GetCore.lua',
+    'locales/*.lua',
+    'shared/locale.lua',
 }
 
--- Client
 client_scripts {
+    'client/utilities.lua',
     'client/*.lua',
     'client/app/**/*.lua',
 }
 
--- Server
 server_scripts {
+    'server/utilities.lua',
     'server/*.lua',
     'server/app/**/*.lua',
 }
@@ -42,13 +41,6 @@ files {
     'web/build/audio/*.ogg',
     'web/build/audio/*.mp3',
     'web/build/audio/*.wav',
-    -- Live game-view renderer (CfxTexture Three.js) for the Camera viewfinder.
     'web/build/gamerender/**/*',
-    -- GTA V map tiles (Leaflet) for the Maps app.
     'web/build/mapStyles/**/*',
-}
-
-dependencies {
-    'qbx_core',
-    'ox_lib',
 }

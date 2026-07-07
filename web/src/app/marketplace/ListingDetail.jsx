@@ -130,7 +130,7 @@ function Topbar({ t, onBack, onShare }) {
       <button className="mkt-iconbtn" onClick={onBack}><BackArrow /></button>
       <span className="mkt-topbar__title">{t('market.listing')}</span>
       {onShare ? (
-        <button className="mkt-iconbtn" onClick={onShare} aria-label={t('market.share')}><ShareIcon /></button>
+        <button className="mkt-iconbtn" onClick={onShare} aria-label={t('market.share')}><ShareIcon size={18} /></button>
       ) : (
         <span className="mkt-topbar__spacer" />
       )}

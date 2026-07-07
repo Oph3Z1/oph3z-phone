@@ -1,20 +1,3 @@
---[[
-    oph3z-phone | Public CLIENT export API
-
-    Third-party resources register their app with the phone here. The app then
-    appears on the home screen and renders inside the phone as an iframe.
-
-        exports['oph3z-phone']:RegisterApp({
-            id    = 'myapp',
-            label = 'My App',
-            icon  = ('nui://%s/ui/icon.svg'):format(GetCurrentResourceName()),
-            ui    = ('nui://%s/ui/index.html'):format(GetCurrentResourceName()),
-            place = 'grid', -- 'grid' | 'dock'
-        })
-
-    See docs/THIRD_PARTY_APPS.md and the oph3z-phone-app-template resource.
---]]
-
 local registered = {} -- id -> { id, label, icon, url, place, owner }
 
 local function listApps()
@@ -23,28 +6,24 @@ local function listApps()
         out[#out + 1] = {
             id = a.id, label = a.label, developer = a.developer, description = a.description,
             icon = a.icon, url = a.url, place = a.place, deletable = a.deletable,
-            share = a.share, -- true = appears in the Messages "Share" sheet as a share source
-            -- App Store metadata (every third-party app is listed in the App Store).
+            share = a.share,
             headerImage = a.headerImage, swiperItems = a.swiperItems,
         }
     end
     return out
 end
 
--- Push the current external-app set to the NUI (used by main.lua on open too).
 PhoneApps = PhoneApps or {}
 function PhoneApps.sync()
     SendNUIMessage({ action = 'phone:apps:external', data = listApps() })
 end
-
--- ---- Registration --------------------------------------------------------
 
 exports('RegisterApp', function(def)
     if type(def) ~= 'table' or type(def.id) ~= 'string' or def.id == '' then
         print('[oph3z-phone] RegisterApp: a definition with at least { id, ui } is required.')
         return false
     end
-    local page = def.ui or def.url -- `ui` is the current key; `url` kept for back-compat
+    local page = def.ui or def.url
     if type(page) ~= 'string' or page == '' then
         print(('[oph3z-phone] RegisterApp(%s): a `ui` (the iframe page) is required.'):format(def.id))
         return false
@@ -57,10 +36,9 @@ exports('RegisterApp', function(def)
         icon        = def.icon,
         url         = page,
         place       = def.place or 'grid',
-        deletable   = def.deletable ~= false, -- third-party apps are uninstallable by default
-        share       = def.share and true or nil, -- can be a Messages "Share" source (oph3z:shareRequest)
+        deletable   = def.deletable ~= false,
+        share       = def.share and true or nil,
         owner       = GetInvokingResource() or 'unknown',
-        -- App Store page metadata.
         headerImage = def.headerImage,
         swiperItems = def.swiperItems,
     }
@@ -77,9 +55,6 @@ exports('UnregisterApp', function(id)
     return false
 end)
 
--- ---- Lifecycle / helpers -------------------------------------------------
-
--- Open the phone (if closed) and jump straight to an app (built-in or third-party).
 exports('OpenApp', function(id)
     if type(id) ~= 'string' or id == '' then return false end
     CreateThread(function()
@@ -93,12 +68,6 @@ exports('IsOpen', function()
     return Phone.isOpen == true
 end)
 
--- Show a transient status toast (success / error / info). It looks like a
--- notification card but is throwaway — nothing is saved. Only shows while the
--- phone is open (it's an on-screen element). `app` is optional: an app id to
--- borrow the icon from; defaults to whichever app is currently open.
---   exports['oph3z-phone']:Toast('error', 'Camera', "Couldn't save the photo")
---   exports['oph3z-phone']:Toast('success', 'Bank', 'Transfer complete', 'appstore')
 exports('Toast', function(kind, title, body, app)
     if not Phone.isOpen then return false end
     SendNUIMessage({
@@ -108,8 +77,6 @@ exports('Toast', function(kind, title, body, app)
     return true
 end)
 
--- The player's formatted number (cached when the phone is first opened; may be nil
--- before then — use the server export GetPhoneNumber for a guaranteed value).
 exports('GetNumber', function()
     return Phone.identity and Phone.identity.number or nil
 end)
@@ -118,9 +85,10 @@ exports('GetIdentity', function()
     return Phone.identity
 end)
 
--- ---- Housekeeping --------------------------------------------------------
+exports('GetLanguage', function()
+    return Phone.language or Config.DefaultLocale or 'en'
+end)
 
--- When an app's resource stops, drop its apps from the phone.
 AddEventHandler('onResourceStop', function(res)
     if res == GetCurrentResourceName() then return end
     local changed = false
@@ -133,7 +101,6 @@ AddEventHandler('onResourceStop', function(res)
     if changed then PhoneApps.sync() end
 end)
 
--- When the phone (re)starts, ask already-running app resources to re-register.
 CreateThread(function()
     Wait(500)
     TriggerEvent('oph3z-phone:requestApps')

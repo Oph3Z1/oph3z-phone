@@ -1,49 +1,17 @@
---[[
-    oph3z-phone | Clock — SERVER
-
-    Owns the Clock app's ALARMS, TIMER and timer RECENTS, persisted per-citizenid
-    in `doc.clock`. The server owns firing (not the UI) so that:
-      * a running timer keeps counting while the phone is closed AND survives relog
-        (its end time is an absolute epoch stored in the DB), and
-      * when an alarm rings or a timer finishes the sound plays in 3D via xsound at
-        the player's ped — so the OWNER and NEARBY players both hear it (same
-        mechanism as the incoming-call ringtone, see server/main.lua).
-
-    Alarms fire on REAL-WORLD time (os.date) and repeat daily while enabled.
-
-    doc.clock = {
-        alarms        = { { id, hour, min, label, enabled }, ... },
-        nextAlarmId   = 1,
-        timer         = { endsAt, total, paused, remaining, label, fromRecent } | nil,
-        recents       = { { h, m, s }, ... },        -- most-recent first
-        alarmRingtone = '<url>' | '',                 -- '' = default alarm sound
-        alarmTones    = { items = { {id,name,url} }, nextId },  -- custom alarm sounds
-    }
---]]
-
 local ClockCfg   = Config.Clock or {}
 local RANGE      = ClockCfg.Range or 12.0
 local VOLUME     = ClockCfg.Volume or 0.5
 local RING_SECS  = ClockCfg.RingSeconds or 45
-local MAX_ALARMS = 30 -- max saved alarms per player
-local MAX_RECENT = 12 -- how many recent timer durations to keep
+local MAX_ALARMS = 30
+local MAX_RECENT = 12
 
--- Default alarm sound (bundled in web/build/audio/). Players can pick this or add
--- their own in Settings > Ringtones > Alarm.
-local DEFAULT_ALARM_URL = ('https://cfx-nui-%s/web/build/audio/alarm.mp3')
-    :format(GetCurrentResourceName())
+local DEFAULT_ALARM_URL = ('https://cfx-nui-%s/web/build/audio/alarm.mp3'):format(GetCurrentResourceName())
 
--- Live per-player clock state (mirrors doc.clock for the online session so the
--- 1s loop doesn't hit the DB). Built on demand, torn down on drop.
---   Clock.state[src] = { cid, timer, alarms, alarmRingtone, alarmLast, ring }
 Clock = Clock or {}
 Clock.state = {}
 
--- ---- helpers --------------------------------------------------------------
-
 local function cidOf(src)
-    local player = exports.qbx_core:GetPlayer(src)
-    return player and player.PlayerData.citizenid or nil
+    return GetIdentifier(src)
 end
 
 local function pedCoords(src)
@@ -62,11 +30,9 @@ local function ensureClock(doc)
     c.alarmTones    = c.alarmTones or {}
     c.alarmTones.items  = c.alarmTones.items or {}
     c.alarmTones.nextId = c.alarmTones.nextId or 1
-    -- c.timer stays nil unless set
     return doc
 end
 
--- Load + persist the current in-memory state back into the DB document.
 local function saveState(src)
     local st = Clock.state[src]
     if not st then return end
@@ -80,13 +46,11 @@ local function saveState(src)
     DB.Save(st.cid, doc)
 end
 
--- Resolve the player's selected alarm sound URL (their pick, else the default).
 local function alarmUrl(st)
     if st.alarmRingtone and st.alarmRingtone ~= '' then return st.alarmRingtone end
     return DEFAULT_ALARM_URL
 end
 
--- Built-in + custom alarm sounds for the Settings > Ringtones > Alarm list.
 local function alarmToneList(st)
     local out = { { id = 'default', name = 'Alarm', url = DEFAULT_ALARM_URL, builtin = true } }
     for _, c in ipairs(st.alarmTones.items) do
@@ -95,8 +59,6 @@ local function alarmToneList(st)
     return out
 end
 
--- Ensure the state exists for `src` (loads doc.clock). Returns the state table.
--- Also reconciles a timer that finished while the player was away.
 function Clock.Ensure(src)
     local existing = Clock.state[src]
     if existing then return existing end
@@ -119,14 +81,14 @@ function Clock.Ensure(src)
     }
     Clock.state[src] = st
 
-    -- Reconcile a timer that elapsed while offline: bank it to recents (unless it
-    -- was itself started from recents) and clear it — don't ring retroactively.
     local tm = st.timer
+
     if tm and not tm.paused and tm.endsAt and tm.endsAt <= os.time() then
         if not tm.fromRecent then Clock.AddRecent(st, tm.total) end
         st.timer = nil
         saveState(src)
     end
+
     return st
 end
 
@@ -138,27 +100,25 @@ function Clock.AddRecent(st, totalSecs)
     local h = math.floor(totalSecs / 3600)
     local m = math.floor((totalSecs % 3600) / 60)
     local s = totalSecs % 60
-    -- Dedup: drop an identical existing entry so it re-surfaces at the top.
+
     for i = #st.recents, 1, -1 do
         local r = st.recents[i]
         if r.h == h and r.m == m and r.s == s then table.remove(st.recents, i) end
     end
+
     table.insert(st.recents, 1, { h = h, m = m, s = s })
+
     while #st.recents > MAX_RECENT do table.remove(st.recents) end
 end
-
--- ---- ringing (3D sound + owner UI) ----------------------------------------
 
 local function startRing(src, st, kind, meta)
     local coords = pedCoords(src)
     if not coords then return end
-    -- Only one ring at a time — replace any existing.
     if st.ring then exports.xsound:Destroy(-1, st.ring.name) end
     local name = ('oph3z_clock_%d'):format(src)
     st.ring = { name = name, expires = os.time() + RING_SECS, kind = kind }
     exports.xsound:PlayUrlPos(-1, name, alarmUrl(st), VOLUME, coords, true)
     exports.xsound:Distance(-1, name, RANGE)
-    -- Owner follows the ped position + shows the ringing UI.
     TriggerClientEvent('oph3z-phone:client:clock:ring', src, {
         name = name, kind = kind, meta = meta,
     })
@@ -172,8 +132,6 @@ function Clock.StopRing(src)
     TriggerClientEvent('oph3z-phone:client:clock:ringStop', src)
 end
 
--- ---- the tick loop --------------------------------------------------------
-
 CreateThread(function()
     while true do
         local now = os.time()
@@ -181,7 +139,6 @@ CreateThread(function()
         local minuteKey = ('%04d%02d%02d%02d%02d'):format(nowT.year, nowT.month, nowT.day, nowT.hour, nowT.min)
 
         for src, st in pairs(Clock.state) do
-            -- Timer completion.
             local tm = st.timer
             if tm and not tm.paused and tm.endsAt and now >= tm.endsAt then
                 if not tm.fromRecent then Clock.AddRecent(st, tm.total) end
@@ -193,8 +150,6 @@ CreateThread(function()
                 })
             end
 
-            -- Alarms (real-world time). ONE-SHOT: an alarm turns itself off after
-            -- it rings once (fire once per matching minute as a safety guard too).
             for _, a in ipairs(st.alarms) do
                 if a.enabled and a.hour == nowT.hour and a.min == nowT.min then
                     if st.alarmLast[a.id] ~= minuteKey then
@@ -209,12 +164,10 @@ CreateThread(function()
                 end
             end
 
-            -- Auto-stop a ring that has been going too long.
             if st.ring and now >= st.ring.expires then
                 Clock.StopRing(src)
             end
         end
-
         Wait(1000)
     end
 end)
@@ -225,13 +178,7 @@ AddEventHandler('playerDropped', function()
     Clock.state[src] = nil
 end)
 
--- ===========================================================================
--- NUI callbacks
--- ===========================================================================
-
--- Full clock state (loaded when the phone opens). This also ARMS the player's
--- alarms/timer for the session.
-lib.callback.register('oph3z-phone:server:clock:get', function(src)
+RegisterCallback('oph3z-phone:server:clock:get', function(src)
     local st = Clock.Ensure(src)
     if not st then return nil end
     return {
@@ -244,8 +191,7 @@ lib.callback.register('oph3z-phone:server:clock:get', function(src)
     }
 end)
 
--- Add an alarm { hour, min, label }.
-lib.callback.register('oph3z-phone:server:clock:addAlarm', function(src, data)
+RegisterCallback('oph3z-phone:server:clock:addAlarm', function(src, data)
     local st = Clock.Ensure(src)
     if not st or type(data) ~= 'table' then return nil end
     if #st.alarms >= MAX_ALARMS then return nil end
@@ -259,8 +205,7 @@ lib.callback.register('oph3z-phone:server:clock:addAlarm', function(src, data)
     return alarm
 end)
 
--- Toggle an alarm on/off by id. Returns the new enabled state.
-lib.callback.register('oph3z-phone:server:clock:toggleAlarm', function(src, id)
+RegisterCallback('oph3z-phone:server:clock:toggleAlarm', function(src, id)
     local st = Clock.Ensure(src)
     if not st then return nil end
     for _, a in ipairs(st.alarms) do
@@ -274,8 +219,7 @@ lib.callback.register('oph3z-phone:server:clock:toggleAlarm', function(src, id)
     return nil
 end)
 
--- Delete an alarm by id.
-lib.callback.register('oph3z-phone:server:clock:deleteAlarm', function(src, id)
+RegisterCallback('oph3z-phone:server:clock:deleteAlarm', function(src, id)
     local st = Clock.Ensure(src)
     if not st then return false end
     for i = #st.alarms, 1, -1 do
@@ -289,8 +233,7 @@ lib.callback.register('oph3z-phone:server:clock:deleteAlarm', function(src, id)
     return false
 end)
 
--- Start a timer for `total` seconds. `fromRecent` = don't re-log to recents.
-lib.callback.register('oph3z-phone:server:clock:startTimer', function(src, data)
+RegisterCallback('oph3z-phone:server:clock:startTimer', function(src, data)
     local st = Clock.Ensure(src)
     if not st or type(data) ~= 'table' then return nil end
     local total = math.max(1, math.min(24 * 3600, math.floor(tonumber(data.total) or 0)))
@@ -306,8 +249,7 @@ lib.callback.register('oph3z-phone:server:clock:startTimer', function(src, data)
     return st.timer
 end)
 
--- Pause the running timer.
-lib.callback.register('oph3z-phone:server:clock:pauseTimer', function(src)
+RegisterCallback('oph3z-phone:server:clock:pauseTimer', function(src)
     local st = Clock.Ensure(src)
     if not st or not st.timer or st.timer.paused then return st and st.timer or nil end
     local tm = st.timer
@@ -318,8 +260,7 @@ lib.callback.register('oph3z-phone:server:clock:pauseTimer', function(src)
     return tm
 end)
 
--- Resume a paused timer.
-lib.callback.register('oph3z-phone:server:clock:resumeTimer', function(src)
+RegisterCallback('oph3z-phone:server:clock:resumeTimer', function(src)
     local st = Clock.Ensure(src)
     if not st or not st.timer or not st.timer.paused then return st and st.timer or nil end
     local tm = st.timer
@@ -329,8 +270,7 @@ lib.callback.register('oph3z-phone:server:clock:resumeTimer', function(src)
     return tm
 end)
 
--- Cancel the timer.
-lib.callback.register('oph3z-phone:server:clock:cancelTimer', function(src)
+RegisterCallback('oph3z-phone:server:clock:cancelTimer', function(src)
     local st = Clock.Ensure(src)
     if not st then return false end
     st.timer = nil
@@ -338,8 +278,7 @@ lib.callback.register('oph3z-phone:server:clock:cancelTimer', function(src)
     return true
 end)
 
--- Remove a recent by index (1-based, matching the returned order).
-lib.callback.register('oph3z-phone:server:clock:deleteRecent', function(src, index)
+RegisterCallback('oph3z-phone:server:clock:deleteRecent', function(src, index)
     local st = Clock.Ensure(src)
     if not st then return false end
     index = tonumber(index)
@@ -351,14 +290,12 @@ lib.callback.register('oph3z-phone:server:clock:deleteRecent', function(src, ind
     return false
 end)
 
--- Stop a ringing alarm / finished-timer sound (the "Stop" button).
-lib.callback.register('oph3z-phone:server:clock:stopRing', function(src)
+RegisterCallback('oph3z-phone:server:clock:stopRing', function(src)
     Clock.StopRing(src)
     return true
 end)
 
--- Pick the alarm sound (url). '' resets to the default.
-lib.callback.register('oph3z-phone:server:clock:setAlarmTone', function(src, url)
+RegisterCallback('oph3z-phone:server:clock:setAlarmTone', function(src, url)
     local st = Clock.Ensure(src)
     if not st then return false end
     st.alarmRingtone = (type(url) == 'string') and url or ''
@@ -366,8 +303,7 @@ lib.callback.register('oph3z-phone:server:clock:setAlarmTone', function(src, url
     return true
 end)
 
--- Add a custom alarm sound { name, url }. Returns the new item.
-lib.callback.register('oph3z-phone:server:clock:addAlarmTone', function(src, input)
+RegisterCallback('oph3z-phone:server:clock:addAlarmTone', function(src, input)
     local st = Clock.Ensure(src)
     if not st or type(input) ~= 'table' then return nil end
     local name = tostring(input.name or ''):gsub('^%s+', ''):gsub('%s+$', ''):sub(1, 40)
@@ -380,8 +316,7 @@ lib.callback.register('oph3z-phone:server:clock:addAlarmTone', function(src, inp
     return item
 end)
 
--- Delete a custom alarm sound by id.
-lib.callback.register('oph3z-phone:server:clock:deleteAlarmTone', function(src, id)
+RegisterCallback('oph3z-phone:server:clock:deleteAlarmTone', function(src, id)
     local st = Clock.Ensure(src)
     if not st or type(id) ~= 'string' then return false end
     local removedUrl

@@ -74,6 +74,7 @@ The phone automatically **removes** your app when your resource stops.
 | `Toast(type, title, body, app?)` | Pop a transient status toast (`type`: `'success'`/`'error'`/`'info'`). Throwaway feedback — shows a few seconds, not saved. Only shows while the phone is open. `app` (optional) is an app id to borrow the icon from; defaults to the app currently open. Returns `true` if shown. |
 | `GetNumber()` | The player's formatted number (cached once the phone has been opened; may be `nil` before then). |
 | `GetIdentity()` | `{ number, numberRaw, citizenid }` (same caveat as above). |
+| `GetLanguage()` | The player's current phone language code (e.g. `'en'`), from **Settings → Language**. Cached when the phone loads; falls back to `Config.DefaultLocale`. Listen for switches with `AddEventHandler('oph3z-phone:languageChanged', function(lang) end)`. |
 
 ---
 
@@ -83,15 +84,17 @@ Your page runs inside an iframe. The phone talks to it with `postMessage`:
 
 | Direction | Message | Meaning |
 |---|---|---|
-| phone → app | `{ type:'oph3z:init', identity:{ number, numberRaw, citizenid, name, email, avatar }, app:{ id, label } }` | Sent on load; the player's identity (`name`/`email`/`avatar` are the phone-ID profile). |
+| phone → app | `{ type:'oph3z:init', identity:{ number, numberRaw, citizenid, name, email, avatar }, app:{ id, label }, language }` | Sent on load; the player's identity (`name`/`email`/`avatar` are the phone-ID profile) plus the phone's current `language` code (e.g. `'en'`). |
 | app → phone | `{ type:'oph3z:ready' }` | Ask the phone to (re)send `oph3z:init`. |
+| phone → app | `{ type:'oph3z:language', language }` | The player switched the phone language — re-render your UI to match. |
 | app → phone | `{ type:'oph3z:close' }` | Send the player back to the home screen. |
 | app → phone | `{ type:'oph3z:confirm', id, title, message, confirmText?, cancelText?, destructive? }` | Show a native yes/no confirm; reply `{ type:'oph3z:confirm:result', id, confirmed }`. |
 | app → phone | `{ type:'oph3z:alert', id, title, message, buttons:[{ text, style?, value? }] }` | Show a native dialog with custom buttons; reply `{ type:'oph3z:alert:result', id, value }`. |
 | app → phone | `{ type:'oph3z:prompt', id, title, message?, placeholder?, value?, confirmText?, cancelText?, maxLength?, fields? }` | Show a native **text-input** popup; reply `{ type:'oph3z:prompt:result', id, value }`. `value` = a **string**, or an **object** `{ [key]: value }` when `fields:[{key,placeholder?,value?,optional?}]` is given, or `null` if cancelled. |
 | app → phone | `{ type:'oph3z:toast', toastType?, title?, body? }` | Show a **transient status toast** (`toastType`: `'success'`/`'error'`/`'info'`). Looks like a notification but is throwaway — shows a few seconds, never saved. The icon is automatically your app's icon. Fire-and-forget (no reply). Only one shows at a time. |
 | app → phone | `{ type:'oph3z:airdrop', title?, payload }` | **AirDrop** `payload` to a nearby player. The phone shows the nearby-people picker + the receiver's Accept/Decline prompt. On accept, the **same app** opens on the receiver's phone. |
-| phone → app | `{ type:'oph3z:airdrop:received', payload }` | Delivered to the receiver's app after they **accept** an AirDrop from your app (also fired when someone taps a shared card you sent into a chat). |
+| app → phone | `{ type:'oph3z:share', item:{ title, subtitle?, image?, payload } }` | Native **Share** sheet with both routes — **AirDrop to Nearby** or **Send in Messages** (contact picker). Whichever they pick, `payload` round-trips and the receiver opens your app via `oph3z:airdrop:received`. This is the one-call equivalent of the built-in apps' Share button. |
+| phone → app | `{ type:'oph3z:airdrop:received', payload }` | Delivered to the receiver's app after they **accept** an AirDrop from your app, tap a shared card in a chat, or receive an `oph3z:share`. |
 | phone → app | `{ type:'oph3z:shareRequest' }` | Your app was opened from the Messages **Share** sheet (register with `share: true`) to provide a shareable item. |
 | app → phone | `{ type:'oph3z:shareResult', item:{ title, subtitle?, image?, data? } }` | The item to send into the conversation as a card. Tapping the card re-opens your app with `data` (via `oph3z:airdrop:received`). |
 | app → phone | `{ type:'oph3z:shareCancel' }` | Abort the share and return to the chat. |
@@ -215,9 +218,53 @@ window.addEventListener('message', (e) => {
 });
 ```
 
+### `oph3z:share` — the native Share sheet (AirDrop **or** Messages)
+
+For a full "Share" button like the built-in apps, send `oph3z:share` with an `item`.
+The phone shows a sheet letting the player **AirDrop to Nearby** or **Send in
+Messages** (picking a contact). Either route round-trips `item.payload`, so the
+receiver opens your app and gets it via `oph3z:airdrop:received` (above).
+
+```js
+// One call gives the player both share routes.
+function phoneShare(item) {
+  window.parent.postMessage({ type: 'oph3z:share', item }, '*');
+}
+phoneShare({
+  title: 'Post: Sunset 🌅',
+  subtitle: 'by @john',           // shown under the title (optional)
+  image: 'https://…/thumb.jpg',   // preview/thumbnail (optional; defaults to your icon)
+  payload: { postId: 7 },         // what the receiver's app gets back
+});
+```
+
 The receiver must have **AirDrop turned on** (Control Center) and be within range
 (`Config.Airdrop.Range`). If they don't have your app installed, the sender is told.
 Ships ready-to-use in the template (the **AirDrop to nearby** button).
+
+### Language sync (i18n)
+
+The phone hands your app its language in `oph3z:init` (`msg.language`) and again in
+`oph3z:language` whenever the player switches it in **Settings → Language**. Ship
+translations for the languages your app supports and fall back to a default — your
+app and the phone then stay in the same language automatically.
+
+```js
+const STRINGS = { en: { hi: 'Hello' }, es: { hi: 'Hola' }, fr: { hi: 'Bonjour' } };
+function applyLanguage(code) {
+  const s = STRINGS[code] || STRINGS.en;   // fall back when you don't ship `code`
+  document.querySelector('h1').textContent = s.hi;
+}
+window.addEventListener('message', (e) => {
+  const m = e.data || {};
+  if (m.type === 'oph3z:init' || m.type === 'oph3z:language') applyLanguage(m.language);
+});
+```
+
+On the Lua side, read it with `exports['oph3z-phone']:GetLanguage()` (client) or
+`exports['oph3z-phone']:GetLanguage(src)` (server), and react to language switches
+via `AddEventHandler('oph3z-phone:languageChanged', function(lang) end)`. The
+template demos all of this (the **Language:** line updates live).
 
 ### Share into a conversation (Messages "Share" sheet)
 
@@ -270,6 +317,7 @@ the player's `source`. Your iframe → your `client.lua` (`fetchNui`) → your
 | `GetPhotos(src)` | `{ { id, url, type, thumb, favorite, ts }, ... }` |
 | `GetRecents(src)` | `{ { id, number, name, img, direction, missed, ts }, ... }` |
 | `IsAirplaneMode(src)` | `true`/`false`. |
+| `GetLanguage(src)` | The player's phone language code (e.g. `'en'`), from Settings → Language; falls back to `Config.DefaultLocale`. Localize mail/notifications you send to match. |
 | `GetBlockedNumbers(src)` | `{ [digits] = { number, name, ts }, ... }` |
 | `IsBlocked(src, number)` | `true`/`false`. |
 

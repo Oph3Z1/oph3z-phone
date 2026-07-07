@@ -1,10 +1,3 @@
---[[
-    oph3z-phone | Maps app — SERVER
-
-    Stores a player's custom blips (saved places) in their per-citizenid document
-    under `doc.maps = { blips = { {id,label,x,y,ts}, ... }, nextId }`.
---]]
-
 local function ensureMaps(doc)
     doc.maps = doc.maps or {}
     doc.maps.blips = doc.maps.blips or {}
@@ -12,15 +5,13 @@ local function ensureMaps(doc)
     return doc
 end
 
--- Get all saved blips ---------------------------------------------------------
-lib.callback.register('oph3z-phone:server:maps:get', function(source)
+RegisterCallback('oph3z-phone:server:maps:get', function(source)
     local cid = DB.GetCitizenId(source)
     if not cid then return {} end
     return ensureMaps(DB.LoadOrCreate(cid)).maps.blips
 end)
 
--- Add a saved blip ------------------------------------------------------------
-lib.callback.register('oph3z-phone:server:maps:add', function(source, input)
+RegisterCallback('oph3z-phone:server:maps:add', function(source, input)
     local cid = DB.GetCitizenId(source)
     if not cid or type(input) ~= 'table' or not input.x or not input.y then return nil end
 
@@ -38,8 +29,7 @@ lib.callback.register('oph3z-phone:server:maps:add', function(source, input)
     return blip
 end)
 
--- Move a saved blip (drag to reposition) --------------------------------------
-lib.callback.register('oph3z-phone:server:maps:move', function(source, input)
+RegisterCallback('oph3z-phone:server:maps:move', function(source, input)
     local cid = DB.GetCitizenId(source)
     if not cid or type(input) ~= 'table' or not input.id then return false end
 
@@ -55,8 +45,7 @@ lib.callback.register('oph3z-phone:server:maps:move', function(source, input)
     return false
 end)
 
--- Delete a saved blip ---------------------------------------------------------
-lib.callback.register('oph3z-phone:server:maps:delete', function(source, id)
+RegisterCallback('oph3z-phone:server:maps:delete', function(source, id)
     local cid = DB.GetCitizenId(source)
     if not cid or not id then return false end
 

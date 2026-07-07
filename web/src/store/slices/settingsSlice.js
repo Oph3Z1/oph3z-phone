@@ -6,7 +6,7 @@ const initialState = {
   loaded: false,
   wallpaper: 'blackTitanium',
   brightness: 100, // 20-100 (Control Center)
-  scale: 100,      // 85-100 phone size on screen (Display & Brightness)
+  scale: 100,      // 75-100 phone size on screen (Display & Brightness)
   volume: 70,      // 0-100 media volume
   airdrop: false,  // AirDrop receiving toggle
   airplane: false,

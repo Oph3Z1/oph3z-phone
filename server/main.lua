@@ -1,50 +1,32 @@
---[[
-    oph3z-phone | Server entry point
-
-    Exposes ox_lib callbacks the NUI (via client) uses to load/save phone data.
-    Player identity is the QBox citizenid, resolved from the calling source.
---]]
-
----Resolve a connected player's citizenid from their server id.
----@param src number
----@return string|nil
 local function getCitizenId(src)
-    local player = exports.qbx_core:GetPlayer(src)
-    if not player then return nil end
-    return player.PlayerData.citizenid
+    return GetIdentifier(src)
 end
 
--- Load (or create) the caller's phone document ------------------------------
-lib.callback.register('oph3z-phone:server:getData', function(source)
-    local player = exports.qbx_core:GetPlayer(source)
-    if not player then return nil end
-    local citizenid = player.PlayerData.citizenid
+RegisterCallback('oph3z-phone:server:getData', function(source)
+    local citizenid = GetIdentifier(source)
+    if not citizenid then return nil end
 
-    -- Character name — seeds the phone "ID" display name on first use.
-    local ci = player.PlayerData.charinfo or {}
-    local charName = (('%s %s'):format(ci.firstname or '', ci.lastname or '')):gsub('^%s+', ''):gsub('%s+$', '')
-
-    -- Ensure a phone number is generated/registered on first open so the player
-    -- is reachable even before they open the Phone app. Also ensure a mail
-    -- address (firstname.lastname@domain) and a profile (ID name + avatar).
+    local firstname, lastname = GetCharName(source)
+    local ci = { firstname = firstname, lastname = lastname }
+    local charName = (('%s %s'):format(firstname or '', lastname or '')):gsub('^%s+', ''):gsub('%s+$', '')
     local doc = DB.EnsurePhone(citizenid, DB.LoadOrCreate(citizenid))
+
     DB.EnsureMail(citizenid, doc, ci.firstname, ci.lastname)
     DB.EnsureProfile(citizenid, doc, charName)
 
     return {
         citizenid = citizenid,
-        name      = doc.profile.name,                   -- phone ID display name (renameable)
-        email     = doc.mail.address,                   -- e.g. barbara.orton@lsmail.com
-        avatar    = doc.profile.avatar,                 -- profile photo URL (nil until set)
+        name      = doc.profile.name,
+        email     = doc.mail.address,
+        avatar    = doc.profile.avatar,
         settings  = doc.settings,
-        number    = doc.phone.number,                  -- formatted (e.g. 555-0142)
-        numberRaw = DB.Digits(doc.phone.numberRaw),     -- digits only
-        home      = doc.home,                           -- saved home-screen layout (nil until customised)
+        number    = doc.phone.number,
+        numberRaw = DB.Digits(doc.phone.numberRaw),
+        home      = doc.home,
     }
 end)
 
--- Persist the player's custom home-screen layout (pages / dock / folders / removed).
-lib.callback.register('oph3z-phone:server:home:save', function(source, layout)
+RegisterCallback('oph3z-phone:server:home:save', function(source, layout)
     local citizenid = getCitizenId(source)
     if not citizenid or type(layout) ~= 'table' then return false end
     local doc = DB.LoadOrCreate(citizenid)
@@ -52,8 +34,7 @@ lib.callback.register('oph3z-phone:server:home:save', function(source, layout)
     return DB.Save(citizenid, doc)
 end)
 
--- Persist a partial settings update -----------------------------------------
-lib.callback.register('oph3z-phone:server:saveSettings', function(source, patch)
+RegisterCallback('oph3z-phone:server:saveSettings', function(source, patch)
     local citizenid = getCitizenId(source)
     if not citizenid or type(patch) ~= 'table' then return false end
 
@@ -66,11 +47,6 @@ lib.callback.register('oph3z-phone:server:saveSettings', function(source, patch)
     return DB.Save(citizenid, doc)
 end)
 
--- ===========================================================================
--- Phone app (contacts / favorites / recents)
--- ===========================================================================
-
----Trim and cap a string field.
 local function clean(value, maxLen)
     if type(value) ~= 'string' then return '' end
     value = value:gsub('^%s+', ''):gsub('%s+$', '')
@@ -78,7 +54,6 @@ local function clean(value, maxLen)
     return value
 end
 
----Build the sanitized public contact payload from raw input.
 local function sanitizeContact(input)
     if type(input) ~= 'table' then return nil end
     return {
@@ -89,7 +64,6 @@ local function sanitizeContact(input)
     }
 end
 
----Find a contact (and its index) by id.
 local function findContact(contacts, id)
     for i = 1, #contacts do
         if contacts[i].id == id then return contacts[i], i end
@@ -97,8 +71,7 @@ local function findContact(contacts, id)
     return nil
 end
 
--- Load the phone state (number, contacts, recents) -------------------------
-lib.callback.register('oph3z-phone:server:phone:getState', function(source)
+RegisterCallback('oph3z-phone:server:phone:getState', function(source)
     local citizenid = getCitizenId(source)
     if not citizenid then return nil end
 
@@ -112,44 +85,49 @@ lib.callback.register('oph3z-phone:server:phone:getState', function(source)
     }
 end)
 
--- Block / unblock a number --------------------------------------------------
-lib.callback.register('oph3z-phone:server:phone:block', function(source, number)
+RegisterCallback('oph3z-phone:server:phone:block', function(source, number)
     local citizenid = getCitizenId(source)
     if not citizenid then return nil end
     return DB.Block(citizenid, number)
 end)
 
-lib.callback.register('oph3z-phone:server:phone:unblock', function(source, number)
+RegisterCallback('oph3z-phone:server:phone:unblock', function(source, number)
     local citizenid = getCitizenId(source)
     if not citizenid then return nil end
     return DB.Unblock(citizenid, number)
 end)
 
--- Airplane mode -------------------------------------------------------------
--- Explicit set (used by the future Settings toggle).
-lib.callback.register('oph3z-phone:server:phone:setAirplane', function(source, value)
+RegisterCallback('oph3z-phone:server:phone:setAirplane', function(source, value)
     local citizenid = getCitizenId(source)
     if not citizenid then return false end
     local doc = DB.LoadOrCreate(citizenid)
     doc.settings = doc.settings or {}
     doc.settings.airplane = value and true or false
     DB.Save(citizenid, doc)
+
+    if not doc.settings.airplane and Notif then
+        Notif.Release(citizenid)
+        TriggerClientEvent('oph3z-phone:client:notifRefresh', source)
+    end
+
     return doc.settings.airplane
 end)
 
--- Toggle (used by the /airplane dev command); returns the new state.
-lib.callback.register('oph3z-phone:server:phone:toggleAirplane', function(source)
+RegisterCallback('oph3z-phone:server:phone:toggleAirplane', function(source)
     local citizenid = getCitizenId(source)
     if not citizenid then return false end
     local doc = DB.LoadOrCreate(citizenid)
     doc.settings = doc.settings or {}
     doc.settings.airplane = not doc.settings.airplane
     DB.Save(citizenid, doc)
+    if not doc.settings.airplane and Notif then
+        Notif.Release(citizenid)
+        TriggerClientEvent('oph3z-phone:client:notifRefresh', source)
+    end
     return doc.settings.airplane
 end)
 
--- Add a contact -------------------------------------------------------------
-lib.callback.register('oph3z-phone:server:phone:addContact', function(source, input)
+RegisterCallback('oph3z-phone:server:phone:addContact', function(source, input)
     local citizenid = getCitizenId(source)
     if not citizenid then return nil end
 
@@ -171,8 +149,7 @@ lib.callback.register('oph3z-phone:server:phone:addContact', function(source, in
     return contact
 end)
 
--- Update a contact ----------------------------------------------------------
-lib.callback.register('oph3z-phone:server:phone:updateContact', function(source, input)
+RegisterCallback('oph3z-phone:server:phone:updateContact', function(source, input)
     local citizenid = getCitizenId(source)
     if not citizenid or type(input) ~= 'table' then return false end
 
@@ -189,8 +166,7 @@ lib.callback.register('oph3z-phone:server:phone:updateContact', function(source,
     return true
 end)
 
--- Delete a contact ----------------------------------------------------------
-lib.callback.register('oph3z-phone:server:phone:deleteContact', function(source, id)
+RegisterCallback('oph3z-phone:server:phone:deleteContact', function(source, id)
     local citizenid = getCitizenId(source)
     if not citizenid then return false end
 
@@ -203,8 +179,7 @@ lib.callback.register('oph3z-phone:server:phone:deleteContact', function(source,
     return true
 end)
 
--- Toggle favorite -----------------------------------------------------------
-lib.callback.register('oph3z-phone:server:phone:setFavorite', function(source, data)
+RegisterCallback('oph3z-phone:server:phone:setFavorite', function(source, data)
     local citizenid = getCitizenId(source)
     if not citizenid or type(data) ~= 'table' then return false end
 
@@ -217,27 +192,18 @@ lib.callback.register('oph3z-phone:server:phone:setFavorite', function(source, d
     return true
 end)
 
--- ===========================================================================
--- Call manager
---   - resolves phone numbers -> online players (cached registry + QBox)
---   - assigns a pma-voice call channel (both sides join the same id)
---   - state machine: ringing -> active -> ended; plus busy/unavailable/timeout
---   - logs every call to both parties' Recents
--- ===========================================================================
-local activeCalls = {}   -- callId -> call table
-local playerCall  = {}   -- src    -> callId (busy check)
+local activeCalls = {}
+local playerCall  = {}
 local nextCallId  = 1
 
 local function otherParty(call, src)
     return src == call.caller and call.callee or call.caller
 end
 
----@return table phoneDoc.phone  (ensures number/contacts exist)
 local function getPhone(citizenid)
     return DB.EnsurePhone(citizenid, DB.LoadOrCreate(citizenid)).phone
 end
 
----What `viewerCid` should see when the other party's number is `otherDigits`.
 local function displayFor(viewerCid, otherDigits, otherFormatted)
     local contact = DB.ResolveContact(viewerCid, otherDigits)
     return {
@@ -247,8 +213,6 @@ local function displayFor(viewerCid, otherDigits, otherFormatted)
     }
 end
 
----Start the 3D ringtone at the callee's position (heard by callee + nearby).
----Uses the callee's chosen ringtone (Settings > Ringtones), else Config.RingtoneUrl.
 local function startRingtone(call)
     local ped = GetPlayerPed(call.callee)
     if not ped or ped == 0 then return end
@@ -268,7 +232,6 @@ local function stopRingtone(call)
     end
 end
 
----Tear down a call, notify both sides, and write Recents.
 local function endCall(callId, reason)
     local call = activeCalls[callId]
     if not call then return end
@@ -278,14 +241,13 @@ local function endCall(callId, reason)
     if playerCall[call.caller] == callId then playerCall[call.caller] = nil end
     if playerCall[call.callee] == callId then playerCall[call.callee] = nil end
 
-    -- Log Recents BEFORE notifying so a client refresh sees the new entry.
     local connected = call.answeredAt ~= nil
     local ts = os.time()
-    DB.LogRecent(call.callerCid, {  -- caller (outgoing) — never "missed"
+    DB.LogRecent(call.callerCid, {
         number = call.calleeNumber, name = call.calleeNameSeen, img = call.calleeImgSeen,
         direction = 'out', missed = false, ts = ts,
     })
-    DB.LogRecent(call.calleeCid, {  -- callee (incoming) — missed if never answered
+    DB.LogRecent(call.calleeCid, {
         number = call.callerNumber, name = call.callerNameSeen, img = call.callerImgSeen,
         direction = 'in', missed = not connected, ts = ts,
     })
@@ -303,8 +265,6 @@ local function endCall(callId, reason)
     TriggerClientEvent('oph3z-phone:call:ended', call.callee, { callId = callId, reason = reason })
 end
 
--- Place a call from `src` to a number. Used by the call:start net event and by
--- the exported PlaceCall API.
 local function startCall(src, rawNumber)
     local callerCid = getCitizenId(src)
     if not callerCid or playerCall[src] then return end
@@ -312,7 +272,7 @@ local function startCall(src, rawNumber)
     local calleeDigits = DB.Digits(rawNumber)
     local callerDoc = DB.EnsurePhone(callerCid, DB.LoadOrCreate(callerCid))
     local callerPhone = callerDoc.phone
-    -- Airplane mode: you can't place calls (no signal).
+
     if callerDoc.settings and callerDoc.settings.airplane then
         TriggerClientEvent('oph3z-phone:call:failed', src, { reason = 'airplane' })
         return
@@ -323,12 +283,9 @@ local function startCall(src, rawNumber)
     end
 
     local calleeCid = DB.GetCitizenIdByNumber(calleeDigits)
-    local calleePlayer = calleeCid and exports.qbx_core:GetPlayerByCitizenId(calleeCid) or nil
+    local calleePlayer = calleeCid and GetPlayerByCitizenId(calleeCid) or nil
     local calleeSrc = calleePlayer and calleePlayer.PlayerData.source or nil
     if not calleeSrc then
-        -- Callee is offline: still record a missed call for them (and an outgoing
-        -- for the caller), unless they've blocked the caller. They'll see it on
-        -- their next phone load.
         if calleeCid then
             local calleeDocOff = DB.EnsurePhone(calleeCid, DB.LoadOrCreate(calleeCid))
             if not DB.IsBlocked(calleeDocOff, callerPhone.numberRaw) then
@@ -363,7 +320,7 @@ local function startCall(src, rawNumber)
 
     local calleeDoc = DB.EnsurePhone(calleeCid, DB.LoadOrCreate(calleeCid))
     local calleePhone = calleeDoc.phone
-    -- Callee unreachable: airplane mode on, or they've blocked the caller.
+
     if (calleeDoc.settings and calleeDoc.settings.airplane)
         or DB.IsBlocked(calleeDoc, callerPhone.numberRaw) then
         TriggerClientEvent('oph3z-phone:call:failed', src, { reason = 'unavailable' })
@@ -373,7 +330,6 @@ local function startCall(src, rawNumber)
     local callId = nextCallId
     nextCallId = nextCallId + 1
 
-    -- What each side sees of the other (name resolved from their own contacts).
     local callerSeesCallee = displayFor(callerCid, calleeDigits, calleePhone.number)
     local calleeSeesCaller = displayFor(calleeCid, callerPhone.numberRaw, callerPhone.number)
 
@@ -411,7 +367,6 @@ RegisterNetEvent('oph3z-phone:call:start', function(rawNumber)
     startCall(source, rawNumber)
 end)
 
--- Expose call placement to the export API (server/api.lua).
 PhoneCall = PhoneCall or {}
 PhoneCall.Start = startCall
 

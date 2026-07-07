@@ -1,31 +1,16 @@
---[[
-    oph3z-phone | Locale: English (en)
-
-    This is the single source of truth for English text. It is used BOTH by:
-      - the phone UI (the `frontend` table is sent to the NUI when 'en' is selected)
-      - Lua scripts (client/server) via the Lang() helper, e.g.
-            Lang('systemNotification.minutes')      -> "Minutes"
-            Lang('frontend.settings.title', 'en')   -> "Settings"
-
-    To ADD A LANGUAGE: copy this file to locales/<code>.lua (e.g. locales/tr.lua),
-    change `Locales['en']` to `Locales['tr']`, set `_name`, and translate the values.
-    It then appears automatically in Settings > Language (no other changes needed).
---]]
-
 Locales = Locales or {}
 
 Locales['en'] = {
-    -- Shown in the Settings > Language picker.
     ['_name'] = 'English',
 
-    -- =====================================================================
-    -- Strings used by the phone UI (React). This whole sub-table is handed to
-    -- the NUI; components look keys up with t('settings.title') etc.
-    -- =====================================================================
     ['frontend'] = {
         ['common'] = {
             ['cancel'] = 'Cancel',
             ['close'] = 'Close',
+            ['share'] = 'Share',
+            ['shareAirdrop'] = 'AirDrop to Nearby',
+            ['shareMessages'] = 'Send in Messages',
+            ['sharedWith'] = 'Sent to {name}',
             ['done'] = 'Done',
             ['add'] = 'Add',
             ['next'] = 'Next',
@@ -221,7 +206,6 @@ Locales['en'] = {
             ['footer'] = 'Designed & Developed by Oph3Z',
         },
 
-        -- Phone / Contacts / Calls app
         ['phone'] = {
             ['title'] = 'Phone',
             ['favorites'] = 'Favorites',
@@ -289,7 +273,6 @@ Locales['en'] = {
             ['reasonFailed'] = 'Call Failed',
         },
 
-        -- Messages app
         ['messages'] = {
             ['title'] = 'Messages',
             ['empty'] = 'No messages yet. Tap ✎ to start.',
@@ -299,17 +282,14 @@ Locales['en'] = {
             ['delete'] = 'Delete',
             ['you'] = 'You',
             ['yesterday'] = 'Yesterday',
-            -- media previews
             ['photo'] = 'Photo',
             ['video'] = 'Video',
             ['gif'] = 'GIF',
             ['location'] = 'Location',
             ['money'] = 'Money',
             ['voice'] = 'Voice message',
-            -- composer
             ['inputPlaceholder'] = 'Send your message…',
             ['addComment'] = 'Add a comment',
-            -- new message / group
             ['newMessage'] = 'New Message',
             ['newGroup'] = 'New Group',
             ['create'] = 'Create',
@@ -322,20 +302,17 @@ Locales['en'] = {
             ['chooseGroupPhoto'] = 'Choose a Group Photo',
             ['choosePhotoVideo'] = 'Choose a Photo or Video',
             ['noPhotos'] = 'No photos yet.',
-            -- + menu
             ['camera'] = 'Camera',
             ['gallery'] = 'Gallery',
             ['locationMenu'] = 'Location',
             ['shareMenu'] = 'Share',
             ['contactMenu'] = 'Contact',
-            -- shared contact card
             ['contactCard'] = 'Contact',
             ['cardCall'] = 'Call',
             ['cardMessage'] = 'Message',
             ['cardSave'] = 'Save as Contact',
             ['cardAdded'] = 'Added to Contacts',
             ['cardExists'] = 'Already in Contacts',
-            -- money
             ['send'] = 'Send',
             ['request'] = 'Request',
             ['sending'] = 'Sending…',
@@ -349,18 +326,15 @@ Locales['en'] = {
             ['errGeneric'] = 'Could not send.',
             ['errComplete'] = 'Could not complete.',
             ['errDecline'] = 'Could not decline.',
-            -- location
             ['sendCurrentLocation'] = 'Send Current Location',
             ['shareLive15'] = 'Share Live · 15 min',
             ['shareLive60'] = 'Share Live · 1 hour',
             ['shareLiveStop'] = 'Share Live · Until I stop',
-            -- gif
             ['searchGiphy'] = 'Search GIPHY',
             ['loading'] = 'Loading…',
             ['noGifs'] = 'No GIFs found.',
             ['gifError'] = 'Couldn’t reach the GIF service.',
             ['gifNoKey'] = 'Add your GIPHY API key in config.lua (Config.Gif.apiKey) to enable GIFs.',
-            -- group info
             ['groupInfo'] = 'Group Info',
             ['editName'] = 'Edit Name',
             ['membersCount'] = '{n} members',
@@ -371,11 +345,9 @@ Locales['en'] = {
             ['deleteGroup'] = 'Delete Group',
             ['addMembers'] = 'Add Members',
             ['addAction'] = 'Add',
-            -- emoji
             ['searchEmoji'] = 'Search emoji…',
             ['noEmoji'] = 'No Emoji Found',
             ['noRecentEmoji'] = "You haven't used any emoji yet",
-            -- voice / bubbles
             ['recording'] = 'Recording…',
             ['slideToCancel'] = 'slide to cancel',
             ['liveLocation'] = 'Live Location',
@@ -386,7 +358,6 @@ Locales['en'] = {
             ['requested'] = 'requested',
             ['peopleCount'] = '{n} people',
             ['micUnavailable'] = 'Microphone unavailable.',
-            -- money / request bubbles
             ['payHeader'] = 'Pay',
             ['moneySent'] = 'Sent',
             ['moneyReceived'] = 'Received',
@@ -397,7 +368,6 @@ Locales['en'] = {
             ['moneyOfferingYou'] = 'Offering you',
             ['accept'] = 'Accept',
             ['declineBtn'] = 'Decline',
-            -- location card
             ['locStop'] = 'Stop',
             ['locYouStopped'] = 'You stopped sharing',
             ['locStopped'] = 'Stopped sharing',
@@ -407,14 +377,12 @@ Locales['en'] = {
             ['locCurrent'] = 'Current Location',
         },
 
-        -- Camera app
         ['camera'] = {
             ['photo'] = 'PHOTO',
             ['video'] = 'VIDEO',
             ['cancel'] = 'Cancel',
         },
 
-        -- Photos app
         ['photos'] = {
             ['library'] = 'Library',
             ['favorites'] = 'Favorites',
@@ -430,7 +398,6 @@ Locales['en'] = {
             ['noPhotosHint'] = 'Photos and videos you take will appear here.',
         },
 
-        -- Maps app
         ['maps'] = {
             ['messages'] = 'Messages',
             ['tip'] = 'Right-click to add · hold Ctrl + drag to move a pin',
@@ -445,7 +412,6 @@ Locales['en'] = {
             ['savedPlace'] = 'Saved place',
         },
 
-        -- App Store
         ['appstore'] = {
             ['title'] = 'Apps',
             ['get'] = 'Get',
@@ -457,7 +423,6 @@ Locales['en'] = {
             ['noApps'] = 'No apps available.',
         },
 
-        -- Control Center
         ['controlCenter'] = {
             ['airplane'] = 'Airplane',
             ['airdrop'] = 'AirDrop',
@@ -467,7 +432,6 @@ Locales['en'] = {
             ['notPlaying'] = 'Not Playing',
         },
 
-        -- Notifications / lock screen
         ['notif'] = {
             ['none'] = 'No Notifications',
             ['clearAll'] = 'Clear All',
@@ -476,7 +440,6 @@ Locales['en'] = {
             ['swipeUp'] = 'Swipe up to open',
         },
 
-        -- AirDrop (nearby sharing)
         ['airdrop'] = {
             ['title'] = 'AirDrop',
             ['shareVia'] = 'Share via AirDrop',
@@ -493,7 +456,6 @@ Locales['en'] = {
             ['failed'] = 'Couldn\'t send',
             ['decline'] = 'Decline',
             ['accept'] = 'Accept',
-            -- Incoming prompt body: "<name> would like to share <what>."
             ['wants'] = '{name} would like to share {what}.',
             ['whatContact'] = 'a contact',
             ['whatOnePhoto'] = '1 photo',
@@ -513,7 +475,6 @@ Locales['en'] = {
         },
 
         ['x'] = {
-            -- Auth
             ['signIn'] = 'Sign in to X',
             ['createAccount'] = 'Create your account',
             ['displayName'] = 'Name',
@@ -545,7 +506,6 @@ Locales['en'] = {
             ['err_expired'] = 'Code expired — please resend.',
             ['err_bad'] = 'Something went wrong.',
             ['errGeneric'] = 'Something went wrong.',
-            -- Verification / recovery
             ['verifyTitle'] = 'Verify your email',
             ['verifyEmailTitle'] = 'Verify email',
             ['recoverTitle'] = 'Reset password',
@@ -561,14 +521,12 @@ Locales['en'] = {
             ['changeEmail'] = 'Change email',
             ['emailChanged'] = 'Email updated',
             ['sendCode'] = 'Send code',
-            -- Feed
             ['foryou'] = 'For you',
             ['following'] = 'Following',
             ['feedEmpty'] = 'Nothing here yet. Be the first to post!',
             ['followingEmpty'] = 'Follow people to see their posts here.',
             ['loading'] = 'Loading…',
             ['reposted'] = 'reposted',
-            -- Compose
             ['whatsHappening'] = 'What\'s happening?',
             ['replyPh'] = 'Post your reply',
             ['post'] = 'Post',
@@ -583,18 +541,15 @@ Locales['en'] = {
             ['addLinkTitle'] = 'Add a link',
             ['addLinkHint'] = 'Paste an image, GIF or video URL.',
             ['emoji'] = 'Emoji',
-            -- Post detail
             ['postTitle'] = 'Post',
             ['noReplies'] = 'No replies yet.',
             ['commentBtn'] = 'Reply',
-            -- Actions
             ['copied'] = 'Copied',
             ['copyText'] = 'Copy text',
             ['deletePost'] = 'Delete post',
             ['deletePostTitle'] = 'Delete post',
             ['deletePostMsg'] = 'This can\'t be undone. Delete this post?',
             ['postDeleted'] = 'Post deleted',
-            -- Profile
             ['editProfile'] = 'Edit profile',
             ['follow'] = 'Follow',
             ['following2'] = 'Following',
@@ -647,14 +602,12 @@ Locales['en'] = {
             ['logOut'] = 'Log out',
             ['logoutTitle'] = 'Log out of X',
             ['logoutMsg'] = 'You can log back in anytime with your username and password.',
-            -- Search / topics
             ['searchProfiles'] = 'Search profiles',
             ['noResults'] = 'No results.',
             ['topics'] = 'Topics',
             ['noTopics'] = 'No trending topics yet.',
             ['posts'] = 'Posts',
             ['topic'] = 'Topic',
-            -- Notifications
             ['notifications'] = 'Notifications',
             ['noNotifs'] = 'No notifications yet.',
             ['someone'] = 'Someone',
@@ -663,12 +616,12 @@ Locales['en'] = {
             ['verb_repost'] = 'reposted your post',
             ['verb_follow'] = 'followed you',
             ['verb_mention'] = 'mentioned you',
-            -- Share
             ['shareAirdrop'] = 'AirDrop to Nearby',
             ['shareMessages'] = 'Send in Messages',
             ['copyHandle'] = 'Copy username',
             ['profileSharedWith'] = 'Profile sent to {name}',
         },
+
         ['market'] = {
             ['title'] = 'Marketplace',
             ['search'] = 'Search',
@@ -677,23 +630,19 @@ Locales['en'] = {
             ['listing'] = 'Listing',
             ['profile'] = 'Seller',
             ['free'] = 'Free',
-            -- categories
             ['cat_all'] = 'All',
             ['cat_ads'] = 'Ads',
             ['cat_cars'] = 'Cars',
             ['cat_items'] = 'Items',
             ['cat_houses'] = 'Houses',
             ['cat_other'] = 'Other',
-            -- feed empty
             ['noneTitle'] = 'Nothing here yet',
             ['noneSub'] = 'Be the first to post an ad in this category.',
-            -- profile
             ['you'] = 'You',
             ['adsCount'] = '{count} listing(s)',
             ['youNoAds'] = 'You haven\'t posted any ads yet.',
             ['sellerNoAds'] = 'This seller has no active ads.',
             ['noSeller'] = 'Seller not found.',
-            -- detail
             ['gone'] = 'This listing is no longer available.',
             ['call'] = 'Call',
             ['message'] = 'Message',
@@ -702,7 +651,6 @@ Locales['en'] = {
             ['deleteTitle'] = 'Delete listing',
             ['deleteMsg'] = 'Remove this ad permanently? This can\'t be undone.',
             ['deleted'] = 'Listing deleted',
-            -- compose
             ['newPost'] = 'New listing',
             ['editPost'] = 'Edit listing',
             ['post'] = 'Post',
@@ -725,7 +673,6 @@ Locales['en'] = {
             ['fromLink'] = 'Paste a link',
             ['posted'] = 'Listing posted',
             ['updated'] = 'Listing updated',
-            -- validation / errors
             ['errTitle'] = 'Add a title.',
             ['errMedia'] = 'Add at least one photo or video.',
             ['errContact'] = 'Enable calls or messages (at least one).',
@@ -736,11 +683,9 @@ Locales['en'] = {
             ['err_denied'] = 'You can only edit your own listings.',
             ['err_notfound'] = 'That listing no longer exists.',
             ['err_bad'] = 'Something went wrong.',
-            -- search
             ['searchPh'] = 'Search cars, houses, items…',
             ['searchHint'] = 'Search by title, description or seller.',
             ['noResults'] = 'No listings match your search.',
-            -- share
             ['share'] = 'Share',
             ['shareListing'] = 'Share listing',
             ['shareProfile'] = 'Share seller',
@@ -748,6 +693,7 @@ Locales['en'] = {
             ['shareMessages'] = 'Send in Messages',
             ['sharedWith'] = 'Sent to {name}',
         },
+        
         ['spotify'] = {
             ['library'] = 'Library',
             ['search'] = 'Search',
@@ -798,10 +744,6 @@ Locales['en'] = {
         },
     },
 
-    -- =====================================================================
-    -- Strings used by LUA scripts (notifications, prints, etc.). Not sent to
-    -- the NUI. Look them up with Lang('systemNotification.<key>').
-    -- =====================================================================
     ['systemNotification'] = {
         ['minutes'] = 'Minutes',
         ['missedCall'] = 'Missed Call',

@@ -1,13 +1,3 @@
---[[
-    oph3z-phone | Messages app — SERVER
-
-    1-on-1 text messaging by phone number. Each player stores their own copy of
-    every thread (`doc.messages.threads[otherNumberDigits] = { number, items, unread }`).
-    Sending writes the message to BOTH the sender's and recipient's documents and,
-    if the recipient is online, pushes it live. Offline recipients get it on next
-    load. Names/avatars are resolved from contacts at read time.
---]]
-
 local function ensureMessages(doc)
     doc.messages = doc.messages or {}
     doc.messages.threads = doc.messages.threads or {}
@@ -18,13 +8,8 @@ local function genId()
     return ('%d%04d'):format(os.time(), math.random(0, 9999))
 end
 
--- Active live-location shares, keyed by share id (sid). Holds the latest streamed
--- position in memory; only persisted to disk when the share ends. Declared up here
--- so messages:open can overlay the current position onto a freshly opened thread.
 local liveShares = {} -- [sid] = { senderCid, senderSrc, senderNumber, recipCid, recipNumber, id, lastX, lastY, lastLabel }
 
--- Overlay the latest live position onto any active live-location items (so a thread
--- opened after missing some live pushes still shows the current position).
 local function applyLivePositions(items)
     for _, m in ipairs(items) do
         if m.type == 'location' and m.meta and m.meta.sid then
@@ -40,7 +25,6 @@ local function applyLivePositions(items)
     return items
 end
 
--- Append a message to one document's thread, capped at 200.
 local function appendToThread(doc, numberDigits, msg, incUnread)
     local threads = doc.messages.threads
     local t = threads[numberDigits]
@@ -53,8 +37,7 @@ local function appendToThread(doc, numberDigits, msg, incUnread)
     if #t.items > 200 then table.remove(t.items, 1) end
 end
 
--- List all threads (newest first) with resolved name/avatar + last-message preview.
-lib.callback.register('oph3z-phone:server:messages:threads', function(src)
+RegisterCallback('oph3z-phone:server:messages:threads', function(src)
     local cid = DB.GetCitizenId(src)
     if not cid then return {} end
 
@@ -74,7 +57,7 @@ lib.callback.register('oph3z-phone:server:messages:threads', function(src)
             unread   = t.unread or 0,
         }
     end
-    -- Merge in the player's group chats (they share the same thread list).
+
     if Groups then
         for _, row in ipairs(Groups.ListForThreads(cid)) do
             out[#out + 1] = row
@@ -85,8 +68,7 @@ lib.callback.register('oph3z-phone:server:messages:threads', function(src)
     return out
 end)
 
--- Open one thread: return its messages (resolved meta) and mark it read.
-lib.callback.register('oph3z-phone:server:messages:open', function(src, input)
+RegisterCallback('oph3z-phone:server:messages:open', function(src, input)
     local cid = DB.GetCitizenId(src)
     local number = DB.Digits(input and input.number)
     if not cid or number == '' then return nil end
@@ -109,8 +91,7 @@ lib.callback.register('oph3z-phone:server:messages:open', function(src, input)
     }
 end)
 
--- Delete whole threads (Edit mode in the list).
-lib.callback.register('oph3z-phone:server:messages:delete', function(src, input)
+RegisterCallback('oph3z-phone:server:messages:delete', function(src, input)
     local cid = DB.GetCitizenId(src)
     if not cid or type(input) ~= 'table' or type(input.numbers) ~= 'table' then return false end
 
@@ -122,8 +103,7 @@ lib.callback.register('oph3z-phone:server:messages:delete', function(src, input)
     return true
 end)
 
--- Mark a thread read (used when a message arrives while it's already open).
-lib.callback.register('oph3z-phone:server:messages:read', function(src, input)
+RegisterCallback('oph3z-phone:server:messages:read', function(src, input)
     local cid = DB.GetCitizenId(src)
     local number = DB.Digits(input and input.number)
     if not cid or number == '' then return false end
@@ -138,7 +118,6 @@ lib.callback.register('oph3z-phone:server:messages:read', function(src, input)
     return true
 end)
 
--- Short human-readable preview of a message for notifications / previews.
 local function notifBody(mtype, body, meta)
     if mtype == 'image' then return '📷 Photo'
     elseif mtype == 'gif' then return '🎞️ GIF'
@@ -152,8 +131,6 @@ local function notifBody(mtype, body, meta)
     else return body end
 end
 
--- Write a message to BOTH the sender's and recipient's docs, push live to an
--- online recipient, and return the sender's outgoing copy.
 local function deliver(senderCid, toDigits, mtype, body, meta)
     local id = genId()
     local ts = os.time()
@@ -174,7 +151,8 @@ local function deliver(senderCid, toDigits, mtype, body, meta)
             local contact = DB.ResolveContact(recipCid, senderNumber)
             local senderName = contact and contact.name or DB.FormatNumber(senderNumber)
 
-            local recipPlayer = exports.qbx_core:GetPlayerByCitizenId(recipCid)
+            local recipAirplane = recipDoc.settings and recipDoc.settings.airplane
+            local recipPlayer = not recipAirplane and GetPlayerByCitizenId(recipCid) or nil
             if recipPlayer then
                 TriggerClientEvent('oph3z-phone:client:messages:incoming', recipPlayer.PlayerData.source, {
                     from   = senderNumber,
@@ -184,9 +162,6 @@ local function deliver(senderCid, toDigits, mtype, body, meta)
                 })
             end
 
-            -- Notification (persisted; live-pushed if online). Status updates from
-            -- negotiate (paid/declined) reuse deliver and shouldn't notify, but
-            -- those are fresh 'request' messages so a notification is fine.
             if Notif then
                 Notif.Push(recipCid, {
                     app   = 'message',
@@ -201,8 +176,6 @@ local function deliver(senderCid, toDigits, mtype, body, meta)
     return { id = id, dir = 'out', type = mtype, body = body, meta = meta, ts = ts, read = true }
 end
 
--- Expose 1-on-1 message sending to the export API (server/api.lua). Sends a
--- message FROM a citizen TO a number (digits), writing both sides + live push.
 Messages = Messages or {}
 function Messages.Send(senderCid, toNumber, mtype, body, meta)
     if not senderCid then return nil end
@@ -212,8 +185,7 @@ function Messages.Send(senderCid, toNumber, mtype, body, meta)
         type(meta) == 'table' and meta or nil)
 end
 
--- Send a message (text or attachment). Writes both sides + live push.
-lib.callback.register('oph3z-phone:server:messages:send', function(src, input)
+RegisterCallback('oph3z-phone:server:messages:send', function(src, input)
     local cid = DB.GetCitizenId(src)
     if not cid or type(input) ~= 'table' then return nil end
     local toDigits = DB.Digits(input.to)
@@ -222,9 +194,7 @@ lib.callback.register('oph3z-phone:server:messages:send', function(src, input)
         type(input.meta) == 'table' and input.meta or nil)
 end)
 
--- Send money (bank transfer). Recipient must be online (qbx can only credit a
--- loaded player). Returns { ok, reason?, msg? }.
-lib.callback.register('oph3z-phone:server:messages:money', function(src, input)
+RegisterCallback('oph3z-phone:server:messages:money', function(src, input)
     local cid = DB.GetCitizenId(src)
     if not cid then return { ok = false, reason = 'error' } end
 
@@ -235,25 +205,17 @@ lib.callback.register('oph3z-phone:server:messages:money', function(src, input)
     local recipCid = toDigits ~= '' and DB.GetCitizenIdByNumber(toDigits) or nil
     if not recipCid or recipCid == cid then return { ok = false, reason = 'recipient' } end
 
-    local recipPlayer = exports.qbx_core:GetPlayerByCitizenId(recipCid)
-    if not recipPlayer then return { ok = false, reason = 'offline' } end
+    if not GetSourceById(recipCid) then return { ok = false, reason = 'offline' } end
 
-    local sender = exports.qbx_core:GetPlayer(src)
-    if not sender then return { ok = false, reason = 'error' } end
-    if (sender.PlayerData.money.bank or 0) < amount then return { ok = false, reason = 'funds' } end
-    if not sender.Functions.RemoveMoney('bank', amount, 'phone-transfer') then
+    if Bank.Get(cid) < amount then return { ok = false, reason = 'funds' } end
+    if not Bank.Remove(cid, amount, 'phone-transfer') then
         return { ok = false, reason = 'funds' }
     end
-    recipPlayer.Functions.AddMoney('bank', amount, 'phone-transfer')
+    Bank.Add(recipCid, amount, 'phone-transfer')
 
     local outMsg = deliver(cid, toDigits, 'money', tostring(amount), { amount = amount })
     return { ok = true, msg = outMsg }
 end)
-
--- ---- Money requests ------------------------------------------------------
--- A request/offer always moves money from `meta.payer` -> `meta.payee`. The
--- recipient can accept (settle, pays payer->payee) or decline it.
--- status: pending|paid|declined.
 
 local function findMsg(doc, numberDigits, id)
     local t = doc.messages and doc.messages.threads[numberDigits]
@@ -277,15 +239,14 @@ end
 
 local function pushStatus(cid, number, id, status)
     if not cid then return end
-    local player = exports.qbx_core:GetPlayerByCitizenId(cid)
+    local player = GetPlayerByCitizenId(cid)
     if player then
         TriggerClientEvent('oph3z-phone:client:messages:update', player.PlayerData.source,
             { number = number, id = id, status = status })
     end
 end
 
--- Create a money REQUEST (the sender wants the recipient to pay them).
-lib.callback.register('oph3z-phone:server:messages:request', function(src, input)
+RegisterCallback('oph3z-phone:server:messages:request', function(src, input)
     local cid = DB.GetCitizenId(src)
     if not cid then return nil end
     local toDigits = DB.Digits(input and input.to)
@@ -297,8 +258,7 @@ lib.callback.register('oph3z-phone:server:messages:request', function(src, input
         { amount = amount, status = 'pending', payer = toDigits, payee = myNumber })
 end)
 
--- Settle (pay/accept) or decline a pending request — acted on by its recipient.
-lib.callback.register('oph3z-phone:server:messages:negotiate', function(src, input)
+RegisterCallback('oph3z-phone:server:messages:negotiate', function(src, input)
     local cid = DB.GetCitizenId(src)
     if not cid or type(input) ~= 'table' then return { ok = false, reason = 'error' } end
     local otherNumber = DB.Digits(input.number)
@@ -321,17 +281,16 @@ lib.callback.register('oph3z-phone:server:messages:negotiate', function(src, inp
         return { ok = true }
     end
 
-    -- settle: move money payer -> payee (both must be online).
     local amount = math.floor(tonumber(msg.meta.amount) or 0)
     if amount <= 0 then return { ok = false, reason = 'amount' } end
-    local payerPlayer = exports.qbx_core:GetPlayerByCitizenId(DB.GetCitizenIdByNumber(payer))
-    local payeePlayer = exports.qbx_core:GetPlayerByCitizenId(DB.GetCitizenIdByNumber(payee))
-    if not payerPlayer or not payeePlayer then return { ok = false, reason = 'offline' } end
-    if (payerPlayer.PlayerData.money.bank or 0) < amount then return { ok = false, reason = 'funds' } end
-    if not payerPlayer.Functions.RemoveMoney('bank', amount, 'phone-transfer') then
+    local payerCid = DB.GetCitizenIdByNumber(payer)
+    local payeeCid = DB.GetCitizenIdByNumber(payee)
+    if not GetSourceById(payerCid) or not GetSourceById(payeeCid) then return { ok = false, reason = 'offline' } end
+    if Bank.Get(payerCid) < amount then return { ok = false, reason = 'funds' } end
+    if not Bank.Remove(payerCid, amount, 'phone-transfer') then
         return { ok = false, reason = 'funds' }
     end
-    payeePlayer.Functions.AddMoney('bank', amount, 'phone-transfer')
+    Bank.Add(payeeCid, amount, 'phone-transfer')
 
     setStatusBoth(cid, otherNumber, otherCid, myNumber, id, 'paid')
     pushStatus(cid, otherNumber, id, 'paid')
@@ -339,14 +298,9 @@ lib.callback.register('oph3z-phone:server:messages:negotiate', function(src, inp
     return { ok = true }
 end)
 
--- ---- Location / live location -------------------------------------------
--- A 'location' message carries meta = { x, y, label, live, sid? }. Live shares
--- stream the sender's position to the recipient (and the sender's own copy) every
--- few seconds; positions are pushed live and only persisted when the share ends.
-
 local function pushLoc(cid, number, id, x, y, label, live, reason)
     if not cid then return end
-    local p = exports.qbx_core:GetPlayerByCitizenId(cid)
+    local p = GetPlayerByCitizenId(cid)
     if not p then return end
     local data = { number = number, id = id }
     if x ~= nil then data.x = x end
@@ -357,7 +311,6 @@ local function pushLoc(cid, number, id, x, y, label, live, reason)
     TriggerClientEvent('oph3z-phone:client:messages:locupdate', p.PlayerData.source, data)
 end
 
--- Persist a location message's final position + live flag in one doc.
 local function saveLoc(cid, number, id, x, y, label, live, reason)
     if not cid then return end
     local doc = ensureMessages(DB.LoadOrCreate(cid))
@@ -372,7 +325,6 @@ local function saveLoc(cid, number, id, x, y, label, live, reason)
     DB.Save(cid, doc)
 end
 
--- End a live share. reason = 'stopped' (user) | 'expired' (timer / disconnect).
 local function endShare(sid, reason)
     local share = liveShares[sid]
     if not share then return end
@@ -382,12 +334,11 @@ local function endShare(sid, reason)
     saveLoc(share.recipCid, share.senderNumber, share.id, share.lastX, share.lastY, share.lastLabel, false, reason)
     pushLoc(share.senderCid, share.recipNumber, share.id, share.lastX, share.lastY, share.lastLabel, false, reason)
     pushLoc(share.recipCid, share.senderNumber, share.id, share.lastX, share.lastY, share.lastLabel, false, reason)
-    local sp = exports.qbx_core:GetPlayerByCitizenId(share.senderCid)
+    local sp = GetPlayerByCitizenId(share.senderCid)
     if sp then TriggerClientEvent('oph3z-phone:client:loc:stop', sp.PlayerData.source, { sid = sid }) end
 end
 
--- Send a location message (static or live). Coords/label are resolved client-side.
-lib.callback.register('oph3z-phone:server:messages:location', function(src, input)
+RegisterCallback('oph3z-phone:server:messages:location', function(src, input)
     local cid = DB.GetCitizenId(src)
     if not cid or type(input) ~= 'table' then return false end
     local toDigits = DB.Digits(input.to)
@@ -421,7 +372,6 @@ lib.callback.register('oph3z-phone:server:messages:location', function(src, inpu
     return out
 end)
 
--- Sender streams its position while a live share is active.
 RegisterNetEvent('oph3z-phone:server:loc:update', function(sid, x, y, label)
     local src = source
     local share = liveShares[sid]
@@ -433,8 +383,7 @@ RegisterNetEvent('oph3z-phone:server:loc:update', function(sid, x, y, label)
     pushLoc(share.recipCid, share.senderNumber, share.id, x, y, label, nil)
 end)
 
--- Stop a live share (user pressed Stop, or the client's timer expired).
-lib.callback.register('oph3z-phone:server:messages:locstop', function(src, input)
+RegisterCallback('oph3z-phone:server:messages:locstop', function(src, input)
     local cid = DB.GetCitizenId(src)
     local sid = input and input.sid
     if not sid then return { ok = false } end
@@ -444,7 +393,6 @@ lib.callback.register('oph3z-phone:server:messages:locstop', function(src, input
     return { ok = true }
 end)
 
--- End any live shares a dropping player was broadcasting.
 AddEventHandler('playerDropped', function()
     local src = source
     for sid, share in pairs(liveShares) do

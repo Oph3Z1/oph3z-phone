@@ -1,30 +1,10 @@
---[[
-    oph3z-phone | Marketplace (classifieds) — SERVER store
-
-    A GLOBAL board of ads (like X — shared, not per-citizenid). No accounts: a
-    listing is tagged with the seller's citizenid and a SNAPSHOT of their identity
-    (character name, Settings avatar, phone number) taken at post time so cards
-    still render when the seller is offline.
-
-        data/marketplace/listings.json   id(str) -> listing
-        data/marketplace/_meta.json      { nextListingId }
-
-    A listing:
-        { id, sellerCid, category, title, desc, price(number),
-          media = { {url, type('image'|'video'), thumb?}, ... },
-          seller = { name, avatar, number, numberRaw },
-          allowCalls(bool), allowMsg(bool), createdAt, updatedAt }
---]]
-
 Market = Market or {}
 
 local RESOURCE = GetCurrentResourceName()
-local DIR      = (Config.DataFolder or 'data') .. '/marketplace'
+local DIR = (Config.DataFolder or 'data') .. '/marketplace'
 
--- Valid categories (must match the UI's CATEGORIES list). 'all' is a filter only.
 Market.Categories = { ads = true, cars = true, items = true, houses = true, other = true }
 
--- ---- low-level json file cache -------------------------------------------
 local cache = {}
 
 local function readFile(name)
@@ -47,9 +27,9 @@ local function writeFile(name, tbl)
 end
 
 local function listings() return readFile('listings.json') end
-local function meta()     return readFile('_meta.json')     end
+local function meta() return readFile('_meta.json') end
 local function saveListings() writeFile('listings.json', listings()) end
-local function saveMeta()     writeFile('_meta.json', meta())        end
+local function saveMeta() writeFile('_meta.json', meta()) end
 
 local function nextId(key)
     local m = meta()
@@ -58,7 +38,6 @@ local function nextId(key)
     return m[key]
 end
 
--- ---- reads ----------------------------------------------------------------
 function Market.Get(id)
     if id == nil then return nil end
     return listings()[tostring(id)]
@@ -66,7 +45,6 @@ end
 
 function Market.All() return listings() end
 
--- Newest-first array of every listing (optionally filtered). filter(listing)->bool.
 function Market.List(filter)
     local out = {}
     for _, l in pairs(listings()) do
@@ -76,8 +54,6 @@ function Market.List(filter)
     return out
 end
 
--- ---- writes ---------------------------------------------------------------
--- Sanitize a media array to at most `max` {url,type,thumb} entries.
 local function cleanMedia(media)
     local out = {}
     if type(media) ~= 'table' then return out end
@@ -106,9 +82,6 @@ local function clampPrice(p)
     return math.floor(p)
 end
 
--- Create a listing. `seller` = identity snapshot { name, avatar, number, numberRaw }.
--- Returns listing, err. Requires a title, at least one media item, and at least
--- one contact method enabled.
 function Market.Create(sellerCid, seller, data)
     if not sellerCid or type(data) ~= 'table' then return nil, 'bad' end
     local title = tostring(data.title or ''):sub(1, 80)
@@ -121,25 +94,24 @@ function Market.Create(sellerCid, seller, data)
 
     local id = nextId('nextListingId')
     local l = {
-        id         = id,
-        sellerCid  = sellerCid,
-        category   = normCategory(data.category),
-        title      = title,
-        desc       = tostring(data.desc or ''):sub(1, 1200),
-        price      = clampPrice(data.price),
-        media      = media,
-        seller     = seller,
+        id = id,
+        sellerCid = sellerCid,
+        category = normCategory(data.category),
+        title = title,
+        desc = tostring(data.desc or ''):sub(1, 1200),
+        price = clampPrice(data.price),
+        media = media,
+        seller = seller,
         allowCalls = allowCalls,
-        allowMsg   = allowMsg,
-        createdAt  = os.time(),
-        updatedAt  = os.time(),
+        allowMsg = allowMsg,
+        createdAt = os.time(),
+        updatedAt = os.time(),
     }
     listings()[tostring(id)] = l
     saveListings()
     return l, nil
 end
 
--- Owner edit. Only the given fields are updated; identity snapshot refreshed.
 function Market.Update(l, seller, data)
     if not l or type(data) ~= 'table' then return nil, 'bad' end
     if data.title ~= nil then

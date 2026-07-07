@@ -35,13 +35,11 @@ local function ensureBills(doc)
     return doc
 end
 
--- List a player's bills (newest first).
 function BillsProvider.Get(citizenid)
     if not citizenid then return {} end
     return ensureBills(DB.LoadOrCreate(citizenid)).wallet.bills
 end
 
--- Add a bill to a player (used by the CreateBill export + other resources).
 function BillsProvider.CreateBill(citizenid, data)
     if not citizenid or type(data) ~= 'table' then return nil end
     local amount = math.floor(tonumber(data.amount) or 0)
@@ -61,7 +59,6 @@ function BillsProvider.CreateBill(citizenid, data)
     while #doc.wallet.bills > MAX_BILLS do table.remove(doc.wallet.bills) end
     DB.Save(citizenid, doc)
 
-    -- Notify the recipient (persists for offline players) + refresh an open wallet.
     if Notif then
         Notif.Push(citizenid, {
             app = 'wallet',
@@ -70,15 +67,13 @@ function BillsProvider.CreateBill(citizenid, data)
             route = { app = 'wallet' },
         })
     end
-    local player = exports.qbx_core:GetPlayerByCitizenId(citizenid)
+    local player = GetPlayerByCitizenId(citizenid)
     if player then
         TriggerClientEvent('oph3z-phone:client:wallet:bill', player.PlayerData.source, bill)
     end
     return bill
 end
 
--- Pay a bill from the player's BANK. Charges here so third-party providers can
--- override the charge logic entirely.
 function BillsProvider.Pay(citizenid, billId)
     if not citizenid then return { ok = false, reason = 'bad' } end
     local doc = ensureBills(DB.LoadOrCreate(citizenid))
@@ -89,10 +84,9 @@ function BillsProvider.Pay(citizenid, billId)
     end
     if not bill then return { ok = false, reason = 'gone' } end
 
-    -- `bank` is NOT in qbx's dontAllowMinus, so check funds ourselves.
-    local bank = exports.qbx_core:GetMoney(citizenid, 'bank') or 0
+    local bank = Bank.Get(citizenid) or 0
     if bank < bill.amount then return { ok = false, reason = 'funds' } end
-    if not exports.qbx_core:RemoveMoney(citizenid, 'bank', bill.amount, 'phone-bill') then
+    if not Bank.Remove(citizenid, bill.amount, 'phone-bill') then
         return { ok = false, reason = 'funds' }
     end
 

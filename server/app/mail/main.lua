@@ -1,24 +1,7 @@
---[[
-    oph3z-phone | Mail — SERVER
-
-    Player-to-player email (by mail address) + SYSTEM mail from other resources
-    (exports['oph3z-phone']:SendMail). Each player already owns a unique address
-    (firstname.lastname@domain — see DB.EnsureMail); the `_mails.json` registry maps
-    address -> citizenid so we can deliver to online AND offline players.
-
-        doc.mail = {
-            address = 'jane.doe@mail.com',
-            inbox   = { { id, from, fromName, subject, body, attachments?, system, read, ts }, ... },
-            sent    = { { id, to, toName, subject, body, attachments?, ts }, ... },
-            nextId  = 1,
-        }
---]]
-
-local MAX_MAILBOX = 100 -- cap per folder
+local MAX_MAILBOX = 100
 
 local function cidOf(src)
-    local player = exports.qbx_core:GetPlayer(src)
-    return player and player.PlayerData.citizenid or nil
+    return GetIdentifier(src)
 end
 
 local function ensureMail(doc)
@@ -37,7 +20,6 @@ local function clean(value, maxLen)
     return value
 end
 
--- Trim shared photo/video attachments down to what we store.
 local function cleanAttachments(list)
     if type(list) ~= 'table' then return nil end
     local out = {}
@@ -60,8 +42,6 @@ local function nameOf(cid)
     return (doc.profile and doc.profile.name) or nil
 end
 
--- Drop a mail into a recipient's inbox (by citizenid). Live-pushes + notifies if
--- they're online. Returns the stored inbox item.
 local function deliverToInbox(recipCid, mail)
     local doc = ensureMail(DB.LoadOrCreate(recipCid))
     local item = {
@@ -80,7 +60,7 @@ local function deliverToInbox(recipCid, mail)
     while #doc.mail.inbox > MAX_MAILBOX do table.remove(doc.mail.inbox) end
     DB.Save(recipCid, doc)
 
-    local player = exports.qbx_core:GetPlayerByCitizenId(recipCid)
+    local player = GetPlayerByCitizenId(recipCid)
     if player then
         TriggerClientEvent('oph3z-phone:client:mail:incoming', player.PlayerData.source, item)
     end
@@ -95,19 +75,14 @@ local function deliverToInbox(recipCid, mail)
     return item
 end
 
--- ---- NUI callbacks --------------------------------------------------------
-
--- Address + inbox + sent (loaded when the Mail app opens).
-lib.callback.register('oph3z-phone:server:mail:get', function(src)
+RegisterCallback('oph3z-phone:server:mail:get', function(src)
     local cid = cidOf(src)
     if not cid then return {} end
     local doc = ensureMail(DB.EnsureMail(cid, DB.LoadOrCreate(cid)))
     return { address = doc.mail.address, inbox = doc.mail.inbox, sent = doc.mail.sent }
 end)
 
--- Player composes + sends to a mail address. Writes the sender's Sent AND the
--- recipient's Inbox (recipient may be offline).
-lib.callback.register('oph3z-phone:server:mail:send', function(src, data)
+RegisterCallback('oph3z-phone:server:mail:send', function(src, data)
     local cid = cidOf(src)
     if not cid or type(data) ~= 'table' then return { ok = false, reason = 'bad' } end
 
@@ -125,7 +100,6 @@ lib.callback.register('oph3z-phone:server:mail:send', function(src, data)
     local fromAddr = senderDoc.mail.address
     local fromName = (senderDoc.profile and senderDoc.profile.name) or fromAddr
 
-    -- Sender's Sent copy.
     local sentItem = {
         id          = senderDoc.mail.nextId,
         to          = toAddr,
@@ -140,7 +114,6 @@ lib.callback.register('oph3z-phone:server:mail:send', function(src, data)
     while #senderDoc.mail.sent > MAX_MAILBOX do table.remove(senderDoc.mail.sent) end
     DB.Save(cid, senderDoc)
 
-    -- Recipient's Inbox (deliverToInbox reloads the doc, so self-mail is safe).
     deliverToInbox(recipCid, {
         from = fromAddr, fromName = fromName,
         subject = subject, body = body, attachments = attachments, system = false,
@@ -149,8 +122,7 @@ lib.callback.register('oph3z-phone:server:mail:send', function(src, data)
     return { ok = true, sent = sentItem }
 end)
 
--- Mark an inbox mail read.
-lib.callback.register('oph3z-phone:server:mail:read', function(src, id)
+RegisterCallback('oph3z-phone:server:mail:read', function(src, id)
     local cid = cidOf(src)
     if not cid then return false end
     local doc = ensureMail(DB.LoadOrCreate(cid))
@@ -161,8 +133,7 @@ lib.callback.register('oph3z-phone:server:mail:read', function(src, id)
     return true
 end)
 
--- Delete a mail from inbox or sent.
-lib.callback.register('oph3z-phone:server:mail:delete', function(src, data)
+RegisterCallback('oph3z-phone:server:mail:delete', function(src, data)
     local cid = cidOf(src)
     if not cid or type(data) ~= 'table' then return false end
     local doc = ensureMail(DB.LoadOrCreate(cid))
@@ -174,11 +145,8 @@ lib.callback.register('oph3z-phone:server:mail:delete', function(src, data)
     return true
 end)
 
--- ---- Export-facing (system mail) ------------------------------------------
 Mail = Mail or {}
 
--- Send SYSTEM mail to a citizen (used by the export). opts:
---   { from = 'LS Bank', fromAddress? = 'noreply@lsbank.com', subject, body, attachments? }
 function Mail.SendSystem(recipCid, opts)
     if not recipCid or type(opts) ~= 'table' then return nil end
     return deliverToInbox(recipCid, {

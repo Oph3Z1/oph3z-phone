@@ -33,7 +33,7 @@ export default function Profile({ cid, reloadToken, onBack }) {
         <button className="mkt-iconbtn" onClick={onBack}><BackArrow /></button>
         <span className="mkt-topbar__title">{t('market.profile')}</span>
         {seller ? (
-          <button className="mkt-iconbtn" onClick={() => setSharing(true)} aria-label={t('market.share')}><ShareIcon /></button>
+          <button className="mkt-iconbtn" onClick={() => setSharing(true)} aria-label={t('market.share')}><ShareIcon size={18} /></button>
         ) : (
           <span className="mkt-topbar__spacer" />
         )}
