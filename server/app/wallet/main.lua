@@ -1,21 +1,3 @@
---[[
-    oph3z-phone | Wallet (Bank) — SERVER
-
-    Bank-account money for the phone: send to other players (ONLINE or OFFLINE),
-    a per-player transaction log, and bills (via the swappable BillsProvider).
-
-    Money is qbx_core's BANK account. Transfers use the citizenid-based exports
-    (RemoveMoney/AddMoney/GetMoney) which persist for offline players too
-    (SaveOffline). NOTE: `bank` is not in qbx's dontAllowMinus, so we check funds
-    ourselves before removing.
-
-        doc.wallet = {
-            transactions = { { id, kind('sent'|'received'|'bill'), amount, party, number?, note?, ts }, ... },
-            bills        = { ... },   -- owned by BillsProvider (default store)
-            nextTxId, nextBillId,
-        }
---]]
-
 local MAX_TX = 100
 
 local function cidOf(src)
@@ -56,7 +38,7 @@ RegisterCallback('oph3z-phone:server:wallet:get', function(src)
     return {
         balance      = bankOf(src),
         transactions = doc.wallet.transactions,
-        bills        = BillsProvider.Get(cid),
+        bills        = (BillsProvider.Get and BillsProvider.Get(cid, src)) or {},
         serverId     = src,
     }
 end)
@@ -109,7 +91,8 @@ RegisterCallback('oph3z-phone:server:wallet:send', function(src, data)
         Notif.Push(recipCid, {
             app = 'wallet',
             title = senderName,
-            body = ('Received $%s'):format(comma(amount)),
+            bodyKey = 'notify.received',
+            bodyArgs = { comma(amount) },
             route = { app = 'wallet' },
         })
     end
@@ -127,16 +110,16 @@ end)
 RegisterCallback('oph3z-phone:server:wallet:bills', function(src)
     local cid = cidOf(src)
     if not cid then return {} end
-    return BillsProvider.Get(cid)
+    return (BillsProvider.Get and BillsProvider.Get(cid, src)) or {}
 end)
 
 RegisterCallback('oph3z-phone:server:wallet:pay', function(src, billId)
     local cid = cidOf(src)
     if not cid then return { ok = false } end
 
-    local res = BillsProvider.Pay(cid, billId)
+    local res = BillsProvider.Pay and BillsProvider.Pay(cid, src, billId) or { ok = false, reason = 'gone' }
     if not res or not res.ok then return res or { ok = false } end
 
     local tx = logTx(cid, { kind = 'bill', amount = res.amount, party = res.issuer, note = res.label })
-    return { ok = true, balance = bankOf(src), tx = tx, bills = BillsProvider.Get(cid) }
+    return { ok = true, balance = bankOf(src), tx = tx, bills = (BillsProvider.Get and BillsProvider.Get(cid, src)) or {} }
 end)

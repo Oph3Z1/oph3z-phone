@@ -178,7 +178,7 @@ end
 function Phone.open()
     if Phone.isOpen then return end
     if not Phone.hasItem() then
-        Notify('You don\'t have a phone.', 'error')
+        Notify(Lang('notify.noPhone', Phone.language), 'error')
         return
     end
 
@@ -238,6 +238,8 @@ function Phone.toggle()
     if Phone.isOpen then Phone.close() else Phone.open() end
 end
 
+RegisterCommand('+oph3z_phone', function() Phone.toggle() end, false)
+RegisterCommand('-oph3z_phone', function() end, false)
 RegisterKeyMapping('+oph3z_phone', 'Open / close phone', 'keyboard', Config.Keybind)
 
 exports('usePhone', function()

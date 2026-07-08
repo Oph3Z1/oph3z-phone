@@ -18,12 +18,24 @@ function Notif.Push(citizenid, data)
     local appId = data.app or 'system'
     if s.notifApps and s.notifApps[appId] == false then return end
 
+    local lang = s.language or Config.DefaultLocale or 'en'
+    local function loc(key, args)
+        local str = Lang(key, lang)
+        if args and #args > 0 then
+            local ok, res = pcall(string.format, str, table.unpack(args))
+            if ok then return res end
+        end
+        return str
+    end
+    local title = data.title or (data.titleKey and loc(data.titleKey, data.titleArgs)) or ''
+    local body  = data.body or (data.bodyKey and loc(data.bodyKey, data.bodyArgs)) or ''
+
     local n = doc.notifications
     local item = {
         id    = n.nextId,
         app   = data.app or 'system',
-        title = tostring(data.title or ''),
-        body  = tostring(data.body or ''),
+        title = tostring(title),
+        body  = tostring(body),
         icon  = data.icon,
         route = data.route,
         ts    = os.time(),

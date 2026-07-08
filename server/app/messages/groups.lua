@@ -294,7 +294,7 @@ RegisterCallback('oph3z-phone:server:groups:create', function(src, input)
                 Notif.Push(mcid, {
                     app = 'message',
                     title = group.name,
-                    body = 'You were added to the group',
+                    bodyKey = 'notify.addedToGroup',
                     route = { app = 'message', gid = group.gid },
                 })
             end
@@ -440,7 +440,7 @@ RegisterCallback('oph3z-phone:server:groups:manage', function(src, input)
                 if mcid and Notif then
                     Notif.Push(mcid, {
                         app = 'message', title = group.name,
-                        body = 'You were added to the group',
+                        bodyKey = 'notify.addedToGroup',
                         route = { app = 'message', gid = group.gid },
                     })
                 end

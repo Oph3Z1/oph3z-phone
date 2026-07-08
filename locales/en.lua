@@ -3,6 +3,35 @@ Locales = Locales or {}
 Locales['en'] = {
     ['_name'] = 'English',
 
+    ['notify'] = {
+        ['noPhone'] = "You don't have a phone.",
+        ['addphotoUsage'] = 'Usage: /addphoto <url> [image|video]',
+        ['photoAdded'] = 'Photo added',
+        ['photoFailed'] = 'Failed to add photo',
+        ['missedCall'] = 'Missed Call',
+        ['addedToGroup'] = 'You were added to the group',
+        ['received'] = 'Received $%s',
+        ['x'] = {
+            ['mentioned'] = '@%s mentioned you',
+            ['replied'] = '@%s replied to you',
+            ['liked'] = '@%s liked your post',
+            ['reposted'] = '@%s reposted your post',
+            ['followed'] = '@%s followed you',
+        },
+        ['msg'] = {
+            ['photo'] = '📷 Photo',
+            ['gif'] = '🎞️ GIF',
+            ['video'] = '📹 Video',
+            ['voice'] = '🎤 Voice message',
+            ['location'] = '📍 Location',
+            ['received'] = 'You received $%s',
+            ['requested'] = 'Requested $%s',
+            ['contact'] = '👤 %s',
+            ['contactFallback'] = 'Contact',
+            ['shared'] = 'Shared item',
+        },
+    },
+
     ['frontend'] = {
         ['common'] = {
             ['cancel'] = 'Cancel',
@@ -36,6 +65,7 @@ Locales['en'] = {
             ['wallpaper'] = 'Wallpaper',
             ['display'] = 'Display & Brightness',
             ['language'] = 'Language',
+            ['privacy'] = 'Privacy',
             ['about'] = 'About',
         },
 
@@ -194,6 +224,14 @@ Locales['en'] = {
 
         ['language'] = {
             ['title'] = 'Language',
+        },
+
+        ['privacy'] = {
+            ['title'] = 'Privacy',
+            ['blocked'] = 'Blocked',
+            ['blockedHint'] = 'Blocked numbers cannot call or message you. Swipe a row to unblock.',
+            ['unblock'] = 'Unblock',
+            ['empty'] = 'No blocked numbers',
         },
 
         ['about'] = {

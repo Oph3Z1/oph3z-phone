@@ -11,9 +11,20 @@ Config.Keybind   = 'F1' -- default key (player can rebind in GTA settings)
 Config.ItemName  = 'phone'-- ox_inventory item that opens the phone
 Config.RequireItem = false -- If true, the phone can ONLY be opened while the player owns Config.ItemName
 
+Config.XVerifyCommand = 'xverify' -- admin command to grant an X verified badge: /xverify <@username> [gold|blue]
+
 Config.PhoneNumberPrefix = '555' -- 555 + 4 digits -> displayed as "555-0142".
 Config.DefaultLocale = 'en' -- en
 Config.MailDomain = 'mail.com'
+
+-- Billing
+-- A MySQL resource (Config.MySQL) is required.
+Config.BillingScript = 'qbox' -- 'esx_billing' | 'qb' | 'codem-billing' | 'qbox'
+Config.BillingTax = 0 -- informational tax % shown on a bill when the biller doesn't send one
+-- 'qb' (phone_invoices) ONLY: how the billed society/job account gets paid.
+-- ('qbox' reads phone_invoices too but pays the society via Renewed-Banking.)
+Config.QBBanking = true -- true = qb-banking (new management), false = qb-management (legacy)
+Config.QBCreateJobAccount = false -- qb-banking: auto-create the society account if it is missing
 
 Config.Airdrop = {
     Range = 8.0, -- metres: who counts as "nearby" when sharing
@@ -34,9 +45,8 @@ Config.DefaultSettings = {
     brightness = 100, -- screen brightness (Control Center, 20-100)
     volume = 70, -- media volume (Control Center / Music app)
     airdrop = false, -- AirDrop receiving toggle (Control Center)
-    locked = true, -- start locked when opened
     airplane = false, -- airplane mode (unreachable + can't call)
-    scale = 100, -- phone size on screen (85-100; Display & Brightness)
+    scale = 85, -- phone size on screen (75-100; Display & Brightness)
     notifSound = true, -- play a sound on new notifications
     notifMaster = true, -- master switch: off = silence ALL notifications
     language = 'en', -- selected UI language (see locales/, Settings > Language)

@@ -23,7 +23,7 @@ end)
 RegisterCommand('addphoto', function(_, args)
     local url = args[1]
     if not url then
-        Notify('Usage: /addphoto <url> [image|video]', 'error')
+        Notify(Lang('notify.addphotoUsage', Phone.language), 'error')
         return
     end
     local ptype = args[2] == 'video' and 'video' or 'image'
@@ -31,5 +31,5 @@ RegisterCommand('addphoto', function(_, args)
     if photo then
         SendNUIMessage({ action = 'phone:photos:added', data = photo })
     end
-    Notify(photo and 'Photo added' or 'Failed to add photo', photo and 'success' or 'error')
+    Notify(Lang(photo and 'notify.photoAdded' or 'notify.photoFailed', Phone.language), photo and 'success' or 'error')
 end, false)

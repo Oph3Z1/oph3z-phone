@@ -118,16 +118,16 @@ RegisterCallback('oph3z-phone:server:messages:read', function(src, input)
     return true
 end)
 
-local function notifBody(mtype, body, meta)
-    if mtype == 'image' then return '📷 Photo'
-    elseif mtype == 'gif' then return '🎞️ GIF'
-    elseif mtype == 'video' then return '📹 Video'
-    elseif mtype == 'voice' then return '🎤 Voice message'
-    elseif mtype == 'location' then return '📍 Location'
-    elseif mtype == 'money' then return ('You received $%s'):format(meta and meta.amount or body)
-    elseif mtype == 'request' then return ('Requested $%s'):format(meta and meta.amount or body)
-    elseif mtype == 'contact' then return ('👤 %s'):format((meta and meta.name) or 'Contact')
-    elseif mtype == 'appshare' then return (meta and meta.title) or 'Shared item'
+local function notifBody(mtype, body, meta, lang)
+    if mtype == 'image' then return Lang('notify.msg.photo', lang)
+    elseif mtype == 'gif' then return Lang('notify.msg.gif', lang)
+    elseif mtype == 'video' then return Lang('notify.msg.video', lang)
+    elseif mtype == 'voice' then return Lang('notify.msg.voice', lang)
+    elseif mtype == 'location' then return Lang('notify.msg.location', lang)
+    elseif mtype == 'money' then return Lang('notify.msg.received', lang):format(meta and meta.amount or body)
+    elseif mtype == 'request' then return Lang('notify.msg.requested', lang):format(meta and meta.amount or body)
+    elseif mtype == 'contact' then return Lang('notify.msg.contact', lang):format((meta and meta.name) or Lang('notify.msg.contactFallback', lang))
+    elseif mtype == 'appshare' then return (meta and meta.title) or Lang('notify.msg.shared', lang)
     else return body end
 end
 
@@ -166,7 +166,7 @@ local function deliver(senderCid, toDigits, mtype, body, meta)
                 Notif.Push(recipCid, {
                     app   = 'message',
                     title = senderName,
-                    body  = notifBody(mtype, body, meta),
+                    body  = notifBody(mtype, body, meta, recipDoc.settings and recipDoc.settings.language),
                     route = { app = 'message', number = senderNumber },
                 })
             end

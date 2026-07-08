@@ -76,7 +76,7 @@ local function notifyAccount(targetAccId, opts)
     local liveSrc = online[tostring(targetAccId)]
     if liveSrc then targetCid = cidOf(liveSrc) else targetCid = target and target.lastCid or nil end
     if targetCid and Notif then
-        Notif.Push(targetCid, { app = 'x', title = opts.title or 'X', body = opts.body or '', route = { app = 'x' } })
+        Notif.Push(targetCid, { app = 'x', title = opts.title or 'X', body = opts.body, bodyKey = opts.bodyKey, bodyArgs = opts.bodyArgs, route = { app = 'x' } })
     end
 
     if liveSrc then
@@ -94,7 +94,7 @@ local function notifyMentions(text, actorAcc, postId, skip)
             seen[key] = true
             notifyAccount(tid, {
                 type = 'mention', actorId = actorAcc.id, postId = postId,
-                title = actorAcc.name, body = ('@%s mentioned you'):format(actorAcc.handle),
+                title = actorAcc.name, bodyKey = 'notify.x.mentioned', bodyArgs = { actorAcc.handle },
             })
         end
     end
@@ -275,13 +275,13 @@ RegisterCallback('oph3z-phone:server:x:deleteAccount', function(src, data)
     return { ok = true }
 end)
 
-RegisterCommand('xverify', function(src, args)
+RegisterCommand(Config.XVerifyCommand or 'xverify', function(src, args)
     if src ~= 0 and not IsPlayerAceAllowed(src, 'group.admin') then
         TriggerClientEvent('ox_lib:notify', src, { type = 'error', description = 'No permission.' })
         return
     end
     local handle = args[1]
-    if not handle then print('[x] usage: xverify <@handle> [gold|blue]'); return end
+    if not handle then print(('[x] usage: %s <@handle> [gold|blue]'):format(Config.XVerifyCommand or 'xverify')); return end
     local acc = X.GetAccount(X.AccountIdByHandle(handle))
     if not acc then print(('[x] no account @%s'):format(tostring(handle))); return end
     X.SetBadge(acc, (args[2] or 'gold'):lower())
@@ -373,7 +373,7 @@ RegisterCallback('oph3z-phone:server:x:post', function(src, data)
             skip[tostring(parent.author)] = true
             notifyAccount(parent.author, {
                 type = 'reply', actorId = viewerId, postId = p.id,
-                title = acc.name, body = ('@%s replied to you'):format(acc.handle),
+                title = acc.name, bodyKey = 'notify.x.replied', bodyArgs = { acc.handle },
             })
         end
     end
@@ -398,7 +398,7 @@ RegisterCallback('oph3z-phone:server:x:like', function(src, data)
         local acc = X.GetAccount(viewerId)
         notifyAccount(p.author, {
             type = 'like', actorId = viewerId, postId = p.id,
-            title = acc.name, body = ('@%s liked your post'):format(acc.handle),
+            title = acc.name, bodyKey = 'notify.x.liked', bodyArgs = { acc.handle },
         })
     end
     return { ok = true, liked = liked, likeCount = X.countKeys(p.likes) }
@@ -420,7 +420,7 @@ RegisterCallback('oph3z-phone:server:x:repost', function(src, data)
         local acc = X.GetAccount(viewerId)
         notifyAccount(p.author, {
             type = 'repost', actorId = viewerId, postId = p.id,
-            title = acc.name, body = ('@%s reposted your post'):format(acc.handle),
+            title = acc.name, bodyKey = 'notify.x.reposted', bodyArgs = { acc.handle },
         })
     end
     return { ok = true, reposted = reposted, repostCount = X.countKeys(p.reposts) }
@@ -534,7 +534,7 @@ RegisterCallback('oph3z-phone:server:x:follow', function(src, data)
         local acc = X.GetAccount(viewerId)
         notifyAccount(targetId, {
             type = 'follow', actorId = viewerId,
-            title = acc.name, body = ('@%s followed you'):format(acc.handle),
+            title = acc.name, bodyKey = 'notify.x.followed', bodyArgs = { acc.handle },
         })
     end
     local target = X.GetAccount(targetId)

@@ -256,7 +256,7 @@ local function endCall(callId, reason)
         Notif.Push(call.calleeCid, {
             app   = 'call',
             title = call.callerNameSeen or DB.FormatNumber(call.callerNumber),
-            body  = 'Missed Call',
+            bodyKey = 'notify.missedCall',
             route = { app = 'call', tab = 'recents' },
         })
     end
@@ -304,7 +304,7 @@ local function startCall(src, rawNumber)
                     Notif.Push(calleeCid, {
                         app   = 'call',
                         title = calleeSeesCaller.name or DB.FormatNumber(callerPhone.numberRaw),
-                        body  = 'Missed Call',
+                        bodyKey = 'notify.missedCall',
                         route = { app = 'call', tab = 'recents' },
                     })
                 end

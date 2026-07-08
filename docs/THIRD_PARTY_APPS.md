@@ -329,14 +329,19 @@ the player's `source`. Your iframe → your `client.lua` (`fetchNui`) → your
 | `SendMessage(src, toNumber, payload)` | Send a message **from this player** to a number. `payload = { type?, body, meta? }` (`type` defaults to `'text'`). |
 | `PlaceCall(src, toNumber)` | Start a call from this player to a number. Returns the call id. |
 | `SendMail(src, opts)` | Drop **system mail** into this player's Mail inbox. `opts = { from = 'LS Bank', fromAddress? = 'noreply@lsbank.com', subject, body, attachments? = { { url, thumb? } } }`. Fires a phone notification. Returns the stored inbox item. |
-| `CreateBill(target, data)` | Add a **bill** to a player's Wallet. `target` = server id OR citizenid string. `data = { issuer = 'LS Water', label = 'Water bill', amount = 250 }`. Fires a phone notification. Returns the stored bill. *(This uses the default bills provider — see below.)* |
 
-**Swappable billing provider.** The Wallet reads/pays bills only through `server/app/wallet/bills_provider.lua`. Everyone's billing system differs, so to integrate your own, edit that one file to call your resource, keeping these functions + return shapes:
-- `BillsProvider.Get(citizenid)` → `{ { id, issuer, label, amount, ts, paid }, ... }`
-- `BillsProvider.Pay(citizenid, billId)` → `{ ok = true, amount, issuer, label }` or `{ ok = false, reason }` (the provider owns the charge)
-- `BillsProvider.CreateBill(citizenid, data)` → the stored bill (optional; drop it if bills come from your resource)
+**Billing.** The Wallet does NOT store its own bills — it lists and pays invoices from your server's existing billing resource, selected by `Config.BillingScript`:
 
-The default provider stores bills in the phone DB and charges the player's bank.
+| `Config.BillingScript` | Bills table | Paid via |
+|---|---|---|
+| `'esx_billing'` | `billing` | `esx_billing:payBill` event |
+| `'qb'` | `phone_invoices` | bank charge + `qb-banking`/`qb-management` society payout (`Config.QBBanking` / `Config.QBCreateJobAccount`) |
+| `'qbox'` | `phone_invoices` | bank charge + `Renewed-Banking` society payout (qbox has no native biller; qbx_management is boss-menu only) |
+| `'codem-billing'` | `codem_billing` (unpaid) | `codem-billing:server:PayBillBankV2` event |
+
+Each adapter lives in `server/app/wallet/billing/<script>.lua` and only defines `BillsProvider.Get(cid, src)` / `Pay(cid, src, billId)` when it's the selected script. To add another biller, drop a new file there that reads its table and pays through it. A MySQL resource (`Config.MySQL`) is required, since bills are read straight from the biller's table.
+
+**Missing table = no error.** Every adapter checks (once, cached, in `server/app/wallet/billing/_shared.lua`) that its bills table exists; if not, the Wallet simply shows no bills instead of erroring (enable `Config.Debug` to log which table is missing). Note **qbox/qb ship no invoices table** — the Wallet reads the de-facto-standard `phone_invoices` (`citizenid, amount, society, sender, invoicelabel`), which is created by whatever billing/job resource you use to issue invoices. If nothing has created it yet, billing stays empty until it does.
 
 ```lua
 -- server.lua

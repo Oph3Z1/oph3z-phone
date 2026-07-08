@@ -10,6 +10,7 @@ import { loadRingtones, addRingtone, deleteRingtone } from '../../store/slices/r
 import { loadClock, setAlarmTone, addAlarmTone, deleteAlarmTone } from '../../store/slices/clockSlice';
 import { setShareTo } from '../../store/slices/messagesSlice';
 import { openShare } from '../../store/slices/airdropSlice';
+import { unblockNumber, loadPhoneState, digitsOf } from '../../store/slices/contactsSlice';
 import { useAvailableApps } from '../useAvailableApps';
 import { WALLPAPER_PRESETS, isWallpaperUrl } from '../../config/phone.config';
 import { useT } from '../../i18n/useT';
@@ -89,6 +90,9 @@ const GlobeBigG = () => (
 );
 const AboutG = () => (
   <svg viewBox="0 0 24 24" fill="currentColor"><path d="M11 10h2v7h-2z" /><circle cx="12" cy="7" r="1.3" /></svg>
+);
+const PrivacyG = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="12" cy="12" r="8.5" /><path d="M6.2 6.2l11.6 11.6" /></svg>
 );
 const CopyG = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round"><rect x="8" y="8" width="11" height="12" rx="2" /><path d="M5 16V5a2 2 0 012-2h9" /></svg>
@@ -737,6 +741,122 @@ function LanguageScreen({ onBack }) {
   );
 }
 
+/* ---- Privacy screen (blocked list) -------------------------------------- */
+const BLK_ACTION_W = 92; // px width of the swipe-revealed "Unblock" action
+
+function BlockedRow({ number, name, t, onUnblock }) {
+  const [dx, setDx] = useState(0);
+  const openRef = useRef(false);
+  const movedRef = useRef(false);
+  const drag = useRef(null);
+
+  const begin = (e) => {
+    movedRef.current = false;
+    drag.current = { x: e.clientX, base: openRef.current ? -BLK_ACTION_W : 0 };
+    try { e.currentTarget.setPointerCapture(e.pointerId); } catch (_) { /* noop */ }
+  };
+  const move = (e) => {
+    if (!drag.current) return;
+    if (Math.abs(e.clientX - drag.current.x) > 4) movedRef.current = true;
+    let next = drag.current.base + (e.clientX - drag.current.x);
+    if (next < -BLK_ACTION_W) next = -BLK_ACTION_W + (next + BLK_ACTION_W) * 0.35; // rubber-band
+    setDx(Math.max(-BLK_ACTION_W * 1.4, Math.min(0, next)));
+  };
+  const finish = () => {
+    if (!drag.current) return;
+    drag.current = null;
+    const open = dx < -BLK_ACTION_W / 2;
+    openRef.current = open;
+    setDx(open ? -BLK_ACTION_W : 0);
+  };
+  const onClick = () => {
+    if (movedRef.current) { movedRef.current = false; return; }
+    if (openRef.current) { openRef.current = false; setDx(0); }
+  };
+
+  const dragging = !!drag.current;
+  const progress = Math.min(1, Math.max(0, -dx / BLK_ACTION_W)); // 0 closed -> 1 open
+  const snap = 'cubic-bezier(.22,1,.36,1)';
+
+  return (
+    <div className="blk-row">
+      <button
+        className="blk-row__unblock"
+        style={{
+          width: BLK_ACTION_W,
+          opacity: progress,
+          transform: `translateX(${(1 - progress) * 16}px)`,
+          transition: dragging ? 'none' : `opacity .26s ease, transform .26s ${snap}`,
+        }}
+        onClick={onUnblock}
+      >
+        {t('privacy.unblock')}
+      </button>
+      <div
+        className="blk-row__front"
+        style={{ transform: `translate3d(${dx}px,0,0)`, transition: dragging ? 'none' : `transform .26s ${snap}` }}
+        onPointerDown={begin}
+        onPointerMove={move}
+        onPointerUp={finish}
+        onPointerCancel={finish}
+        onClick={onClick}
+      >
+        <span className="blk-row__av">{(name || number || '#').charAt(0).toUpperCase()}</span>
+        <div className="blk-row__txt">
+          <span className="blk-row__name">{name || number}</span>
+          {name ? <span className="blk-row__num">{number}</span> : null}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function PrivacyScreen({ onBack }) {
+  const dispatch = useDispatch();
+  const t = useT();
+  const loaded = useSelector((s) => s.contacts.loaded);
+  const blocked = useSelector((s) => s.contacts.blocked);
+  const contacts = useSelector((s) => s.contacts.contacts);
+
+  useEffect(() => {
+    if (!loaded) dispatch(loadPhoneState());
+  }, [loaded, dispatch]);
+
+  const entries = Object.entries(blocked || {}).map(([digits, e]) => {
+    const c = contacts.find((x) => digitsOf(x.number) === digits);
+    return { digits, number: e.number || digits, name: e.name || (c && c.name) || null };
+  });
+
+  return (
+    <div className="set">
+      <div className="set__navbar set__navbar--center">
+        <button className="set__backcircle" onClick={onBack} aria-label="Back">
+          <ChevronL />
+        </button>
+        <span className="set__navtitle">{t('privacy.title')}</span>
+        <span className="set__navspacer" />
+      </div>
+
+      <div className="set__scroll">
+        <div className="set-grouplabel">{t('privacy.blocked')}</div>
+        {entries.length === 0 ? (
+          <div className="set-card"><div className="blk-empty">{t('privacy.empty')}</div></div>
+        ) : (
+          <div className="set-card set-card--blk">
+            {entries.map((it, i) => (
+              <Fragment key={it.digits}>
+                {i > 0 && <div className="set-sep" />}
+                <BlockedRow number={it.number} name={it.name} t={t} onUnblock={() => dispatch(unblockNumber(it.number))} />
+              </Fragment>
+            ))}
+          </div>
+        )}
+        <p className="set-hint">{t('privacy.blockedHint')}</p>
+      </div>
+    </div>
+  );
+}
+
 /* ---- Notifications screen ------------------------------------------------ */
 function NotificationsScreen({ onBack }) {
   const dispatch = useDispatch();
@@ -994,6 +1114,7 @@ export default function SettingsApp() {
   if (view === 'wallpaper') return <WallpaperScreen onBack={() => setView('list')} />;
   if (view === 'display') return <DisplayScreen onBack={() => setView('list')} />;
   if (view === 'language') return <LanguageScreen onBack={() => setView('list')} />;
+  if (view === 'privacy') return <PrivacyScreen onBack={() => setView('list')} />;
   if (view === 'about') return <AboutScreen onBack={() => setView('list')} />;
   if (view !== 'list') return <SubScreen id={view} onBack={() => setView('list')} />;
 
@@ -1064,6 +1185,8 @@ export default function SettingsApp() {
         {/* General */}
         <div className="set-card">
           <NavRow icon={<SqIcon bg="#0a84ff"><LanguageG /></SqIcon>} label={t('settings.language')} onClick={() => setView('language')} />
+          <div className="set-sep" />
+          <NavRow icon={<SqIcon bg="#ff3b30"><PrivacyG /></SqIcon>} label={t('settings.privacy')} onClick={() => setView('privacy')} />
           <div className="set-sep" />
           <NavRow icon={<SqIcon bg="#8e8e93"><AboutG /></SqIcon>} label={t('settings.about')} onClick={() => setView('about')} />
         </div>

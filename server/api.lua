@@ -102,9 +102,3 @@ exports('SendMail', function(src, opts)
     if not cid or not Mail then return nil end
     return Mail.SendSystem(cid, opts)
 end)
-
-exports('CreateBill', function(target, data)
-    local cid = type(target) == 'string' and target or cidOf(target)
-    if not cid or not BillsProvider or not BillsProvider.CreateBill then return nil end
-    return BillsProvider.CreateBill(cid, data)
-end)
