@@ -176,6 +176,42 @@ to the NUI by the `phone:camera:enter` callback.
 - **Controls:** PHOTO/VIDEO toggle, shutter, flip, gallery thumb (→ opens Photos),
   Esc to exit.
 
+### Video audio — `Config.VideoAudio` (`off` | `self` | `nearby`)
+
+Recorded videos can carry audio. The mode is set in `config.lua`:
+
+| Mode | What you get | Infra needed |
+|---|---|---|
+| `off` | Silent video (original behavior). | none |
+| `self` | **Your own mic** mixed into the video, live. Talk-gated. | none — works on any host, incl. localhost |
+| `nearby` | **All nearby players' voices** (and yours), mixed into the video server-side. | **ffmpeg on the host** |
+
+Related config: `Config.VideoAudioRange` (metres a player must be within to be audible, default `12.0`), `Config.VideoAudioGate` (only capture a player while they're actually talking — uses `NetworkIsPlayerTalking`, so it works with pma-voice / mumble / SaltyChat), `Config.FFmpegPath` (leave as `'ffmpeg'`, auto-detected — see below).
+
+**How `nearby` works (no game audio is ever tapped — the browser can't reach it):**
+- `self` builds a Web Audio graph on the recorder (mic → gain "gate" → track added to the canvas `captureStream`), so the recorder's own voice is baked into the video live.
+- `nearby` is distributed: the recorder films a **silent** video; the server (`server/app/camera/main.lua`) tracks who is near the recorder **for the whole recording** (re-scanned ~2×/s, so people who run into range are picked up, with a mic pre-warm just outside range so the first word isn't clipped). Each nearby player's phone NUI records a tiny gated Opus clip via `getUserMedia` — **even while their phone is closed** (`web/src/utils/voiceCapture.js`, wired into the always-mounted `App.jsx`). The gate is driven **on each player's own client** from their live distance to the recorder (`client/app/camera/main.lua`), so audio is present only while they're genuinely near and talking. On stop, every clip is uploaded and the server hands the video URL + clips (each with a time offset) to a Node script, `server/app/camera/videomux.js`, which runs ffmpeg (`adelay` per clip → `amix` → `-c:v copy -c:a libopus`; the video is **not** re-encoded, so it's fast) and uploads the finished file. The recorder sees a brief **"Processing…"** screen (`phone:camera:videoDone`).
+- **Graceful by design:** if a client's mic is blocked, ffmpeg is missing, or the mux times out, you still get the video (silent) — it never hangs or errors. `getUserMedia` mic access can be blocked on some FiveM CEF clients; that client simply contributes no audio.
+
+### `nearby` host setup (required only for `nearby`)
+
+Players install **nothing**. Only the **server host** does two one-time steps (both are FiveM security gates — the resource can't do them itself):
+
+1. **Install ffmpeg** (safe, industry-standard, open-source — get it from an official source):
+   - Windows: `winget install Gyan.FFmpeg` (or `choco install ffmpeg`)
+   - Linux (VPS): `sudo apt install ffmpeg`
+2. **Grant the child-process permission** in `server.cfg` (FiveM's Node sandbox blocks resources from launching programs unless the owner allows it) — add this **above** the line that starts the phone:
+   ```cfg
+   add_unsafe_child_process_permission "oph3z-phone"
+   ```
+   `server.cfg` is only read at startup, so do a **full server restart** after adding it (a resource restart won't pick it up). The "unsafe" wording is just FiveM's label; it only whitelists this one resource to run ffmpeg.
+
+**No path setup needed.** `Config.FFmpegPath = 'ffmpeg'` auto-detects the binary from `PATH` → winget → chocolatey → `/usr/bin`, `/usr/local/bin`, `/snap/bin`, `/opt/homebrew/bin`. On success the console logs `videomux: using ffmpeg at …`. Only set an absolute path if it's installed somewhere unusual and detection fails.
+
+> Locked-down shared hosts that forbid editing `server.cfg` or installing packages can't use `nearby` — set `Config.VideoAudio = 'self'` there (your own voice, zero setup).
+>
+> Diagnostics: set `Config.Debug = true` to log, per recording, who is captured (`vrec … capturing player X`) and how many clips get mixed (`N participant(s), M voice clip(s) to mix`).
+
 ---
 
 ## Maps app  (client+server/app/maps/main.lua + web/src/app/maps/)

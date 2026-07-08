@@ -6,6 +6,8 @@ import PhonePeek from './components/Notifications/PhonePeek';
 import { useNuiEvent } from './hooks/useNuiEvent';
 import { fetchNui } from './utils/fetchNui';
 import { isEnvBrowser } from './utils/misc';
+import { startVoiceCapture, setVoiceGate, stopVoiceCapture } from './utils/voiceCapture';
+import { uploadToProvider } from './utils/upload';
 import { setVisible, setTime, closeApp, openApp, unlock, setIdentity } from './store/slices/phoneSlice';
 import { setLayout, setExternalApps } from './store/slices/appsSlice';
 import { bumpLive } from './store/slices/xSlice';
@@ -91,6 +93,30 @@ export default function App() {
       // (active/incoming/outgoing) call is left alone so reopening still shows it.
       if (callStateRef.current === 'ended' || callStateRef.current === 'failed') dispatch(clearCall());
     }
+  });
+
+  // Nearby-voice video capture. Fires on EVERY nearby player (even with the
+  // phone closed — this root stays mounted): record a gated mic clip, upload it
+  // on stop, and report the URL back so the server can mix it onto the video.
+  const vrecCfgRef = useRef(null);
+  const vrecSessionRef = useRef(null);
+  useNuiEvent('phone:vrec:capture', (d) => {
+    vrecCfgRef.current = (d && d.cfg) || null;
+    vrecSessionRef.current = (d && d.sessionId) || null;
+    startVoiceCapture(!!(d && d.gate));
+  });
+  useNuiEvent('phone:vrec:gate', (d) => setVoiceGate(!!(d && d.open)));
+  useNuiEvent('phone:vrec:stop', async () => {
+    const cfg = vrecCfgRef.current;
+    const sessionId = vrecSessionRef.current;
+    vrecCfgRef.current = null;
+    vrecSessionRef.current = null;
+    const blob = await stopVoiceCapture();
+    let url = null;
+    if (blob && cfg) {
+      try { url = await uploadToProvider(blob, 'voice.webm', cfg); } catch (e) { url = null; }
+    }
+    fetchNui('phone:camera:clipReady', { sessionId, url }, null);
   });
 
   // Lua -> the set of registered third-party apps changed (resource start/stop).

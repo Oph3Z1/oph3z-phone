@@ -4,6 +4,8 @@ Phone.cameraActive = false
 local HEAD_BONE = 31086
 local frontCam = false
 local photoMode = true
+local selfTalkActive = false
+local partTalkActive = false
 local videoCam = nil
 local videoFov = 52.0
 local VIDEO_FOV_MIN, VIDEO_FOV_MAX = 22.0, 75.0
@@ -164,7 +166,10 @@ end
 
 RegisterNUICallback('phone:camera:enter', function(_, cb)
     enterCamera()
-    cb({ camera = Config.Camera })
+    cb({
+        camera = Config.Camera,
+        video = { mode = Config.VideoAudio or 'off', gate = Config.VideoAudioGate == true },
+    })
 end)
 
 RegisterNUICallback('phone:camera:exit', function(_, cb)
@@ -200,8 +205,101 @@ RegisterNUICallback('phone:camera:save', function(data, cb)
     cb(photo or false)
 end)
 
+local function isTalking()
+    local v = NetworkIsPlayerTalking(PlayerId())
+    return v == true or v == 1
+end
+
+local function startSelfTalk()
+    if selfTalkActive then return end
+    selfTalkActive = true
+    CreateThread(function()
+        local last = nil
+        while selfTalkActive do
+            local talking = isTalking()
+            if talking ~= last then
+                last = talking
+                SendNUIMessage({ action = 'phone:camera:talk', data = { talking = talking } })
+            end
+            Wait(150)
+        end
+    end)
+end
+
+RegisterNUICallback('phone:camera:videoStart', function(data, cb)
+    local mode = data and data.mode or 'off'
+    if mode == 'self' then
+        if data and data.gate then startSelfTalk() end
+        cb({})
+    elseif mode == 'nearby' then
+        local res = TriggerCallback('oph3z-phone:server:camera:videoStart')
+        cb(res or {})
+    else
+        cb({})
+    end
+end)
+
+RegisterNUICallback('phone:camera:videoStop', function(data, cb)
+    selfTalkActive = false
+    local sid = data and data.sessionId
+    if sid then
+        TriggerServerEvent('oph3z-phone:server:camera:videoStop', sid, data and data.url, data and data.duration)
+    end
+    cb('ok')
+end)
+
+RegisterNUICallback('phone:camera:clipReady', function(data, cb)
+    local sid = data and data.sessionId
+    if sid then
+        TriggerServerEvent('oph3z-phone:server:camera:clip', sid, data and data.url)
+    end
+    cb('ok')
+end)
+
+RegisterNetEvent('oph3z-phone:client:camera:capStart', function(payload)
+    if not payload or not payload.sessionId then return end
+    SendNUIMessage({ action = 'phone:vrec:capture', data = {
+        sessionId = payload.sessionId,
+        gate = true,
+        cfg = Config.Camera,
+    } })
+
+    partTalkActive = true
+    local recorderSrc = payload.recorder
+    local range = (payload.range or 12.0) + 0.0
+    local useTalk = payload.gate == true
+    CreateThread(function()
+        local last = nil
+        while partTalkActive do
+            local open = false
+            local rIdx = recorderSrc and GetPlayerFromServerId(recorderSrc) or -1
+            if rIdx ~= -1 then
+                local rPed = GetPlayerPed(rIdx)
+                local myPed = PlayerPedId()
+                if rPed and rPed ~= 0 and myPed and myPed ~= 0 then
+                    if #(GetEntityCoords(myPed) - GetEntityCoords(rPed)) <= range then
+                        open = (not useTalk) or isTalking()
+                    end
+                end
+            end
+            if open ~= last then
+                last = open
+                SendNUIMessage({ action = 'phone:vrec:gate', data = { open = open } })
+            end
+            Wait(120)
+        end
+    end)
+end)
+
+RegisterNetEvent('oph3z-phone:client:camera:capStop', function(payload)
+    partTalkActive = false
+    SendNUIMessage({ action = 'phone:vrec:stop', data = { sessionId = payload and payload.sessionId } })
+end)
+
 AddEventHandler('onResourceStop', function(resource)
     if resource == GetCurrentResourceName() then
+        selfTalkActive = false
+        partTalkActive = false
         exitCamera()
     end
 end)

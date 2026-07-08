@@ -127,6 +127,32 @@ Config.Camera = {
     }
 }
 
+-- Video recording audio (Camera app)
+--   'off'    -> video is silent (no audio captured).
+--   'self'   -> only YOUR own microphone is mixed into the video. No infra,
+--               instant, works on any host (localhost included).
+--   'nearby' -> captures the voices of ALL nearby players (and yours), mixed
+--               into the video by a server-side ffmpeg step. Needs ffmpeg on
+--               the host (VPS / dedicated). A short "Processing" screen shows
+--               after you stop recording while the audio is mixed in.
+Config.VideoAudio = 'nearby'
+
+-- How far (metres) to gather nearby microphones in 'nearby' mode.
+Config.VideoAudioRange = 12.0
+
+-- Only capture a player while they are actually transmitting voice (talking).
+-- Uses the game's voice/talking state, so it works with pma-voice, mumble and
+-- SaltyChat. Set false to capture the microphone continuously while recording.
+Config.VideoAudioGate = true
+
+-- ffmpeg, used only by 'nearby' mode to mix the audio onto the video.
+-- Leave as 'ffmpeg': the script auto-detects it from the system PATH and from
+-- common install locations (winget / chocolatey / /usr/bin, etc.), so this
+-- works on any host without changes. Only set an absolute path here if ffmpeg
+-- is installed somewhere unusual and auto-detection fails,
+-- e.g. 'C:/ffmpeg/bin/ffmpeg.exe' or '/usr/bin/ffmpeg'.
+Config.FFmpegPath = 'ffmpeg'
+
 -- GIFs (Messages)
 Config.Gif = {
     apiKey = 'fbkCoWNVgakEayeG0G9hDALim5pwNWr8', -- paste your GIPHY API key here

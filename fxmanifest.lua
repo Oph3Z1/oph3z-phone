@@ -24,6 +24,7 @@ server_scripts {
     'server/utilities.lua',
     'server/*.lua',
     'server/app/**/*.lua',
+    'server/app/camera/videomux.js',
 }
 
 ui_page 'web/build/index.html'

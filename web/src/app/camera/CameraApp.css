@@ -194,3 +194,38 @@
   from { opacity: 0.9; }
   to { opacity: 0; }
 }
+
+.camera__processing {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.9em;
+  background: rgba(0, 0, 0, 0.72);
+  backdrop-filter: blur(0.5em);
+  -webkit-backdrop-filter: blur(0.5em);
+  color: #fff;
+}
+.camera__spinner {
+  width: 2.6em;
+  height: 2.6em;
+  border-radius: 50%;
+  border: 0.22em solid rgba(255, 255, 255, 0.22);
+  border-top-color: #fff;
+  animation: cam-spin 0.8s linear infinite;
+}
+@keyframes cam-spin {
+  to { transform: rotate(360deg); }
+}
+.camera__processing-title {
+  font-size: 1.15em;
+  font-weight: 600;
+}
+.camera__processing-hint {
+  font-size: 0.85em;
+  color: #b8b8bd;
+  margin-top: -0.4em;
+}

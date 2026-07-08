@@ -419,6 +419,8 @@ Locales['en'] = {
             ['photo'] = 'PHOTO',
             ['video'] = 'VIDEO',
             ['cancel'] = 'Cancel',
+            ['processing'] = 'Processing',
+            ['processingHint'] = 'Mixing in nearby audio…',
         },
 
         ['photos'] = {
@@ -459,6 +461,8 @@ Locales['en'] = {
             ['preview'] = 'Preview',
             ['noPreview'] = 'No preview images available',
             ['noApps'] = 'No apps available.',
+            ['search'] = 'Search',
+            ['noResults'] = 'No results for "{query}"',
         },
 
         ['controlCenter'] = {

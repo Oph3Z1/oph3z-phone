@@ -4,6 +4,7 @@ import './AppStoreApp.css';
 import { openApp } from '../../store/slices/phoneSlice';
 import { startDownload, cancelDownload, folderFlat } from '../../store/slices/homeSlice';
 import { ChevronLeftIcon } from '../messages/components/icons';
+import { SearchIcon } from '../phone/components/icons';
 import { useT } from '../../i18n/useT';
 import { useAvailableApps } from '../useAvailableApps';
 
@@ -69,13 +70,37 @@ function ActionButton({ app, installed }) {
 
 function StoreList({ apps, installed, onOpen }) {
   const t = useT();
+  const [query, setQuery] = useState('');
+  const q = query.trim().toLowerCase();
+  const filtered = useMemo(() => {
+    if (!q) return apps;
+    return apps.filter((a) =>
+      `${a.label || ''} ${a.developer || ''} ${a.description || ''}`.toLowerCase().includes(q)
+    );
+  }, [apps, q]);
   return (
     <div className="astore">
       <div className="astore__topbar" />
       <div className="astore__scroll">
         <h1 className="astore__title">{t('appstore.title')}</h1>
+        <div className="astore-search">
+          <SearchIcon className="astore-search__icon" />
+          <input
+            className="astore-search__input"
+            type="text"
+            placeholder={t('appstore.search')}
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+          />
+          {query && (
+            <button className="astore-search__clear" onClick={() => setQuery('')} aria-label="Clear">×</button>
+          )}
+        </div>
         {apps.length === 0 && <div className="astore__empty">{t('appstore.noApps')}</div>}
-        {apps.map((a) => (
+        {apps.length > 0 && filtered.length === 0 && (
+          <div className="astore__empty">{t('appstore.noResults', { query: query.trim() })}</div>
+        )}
+        {filtered.map((a) => (
           <div key={a.id} className="astore-row" role="button" onClick={() => onOpen(a.id)}>
             <AppIconImg app={a} />
             <div className="astore-row__text">
