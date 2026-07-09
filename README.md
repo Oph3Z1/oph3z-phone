@@ -17,19 +17,19 @@ You can open the phone with a key (F1 by default), a command, or as an inventory
 
 Apps included:
 
-- Phone: real voice calls through pma-voice, with ringtones, a recents list, a speaker mode so players next to you can hear the call, a proper "phone to your ear" animation, and FaceTime-style video calls.
-- Messages: iMessage-style chats with GIFs, voice messages, group chats, and sharing of photos, location and money.
-- Camera and Photos: take photos and videos with a front or back camera, save them to your gallery, and AirDrop them to players nearby.
-- Music: search and play real songs, build playlists, and play out loud so people around you hear it too.
-- Twexa: a built-in social app, a bit like X (Twitter), where players post, follow, reply and repost.
-- Marketplace: buy and sell in the city. Post cars, houses or items with photos and a price.
-- Wallet: check your balance and transactions, send and receive money, and pay bills.
-- Mail: send and read emails right from the phone.
-- Maps: a live map with GPS and saved locations.
-- Clock: set alarms and timers that nearby players can hear too.
-- Calculator: a simple everyday calculator.
-- Settings: change the wallpaper, brightness, language, ringtones and more.
-- App Store: install or remove apps on the phone.
+- **Phone**: real voice calls through pma-voice, with ringtones, a recents list, a speaker mode so players next to you can hear the call, a proper "phone to your ear" animation, and FaceTime-style video calls.
+- **Messages**: iMessage-style chats with GIFs, voice messages, group chats, and sharing of photos, location and money.
+- **Camera and Photos**: take photos and videos with a front or back camera, save them to your gallery, and AirDrop them to players nearby.
+- **Music**: search and play real songs, build playlists, and play out loud so people around you hear it too.
+- **Twexa**: a built-in social app, a bit like X (Twitter), where players post, follow, reply and repost.
+- **Marketplace**: buy and sell in the city. Post cars, houses or items with photos and a price.
+- **Wallet**: check your balance and transactions, send and receive money, and pay bills.
+- **Mail**: send and read emails right from the phone.
+- **Maps**: a live map with GPS and saved locations.
+- **Clock**: set alarms and timers that nearby players can hear too.
+- **Calculator**: a simple everyday calculator.
+- **Settings**: change the wallpaper, brightness, language, ringtones and more.
+- **App Store**: install or remove apps on the phone.
 
 This already covers all the base features you need to use a phone in roleplay, nothing important is missing. I also have a few more custom apps in mind that I will build and add to the phone over time.
 
@@ -95,6 +95,8 @@ Developers can build their own apps and add them to the phone without touching t
    ```
 
    Then set `Config.RequireItem = true` if you want the phone to open only when the player has the item.
+
+   > Note: the phone was tested with ox_inventory, but it supports more inventories. The snippet above is just an ox_inventory example, so add the item the way your own inventory expects. See `config.lua` for the supported inventories.
 
 6. Optional: record video with nearby players' voices. Install ffmpeg on the server, set `Config.VideoAudio = 'nearby'` in `config.lua`, and add this line to your `server.cfg`:
 
