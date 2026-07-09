@@ -1,0 +1,185 @@
+import LocationCard from './LocationCard';
+import VoiceBubble from './VoiceBubble';
+import ContactCard from './ContactCard';
+import AppShareCard from './AppShareCard';
+import { useT } from '../../../i18n/useT';
+
+const PayMark = () => (
+    <svg width="1em" height="1em" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+        <path d="M3 7a2 2 0 012-2h14a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V7zm2 1v2h14V8H5zm0 5v4h14v-4H5z" />
+    </svg>
+);
+
+export function BubbleContent({
+    msg,
+    out,
+    selfNumber,
+    onSettle,
+    onDecline,
+    onOpenMedia,
+    onOpenLocation,
+    onStopLive,
+    onOpenContact,
+}) {
+    const t = useT();
+    const amt = (msg.meta && msg.meta.amount) || Number(msg.body) || 0;
+
+    if (msg.type === 'location') {
+        return <LocationCard msg={msg} out={out} onOpen={onOpenLocation} onStopLive={onStopLive} />;
+    }
+
+    if (msg.type === 'contact') {
+        return <ContactCard msg={msg} onOpen={onOpenContact} />;
+    }
+
+    if (msg.type === 'appshare') {
+        return <AppShareCard msg={msg} />;
+    }
+
+    if (msg.type === 'voice') {
+        return <VoiceBubble msg={msg} out={out} />;
+    }
+
+    if (msg.type === 'gif') {
+        return (
+            <div className={`msg-media msg-media--gif${msg.pending ? ' is-pending' : ''}`}>
+                <img className="msg-media__el" src={msg.body} alt="" />
+            </div>
+        );
+    }
+
+    if (msg.type === 'image' || msg.type === 'video') {
+        return (
+            <button
+                className={`msg-media${msg.pending ? ' is-pending' : ''}`}
+                onClick={() => onOpenMedia && onOpenMedia(msg)}
+            >
+                {msg.type === 'video' ? (
+                    <>
+                        <video
+                            className="msg-media__el"
+                            src={msg.body}
+                            muted
+                            playsInline
+                            preload="metadata"
+                        />
+                        <span className="msg-media__play">▶</span>
+                    </>
+                ) : (
+                    <img className="msg-media__el" src={msg.body} alt="" />
+                )}
+            </button>
+        );
+    }
+
+    if (msg.type === 'money') {
+        return (
+            <div className="msg-cashmsg">
+                <div className={`msg-cashmsg__card${msg.pending ? ' is-pending' : ''}`}>
+                    <div className="msg-cashmsg__hdr">
+                        <PayMark /> {t('messages.payHeader')}
+                    </div>
+                    <div className="msg-cashmsg__amt">${Number(amt).toLocaleString()}</div>
+                </div>
+                <div className="msg-cashmsg__status">
+                    {out ? t('messages.moneySent') : t('messages.moneyReceived')}
+                </div>
+            </div>
+        );
+    }
+
+    if (msg.type === 'request') {
+        const status = (msg.meta && msg.meta.status) || 'pending';
+        const iPay = msg.meta && msg.meta.payer === selfNumber;
+        const done = status === 'paid' || status === 'declined';
+        const showBtns = status === 'pending' && !out;
+        const sub =
+            status === 'paid'
+                ? t('messages.moneyPaid')
+                : status === 'declined'
+                  ? t('messages.moneyDeclined')
+                  : out
+                    ? t('messages.moneyPending')
+                    : iPay
+                      ? t('messages.moneyRequestedFromYou')
+                      : t('messages.moneyOfferingYou');
+
+        return (
+            <div className="msg-cashmsg">
+                <div className={`msg-cashmsg__card is-request${done ? ' is-done' : ''}`}>
+                    <div className="msg-cashmsg__hdr">
+                        <PayMark /> {t('messages.payHeader')}
+                    </div>
+                    <div className="msg-cashmsg__amt">${Number(amt).toLocaleString()}</div>
+                    <div className="msg-cashmsg__req">{sub}</div>
+                    {showBtns && (
+                        <div className="msg-cashmsg__btns">
+                            <button
+                                className="msg-cashmsg__btn msg-cashmsg__btn--pay"
+                                onClick={() => onSettle && onSettle(msg.id)}
+                            >
+                                {iPay ? t('messages.payHeader') : t('messages.accept')}
+                            </button>
+                            <button
+                                className="msg-cashmsg__btn msg-cashmsg__btn--decline"
+                                onClick={() => onDecline && onDecline(msg.id)}
+                            >
+                                {t('messages.declineBtn')}
+                            </button>
+                        </div>
+                    )}
+                </div>
+            </div>
+        );
+    }
+
+    return (
+        <div
+            className={`msg-bubble ${out ? 'is-out' : 'is-in'}${msg.pending ? ' is-pending' : ''}`}
+        >
+            {linkify(msg.body)}
+        </div>
+    );
+}
+
+export default function Bubble({
+    msg,
+    selfNumber,
+    onSettle,
+    onDecline,
+    onOpenMedia,
+    onOpenLocation,
+    onStopLive,
+    onOpenContact,
+}) {
+    const out = msg.dir === 'out';
+    return (
+        <div className={`msg-brow ${out ? 'is-out' : 'is-in'}`}>
+            <BubbleContent
+                msg={msg}
+                out={out}
+                selfNumber={selfNumber}
+                onSettle={onSettle}
+                onDecline={onDecline}
+                onOpenMedia={onOpenMedia}
+                onOpenLocation={onOpenLocation}
+                onStopLive={onStopLive}
+                onOpenContact={onOpenContact}
+            />
+        </div>
+    );
+}
+
+export function linkify(text) {
+    if (!text) return null;
+    const parts = String(text).split(/(https?:\/\/[^\s]+)/g);
+    return parts.map((p, i) =>
+        /^https?:\/\//.test(p) ? (
+            <a key={i} href={p} target="_blank" rel="noreferrer" className="msg-link">
+                {p}
+            </a>
+        ) : (
+            <span key={i}>{p}</span>
+        ),
+    );
+}

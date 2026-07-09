@@ -1,0 +1,132 @@
+.vcall {
+    position: absolute;
+    inset: 0;
+    z-index: 60;
+    background: #0b0b0d;
+    overflow: hidden;
+    color: #fff;
+}
+
+.vcall__remote {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    background: #0b0b0d;
+}
+
+.vcall__waiting {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4em;
+    background: radial-gradient(120% 90% at 50% 30%, #2a2a32, #0b0b0d 75%);
+}
+
+.vcall__wait-name {
+    font-size: 1.5em;
+    font-weight: 700;
+}
+
+.vcall__wait-status {
+    font-size: 0.95em;
+    color: #b8b8bd;
+}
+
+.vcall__topbar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    padding: calc(var(--safe-top) + 0.4em) 1.1em 0.6em;
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.6em;
+    background: linear-gradient(#000000aa, #0000);
+    pointer-events: none;
+}
+
+.vcall__name {
+    font-size: 1.15em;
+    font-weight: 700;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.vcall__timer {
+    font-size: 0.9em;
+    color: #d7d7db;
+}
+
+.vcall__self {
+    position: absolute;
+    top: calc(var(--safe-top) + 3em);
+    right: 0.9em;
+    width: 31%;
+    aspect-ratio: 9 / 16;
+    border-radius: 0.9em;
+    background: #000;
+    object-fit: cover;
+    box-shadow: 0 0.3em 0.9em rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+.vcall__controls {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: calc(var(--safe-bottom) + 1.1em);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.85em;
+}
+
+.vc-btn {
+    width: 3em;
+    height: 3em;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    font-size: 1em;
+    color: #fff;
+    background: rgba(120, 120, 128, 0.45);
+    backdrop-filter: blur(0.5em);
+    -webkit-backdrop-filter: blur(0.5em);
+    cursor: pointer;
+    transition:
+        background 0.15s ease,
+        transform 0.12s ease;
+}
+
+.vc-btn svg {
+    width: 1.5em;
+    height: 1.5em;
+}
+
+.vc-btn:active {
+    transform: scale(0.92);
+}
+
+.vc-btn.is-on {
+    background: #fff;
+    color: #111;
+}
+
+.vc-btn--end {
+    background: #ff3b30;
+}
+
+.vc-btn--end svg {
+    transform: rotate(135deg);
+}
+
+.vc-btn--end:active {
+    background: #e0332a;
+}

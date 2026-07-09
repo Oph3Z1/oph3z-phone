@@ -1,0 +1,130 @@
+.island {
+    position: absolute;
+    top: 0.55em;
+    left: 1.1em;
+    right: 1.1em;
+    z-index: 8;
+    height: 3.6em;
+    background: #000;
+    border-radius: 1.8em;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 0.55em 0 0.7em;
+    color: #fff;
+    box-shadow: 0 0.4em 1.2em rgba(0, 0, 0, 0.55);
+    transform-origin: 50% 0;
+    animation: island-expand 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+    user-select: none !important;
+}
+
+@keyframes island-expand {
+    0% {
+        transform: translateY(-0.55em) scale(0.8);
+        opacity: 0;
+    }
+    55% {
+        opacity: 1;
+    }
+    72% {
+        transform: translateY(0.06em) scale(1.035);
+    }
+    100% {
+        transform: translateY(0) scale(1);
+        opacity: 1;
+    }
+}
+
+.island__left,
+.island__actions {
+    animation: island-content 0.32s ease 0.16s both;
+}
+
+@keyframes island-content {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.island__left {
+    display: flex;
+    align-items: center;
+    gap: 0.55em;
+    min-width: 0;
+}
+
+.island__info {
+    min-width: 0;
+}
+
+.island__sub {
+    font-size: 0.62em;
+    opacity: 0.6;
+    line-height: 1.1;
+}
+
+.island__name {
+    font-size: 0.85em;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.1;
+}
+
+.island__actions {
+    display: flex;
+    gap: 0.45em;
+    flex: 0 0 auto;
+}
+
+.island__btn {
+    width: 2.6em;
+    height: 2.6em;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    transition:
+        transform 0.12s ease,
+        filter 0.12s ease;
+}
+
+.island__btn svg {
+    width: 1.3em;
+    height: 1.3em;
+}
+
+.island__btn--decline {
+    background: #ff3b30;
+}
+
+.island__btn--decline svg {
+    transform: rotate(135deg);
+}
+
+.island__btn--accept {
+    background: #34c759;
+    animation: island-ring 1.5s ease-out infinite;
+}
+
+@keyframes island-ring {
+    0% {
+        box-shadow: 0 0 0 0 rgba(52, 199, 89, 0.55);
+    }
+    70% {
+        box-shadow: 0 0 0 0.6em rgba(52, 199, 89, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(52, 199, 89, 0);
+    }
+}
+
+.island__btn:active {
+    filter: brightness(0.9);
+    transform: scale(0.92);
+}

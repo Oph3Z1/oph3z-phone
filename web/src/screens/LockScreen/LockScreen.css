@@ -1,0 +1,246 @@
+.lockscreen {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: #fff;
+    text-shadow: 0 0.06em 0.4em rgba(0, 0, 0, 0.35);
+    touch-action: none;
+}
+
+.lockscreen--exit {
+    animation: lock-exit 0.4s cubic-bezier(0.32, 0.72, 0, 1) forwards;
+    pointer-events: none;
+}
+
+@keyframes lock-exit {
+    to {
+        transform: translateY(-12%);
+        opacity: 0;
+    }
+}
+
+.lockscreen__clockblock {
+    margin-top: calc(var(--safe-top) + 1.4em);
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.lockscreen__date {
+    font-size: 1.35em;
+    font-weight: 600;
+}
+
+.lockscreen__clock {
+    font-size: 5.6em;
+    font-weight: 600;
+    line-height: 1.02;
+    letter-spacing: -0.01em;
+}
+
+.lockscreen__quickrow {
+    margin-top: auto;
+    width: 100%;
+    padding: 0 2.2em;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.lockscreen__quick {
+    width: calc(5.1vh * var(--phone-scale));
+    height: calc(5.1vh * var(--phone-scale));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition:
+        transform 0.14s ease,
+        filter 0.14s ease,
+        box-shadow 0.18s ease;
+}
+
+.lockscreen__quick img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.lockscreen__quick:hover {
+    transform: scale(1.1);
+    filter: brightness(1.12);
+}
+
+.lockscreen__quick:active {
+    transform: scale(0.92);
+}
+
+.lockscreen__quick--on {
+    filter: brightness(1.6) drop-shadow(0 0 0.45em rgba(255, 250, 235, 0.9));
+    box-shadow: 0 0 0.9em rgba(255, 250, 235, 0.55);
+}
+
+.lockscreen__quick--on:hover {
+    filter: brightness(1.7) drop-shadow(0 0 0.5em rgba(255, 250, 235, 1));
+}
+
+.lockscreen__footer {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.85em;
+    padding-bottom: 0.55em;
+    margin-top: 1.1em;
+}
+
+.lockscreen__hint {
+    font-size: 0.92em;
+    font-weight: 500;
+    opacity: 0.9;
+    animation: swipe-bounce 1.8s ease-in-out infinite;
+}
+
+@keyframes swipe-bounce {
+    0%,
+    100% {
+        transform: translateY(0.35em);
+        opacity: 0.55;
+    }
+    50% {
+        transform: translateY(-0.35em);
+        opacity: 1;
+    }
+}
+
+.lockscreen__indicator {
+    width: 8.5em;
+    height: 0.3em;
+    border-radius: 0.35em;
+    background: #fff;
+    opacity: 0.95;
+    cursor: pointer;
+}
+
+.lockmusic {
+    margin-top: auto;
+    align-self: center;
+    width: 100%;
+    max-width: 23em;
+    padding: 0.7em 0.85em 0.55em;
+    border-radius: 1.1em;
+    background: rgba(30, 30, 32, 0.55);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: #fff;
+}
+
+.lockmusic + .lockscreen__quickrow {
+    margin-top: 1em;
+}
+
+.lockmusic__head {
+    display: flex;
+    align-items: center;
+    gap: 0.7em;
+}
+
+.lockmusic__art {
+    width: 3em;
+    height: 3em;
+    border-radius: 0.5em;
+    overflow: hidden;
+    display: grid;
+    place-items: center;
+    color: rgba(255, 255, 255, 0.85);
+    flex-shrink: 0;
+    box-shadow: 0 0.3em 0.8em rgba(0, 0, 0, 0.4);
+}
+
+.lockmusic__art img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.lockmusic__meta {
+    flex: 1;
+    min-width: 0;
+}
+
+.lockmusic__title {
+    font-weight: 700;
+    font-size: 1.02em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.lockmusic__artist {
+    color: rgba(255, 255, 255, 0.65);
+    font-size: 0.85em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.lockmusic__seek {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 5px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.25);
+    outline: none;
+    margin: 0.7em 0 0;
+}
+
+.lockmusic__seek::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #fff;
+}
+
+.lockmusic__seek::-moz-range-thumb {
+    width: 12px;
+    height: 12px;
+    border: none;
+    border-radius: 50%;
+    background: #fff;
+}
+
+.lockmusic__times {
+    display: flex;
+    justify-content: space-between;
+    color: rgba(255, 255, 255, 0.55);
+    font-size: 0.7em;
+    margin-top: 0.25em;
+}
+
+.lockmusic__ctl {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 2.6em;
+    margin-top: 0.15em;
+}
+
+.lockmusic__ctl button {
+    background: none;
+    border: none;
+    color: #fff;
+    display: grid;
+    place-items: center;
+    padding: 0.3em;
+}
+
+.lockmusic__ctl button:disabled {
+    opacity: 0.35;
+}

@@ -1,0 +1,72 @@
+.phone {
+    --phone-height: 74vh;
+    --phone-scale: 1;
+    --case-aspect: 399 / 803;
+    --screen-width: 90.7%;
+    --screen-height: 97%;
+    --screen-radius: calc(2.9vw * var(--phone-scale));
+
+    position: fixed;
+    right: 2.5vh;
+    bottom: 2.5vh;
+    height: var(--phone-height);
+    aspect-ratio: var(--case-aspect);
+    z-index: 1;
+    filter: drop-shadow(0 1.5vh 3vh rgba(0, 0, 0, 0.55));
+    height: calc(var(--phone-height) * var(--phone-scale));
+}
+
+.phone__case {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    z-index: 1;
+    pointer-events: none;
+}
+
+.phone__screen {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: var(--screen-width);
+    height: var(--screen-height);
+    transform: translate(-50%, -50%);
+    z-index: 2;
+    overflow: hidden;
+    border-radius: var(--screen-radius);
+    background: #000;
+}
+
+.phone__screen {
+    --safe-top: 3.2em;
+    --safe-bottom: 1.6em;
+}
+
+.phone__wallpaper {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 0;
+}
+
+.phone__dim {
+    position: absolute;
+    inset: 0;
+    z-index: 500;
+    background: #000;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+}
+
+.phone__layer {
+    position: absolute;
+    inset: 0;
+}
+
+.phone__layer--base {
+    z-index: 1;
+}

@@ -1,0 +1,353 @@
+.notif-card {
+    display: flex;
+    align-items: center;
+    gap: 0.6em;
+    padding: 0.65em 0.8em;
+    border-radius: 1.3em;
+    background: rgba(44, 44, 48, 0.5);
+    backdrop-filter: blur(1.7em) saturate(180%);
+    -webkit-backdrop-filter: blur(1.7em) saturate(180%);
+    border: 0.5px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 0.4em 1.2em rgba(0, 0, 0, 0.25);
+    color: #fff;
+}
+
+.notif-card.is-tappable {
+    cursor: pointer;
+}
+
+.notif-card.is-tappable:active {
+    transform: scale(0.98);
+}
+
+.notif-card.is-read {
+    opacity: 0.66;
+}
+
+.notif-card__icon {
+    flex: 0 0 auto;
+    width: 1.9em;
+    height: 1.9em;
+    border-radius: 0.45em;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.12);
+}
+
+.notif-card__icon img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.notif-card__body {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.notif-card__top {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5em;
+}
+
+.notif-card__title {
+    flex: 1 1 auto;
+    font-size: 0.92em;
+    font-weight: 700;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.notif-card__time {
+    flex: 0 0 auto;
+    font-size: 0.7em;
+    color: rgba(235, 235, 245, 0.6);
+}
+
+.notif-card__text {
+    font-size: 0.84em;
+    line-height: 1.28;
+    color: rgba(235, 235, 245, 0.85);
+    margin-top: 0.1em;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.notif-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5em;
+    padding: 0 0.5em;
+}
+
+.notif-stackwrap {
+    position: relative;
+    padding-bottom: 0.78em;
+}
+
+.notif-stackwrap__edge {
+    position: absolute;
+    border-radius: 1.3em;
+    height: 1.5em;
+    background: rgba(48, 48, 53, 0.5);
+    backdrop-filter: blur(1.7em) saturate(180%);
+    -webkit-backdrop-filter: blur(1.7em) saturate(180%);
+    border: 0.5px solid rgba(255, 255, 255, 0.1);
+}
+
+.notif-stackwrap__edge1 {
+    left: 0.4em;
+    right: 0.4em;
+    bottom: 0.4em;
+}
+
+.notif-stackwrap__edge2 {
+    left: 0.85em;
+    right: 0.85em;
+    bottom: 0.05em;
+    opacity: 0.7;
+}
+
+.notif-stackwrap > .notif-card {
+    position: relative;
+    z-index: 2;
+}
+
+.notif-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4em;
+}
+
+.notif-group__less {
+    align-self: center;
+    margin-top: 0.1em;
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 0.8em;
+    font-weight: 600;
+}
+
+.notif-swipe {
+    position: relative;
+}
+
+.notif-swipe__clear {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 5em;
+    border-radius: 1.3em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #ff3b30;
+    color: #fff;
+    font-size: 0.85em;
+    font-weight: 600;
+}
+
+.notif-swipe__card {
+    position: relative;
+    z-index: 1;
+    cursor: pointer;
+    transition: transform 0.06s linear;
+}
+
+.lockscreen__notifs {
+    flex: 1 1 auto;
+    width: 100%;
+    min-height: 0;
+    padding: 1.2em 0 0.4em;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+}
+
+.lockscreen__notifhead {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 0.7em 1.05em;
+    color: #fff;
+}
+
+.lockscreen__notiftitle {
+    font-size: 0.95em;
+    font-weight: 700;
+}
+
+.lockscreen__notifclear {
+    color: #fff;
+    font-size: 0.82em;
+    font-weight: 600;
+    padding: 0.22em 0.7em;
+    border-radius: 1em;
+    background: rgba(120, 120, 128, 0.5);
+}
+
+.lockscreen__notifscroll {
+    flex: 0 1 auto;
+    min-height: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+.lockscreen__notifscroll::-webkit-scrollbar {
+    display: none;
+}
+
+.notif-banner {
+    position: absolute;
+    top: calc(var(--safe-top) + 0.4em);
+    left: 0.5em;
+    right: 0.5em;
+    z-index: 60;
+    animation: notif-banner-in 0.34s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+@keyframes notif-banner-in {
+    from {
+        transform: translateY(-135%);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.status-toast {
+    position: absolute;
+    top: calc(var(--safe-top) + 0.4em);
+    left: 0.5em;
+    right: 0.5em;
+    z-index: 2147483647;
+    animation: notif-banner-in 0.34s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.status-toast .notif-card {
+    align-items: center;
+}
+
+.notif-center {
+    position: absolute;
+    inset: 0;
+    z-index: 55;
+    display: flex;
+    flex-direction: column;
+    padding: calc(var(--safe-top) + 0.4em) 0.6em calc(var(--safe-bottom) + 0.4em);
+    background: rgba(0, 0, 0, 0.16);
+    backdrop-filter: blur(2.3em) saturate(150%);
+    -webkit-backdrop-filter: blur(2.3em) saturate(150%);
+    transform: translateY(-101%);
+    transition: transform 0.38s cubic-bezier(0.32, 0.72, 0, 1);
+    pointer-events: none;
+}
+
+.notif-center.is-open {
+    transform: translateY(0);
+    pointer-events: auto;
+}
+
+.notif-center__head {
+    flex: 0 0 auto;
+    text-align: center;
+    color: #fff;
+    padding-bottom: 0.7em;
+}
+
+.notif-center__clock {
+    font-size: 2.7em;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1;
+}
+
+.notif-center__date {
+    font-size: 0.92em;
+    color: rgba(235, 235, 245, 0.7);
+    margin-top: 0.2em;
+}
+
+.notif-center__list {
+    flex: 1 1 auto;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5em;
+}
+
+.notif-center__airdrops {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5em;
+    padding: 0 0.5em;
+}
+
+.notif-center__list::-webkit-scrollbar {
+    display: none;
+}
+
+.notif-center__empty {
+    text-align: center;
+    color: rgba(235, 235, 245, 0.55);
+    padding: 2.5em 1em;
+    font-size: 0.9em;
+}
+
+.notif-center__clear {
+    flex: 0 0 auto;
+    align-self: center;
+    margin-top: 0.6em;
+    padding: 0.4em 1.2em;
+    border-radius: 1em;
+    background: rgba(120, 120, 128, 0.5);
+    color: #fff;
+    font-size: 0.85em;
+    font-weight: 600;
+}
+
+.notif-center__grab {
+    flex: 0 0 auto;
+    width: 3em;
+    height: 0.3em;
+    border-radius: 0.2em;
+    background: rgba(255, 255, 255, 0.5);
+    margin: 0.5em auto 0;
+}
+
+.phone-peek {
+    z-index: 40;
+    pointer-events: none;
+    animation: phone-peek-slide 4.2s cubic-bezier(0.3, 0.7, 0, 1) forwards;
+}
+
+@keyframes phone-peek-slide {
+    0% {
+        transform: translateY(105%);
+    }
+    9% {
+        transform: translateY(75%);
+    }
+    91% {
+        transform: translateY(75%);
+    }
+    100% {
+        transform: translateY(105%);
+    }
+}
+
+.phone-peek__notif {
+    position: absolute;
+    top: calc(var(--safe-top) + 0.1em);
+    left: 0.5em;
+    right: 0.5em;
+    z-index: 5;
+}

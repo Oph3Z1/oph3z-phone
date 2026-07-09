@@ -1,0 +1,20 @@
+.homebar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 5;
+    height: 1.6em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.homebar__pill {
+    width: 8.5em;
+    height: 0.35em;
+    border-radius: 0.35em;
+    background: #fff;
+    opacity: 0.92;
+    cursor: pointer;
+}

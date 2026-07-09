@@ -1,0 +1,338 @@
+.astore {
+    position: absolute;
+    inset: 0;
+    background: #000;
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.astore__topbar {
+    flex: 0 0 auto;
+    height: calc(var(--safe-top) + 0.2em);
+}
+
+.astore__scroll {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    padding: 0 1em calc(var(--safe-bottom) + 1em);
+}
+
+.astore__scroll::-webkit-scrollbar {
+    display: none;
+}
+
+.astore__title {
+    font-size: 2.1em;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin: 0.1em 0 0.5em;
+}
+
+.astore__empty {
+    color: #8e8e93;
+    text-align: center;
+    padding: 3em 1em;
+}
+
+.astore-search {
+    display: flex;
+    align-items: center;
+    gap: 0.45em;
+    background: rgba(120, 120, 128, 0.24);
+    border-radius: 0.7em;
+    padding: 0.5em 0.7em;
+    margin-bottom: 0.9em;
+}
+
+.astore-search__icon {
+    width: 1.05em;
+    height: 1.05em;
+    color: #8e8e93;
+    flex: 0 0 auto;
+}
+
+.astore-search__input {
+    flex: 1 1 auto;
+    min-width: 0;
+    background: none;
+    border: none;
+    outline: none;
+    color: #fff;
+    font-size: 1em;
+}
+
+.astore-search__input::placeholder {
+    color: #8e8e93;
+}
+
+.astore-search__clear {
+    flex: 0 0 auto;
+    width: 1.35em;
+    height: 1.35em;
+    border-radius: 50%;
+    background: rgba(120, 120, 128, 0.5);
+    color: #d1d1d6;
+    font-size: 0.95em;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.astore-icon {
+    flex: 0 0 auto;
+    width: 3.4em;
+    height: 3.4em;
+    border-radius: 0.85em;
+    overflow: hidden;
+    background: #2c2c2e;
+    box-shadow: 0 0 0 0.5px rgba(255, 255, 255, 0.08);
+    display: block;
+}
+
+.astore-icon img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.astore-icon__fallback {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(160deg, #48484a, #2c2c2e);
+    color: #fff;
+    font-size: 1.6em;
+    font-weight: 700;
+}
+
+.astore-icon--lg {
+    width: 5em;
+    height: 5em;
+    border-radius: 1.15em;
+}
+
+.astore-row {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 0.8em;
+    padding: 0.8em;
+    margin-bottom: 0.7em;
+    border-radius: 1.1em;
+    background: #1c1c1e;
+    text-align: left;
+    cursor: pointer;
+    box-shadow: 0 0.1em 0.5em rgba(0, 0, 0, 0.3);
+    transition:
+        transform 0.12s ease,
+        box-shadow 0.12s ease,
+        background 0.12s ease;
+}
+
+.astore-row:hover {
+    background: #242426;
+    transform: translateY(-0.08em);
+    box-shadow: 0 0.3em 0.8em rgba(0, 0, 0, 0.45);
+}
+
+.astore-row:active {
+    background: #2a2a2c;
+    transform: none;
+}
+
+.astore-row__text {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.astore-row__name {
+    font-size: 1.02em;
+    font-weight: 600;
+}
+
+.astore-row__desc {
+    font-size: 0.82em;
+    color: #8e8e93;
+    margin-top: 0.1em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.astore-getbtn {
+    flex: 0 0 auto;
+    min-width: 4.6em;
+    padding: 0.4em 1.1em;
+    border-radius: 1.2em;
+    background: rgba(120, 120, 128, 0.28);
+    color: #0a84ff;
+    font-size: 0.9em;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.astore-getbtn:hover {
+    filter: brightness(1.15);
+}
+
+.astore-getbtn:active {
+    background: rgba(120, 120, 128, 0.4);
+}
+
+.astore-getbtn--ring {
+    min-width: 0;
+    width: 2.2em;
+    height: 2.2em;
+    padding: 0;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(120, 120, 128, 0.28);
+}
+
+.astore-ring {
+    width: 1.7em;
+    height: 1.7em;
+    transform: rotate(-90deg);
+}
+
+.astore-ring__track {
+    fill: none;
+    stroke: rgba(255, 255, 255, 0.18);
+    stroke-width: 2.5;
+}
+
+.astore-ring__bar {
+    fill: none;
+    stroke: #0a84ff;
+    stroke-width: 2.5;
+    stroke-linecap: round;
+    transition: stroke-dashoffset 0.12s linear;
+}
+
+.astore-ring__stop {
+    fill: #0a84ff;
+}
+
+.astore-detail__header {
+    flex: 0 0 auto;
+    position: relative;
+    height: 11em;
+    background-size: cover;
+    background-position: center;
+    background-color: #1a1a24;
+    background-image: linear-gradient(140deg, #34344a, #16161d);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.astore-detail__headertext {
+    font-size: 2.6em;
+    font-weight: 800;
+    color: rgba(255, 255, 255, 0.92);
+    font-style: italic;
+}
+
+.astore-detail__back {
+    position: absolute;
+    top: calc(var(--safe-top) - 0.2em);
+    left: 0.7em;
+    width: 1.9em;
+    height: 1.9em;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(0.6em);
+    color: #fff;
+    font-size: 1.05em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0.1em 0.4em rgba(0, 0, 0, 0.35);
+}
+
+.astore-detail__head {
+    display: flex;
+    align-items: center;
+    gap: 0.9em;
+    padding: 1em 0;
+    border-bottom: 0.5px solid rgba(255, 255, 255, 0.1);
+}
+
+.astore-detail__meta {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.astore-detail__name {
+    font-size: 1.25em;
+    font-weight: 700;
+}
+
+.astore-detail__dev {
+    font-size: 0.82em;
+    color: #8e8e93;
+    margin-top: 0.1em;
+}
+
+.astore-detail__action {
+    margin-top: 0.6em;
+}
+
+.astore-detail__section {
+    font-size: 1.25em;
+    font-weight: 700;
+    padding: 0.9em 0 0.6em;
+}
+
+.astore-detail__shots {
+    display: flex;
+    gap: 0.7em;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    padding-bottom: 0.5em;
+}
+
+.astore-detail__shots::-webkit-scrollbar {
+    display: none;
+}
+
+.astore-detail__shot {
+    flex: 0 0 auto;
+    width: 62%;
+    aspect-ratio: 9 / 16;
+    border-radius: 1.1em;
+    overflow: hidden;
+    background: #2c2c2e;
+    scroll-snap-align: start;
+}
+
+.astore-detail__shot img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.astore-detail__noshots {
+    color: #8e8e93;
+    font-size: 0.9em;
+    padding: 0.5em 0 1em;
+}
+
+.astore-detail__about {
+    font-size: 0.9em;
+    line-height: 1.45;
+    color: #c7c7cc;
+    padding: 1em 0 0;
+    border-top: 0.5px solid rgba(255, 255, 255, 0.1);
+    margin-top: 0.5em;
+}

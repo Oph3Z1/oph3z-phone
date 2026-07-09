@@ -1,0 +1,60 @@
+import { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import './Airdrop.css';
+import { AirDropGlyph, AirdropPreview, describeAirdrop } from './airdropShared';
+import { acceptAirdrop, declineAirdrop, stashIsland } from '../../store/slices/airdropSlice';
+import { useT } from '../../i18n/useT';
+
+const SHOW_MS = 5500;
+const CLOSE_MS = 340;
+
+export default function AirdropIsland() {
+    const dispatch = useDispatch();
+    const t = useT();
+    const transfer = useSelector((s) => s.airdrop.island);
+    const [closing, setClosing] = useState(false);
+
+    useEffect(() => {
+        setClosing(false);
+        if (!transfer) return undefined;
+        const hide = setTimeout(() => setClosing(true), SHOW_MS);
+        return () => clearTimeout(hide);
+    }, [transfer]);
+
+    useEffect(() => {
+        if (!closing) return undefined;
+        const done = setTimeout(() => dispatch(stashIsland()), CLOSE_MS);
+        return () => clearTimeout(done);
+    }, [closing, dispatch]);
+
+    if (!transfer) return null;
+
+    return (
+        <div className={`ad-island${closing ? ' is-closing' : ''}`} key={transfer.id}>
+            <div className="ad-island__row">
+                <span className="ad-island__appicon">
+                    <AirDropGlyph />
+                </span>
+                <div className="ad-island__text">
+                    <div className="ad-island__title">{t('airdrop.title')}</div>
+                    <div className="ad-island__body">{describeAirdrop(transfer, t)}</div>
+                </div>
+                <AirdropPreview transfer={transfer} className="ad-preview--island" />
+            </div>
+            <div className="ad-island__actions">
+                <button
+                    className="ad-island__btn ad-island__btn--decline"
+                    onClick={() => dispatch(declineAirdrop(transfer))}
+                >
+                    {t('airdrop.decline')}
+                </button>
+                <button
+                    className="ad-island__btn ad-island__btn--accept"
+                    onClick={() => dispatch(acceptAirdrop(transfer))}
+                >
+                    {t('airdrop.accept')}
+                </button>
+            </div>
+        </div>
+    );
+}
