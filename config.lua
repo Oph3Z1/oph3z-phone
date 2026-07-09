@@ -136,7 +136,7 @@ Config.Camera = {
     },
     
     fivemanage = {
-        apiKey = 'MaUggIdxK7oGR98qa7HjRWcFqveBP1pp',
+        apiKey = '',
         url = 'https://api.fivemanage.com/api/v3/file',
     }
 }
@@ -169,12 +169,12 @@ Config.FFmpegPath = 'ffmpeg'
 
 -- GIFs (Messages)
 Config.Gif = {
-    apiKey = 'fbkCoWNVgakEayeG0G9hDALim5pwNWr8', -- paste your GIPHY API key here
+    apiKey = '', -- paste your GIPHY API key here
 }
 
 -- Music app / Spotify
 Config.Music = {
-    apiKey = 'AIzaSyAo41rsOkmsNUV0E--psc7IAmKsVvuan-8', -- YouTube Data API v3 key: https://console.cloud.google.com
+    apiKey = '', -- YouTube Data API v3 key: https://console.cloud.google.com
     AllowNearby = true, -- let players broadcast to nearby players (in-app speaker toggle)
     NearbyRange = 12.0, -- metres nearby players can hear the music
 }
