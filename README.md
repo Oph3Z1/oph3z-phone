@@ -11,7 +11,7 @@ See it in action: [YouTube video](YOUTUBE-LINK-HERE)
 
 ## Features
 
-The phone looks and feels like an iPhone. It scales to any screen size and has a lock screen with a live clock, the date and your notifications, a home screen with apps you can move around, a control center and a dynamic island. There is also a walk mode so you can move around while using it, and the whole interface can be shown in different languages.
+The phone looks and feels like an iPhone. It scales to any screen size and has a lock screen with a live clock, the date and your notifications, a home screen with apps you can move around, a control center and a dynamic island. There is also a walk mode so you can move around while using it, and the whole interface is available in English and Turkish, with more languages coming later.
 
 You can open the phone with a key (F1 by default), a command, or as an inventory item.
 
@@ -30,6 +30,8 @@ Apps included:
 - Calculator: a simple everyday calculator.
 - Settings: change the wallpaper, brightness, language, ringtones and more.
 - App Store: install or remove apps on the phone.
+
+This already covers all the base features you need to use a phone in roleplay, nothing important is missing. I also have a few more custom apps in mind that I will build and add to the phone over time.
 
 ## Third-party apps
 
