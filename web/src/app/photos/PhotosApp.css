@@ -148,9 +148,7 @@
 .ph-nav__segment,
 .ph-nav__search,
 .ph-nav__searchbox {
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.05));
-    backdrop-filter: blur(3.2em) saturate(220%) brightness(1.18);
-    -webkit-backdrop-filter: blur(3.2em) saturate(220%) brightness(1.18);
+    background: rgba(28, 28, 30, 0.94);
     border: 0.5px solid rgba(255, 255, 255, 0.2);
     box-shadow:
         0 0.5em 1.6em rgba(0, 0, 0, 0.45),
@@ -264,9 +262,7 @@
     justify-content: space-between;
     padding: 0.7em 1.1em;
     border-radius: 1.6em;
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.05));
-    backdrop-filter: blur(3.2em) saturate(220%) brightness(1.18);
-    -webkit-backdrop-filter: blur(3.2em) saturate(220%) brightness(1.18);
+    background: rgba(28, 28, 30, 0.94);
     border: 0.5px solid rgba(255, 255, 255, 0.2);
 }
 
