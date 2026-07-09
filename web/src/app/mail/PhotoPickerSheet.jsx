@@ -3,16 +3,31 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useT } from '../../i18n/useT';
 import { loadPhotos } from '../../store/slices/photosSlice';
 
-export default function PhotoPickerSheet({ selected, onClose, onDone }) {
+export default function PhotoPickerSheet({
+    selected = [],
+    onClose,
+    onDone,
+    single = false,
+    photosOnly = false,
+}) {
     const dispatch = useDispatch();
     const t = useT();
     const loaded = useSelector((s) => s.photos.loaded);
-    const media = useSelector((s) => s.photos.items);
+    const allMedia = useSelector((s) => s.photos.items);
+    const media = photosOnly ? allMedia.filter((m) => m.type !== 'video') : allMedia;
     const [picked, setPicked] = useState(() => new Map(selected.map((a) => [a.url, a])));
 
     useEffect(() => {
         if (!loaded) dispatch(loadPhotos());
     }, [loaded, dispatch]);
+
+    const pick = (p) => {
+        if (single) {
+            onDone([{ url: p.url, type: p.type, thumb: p.thumb }]);
+            return;
+        }
+        toggle(p);
+    };
 
     const toggle = (p) => {
         setPicked((prev) => {
@@ -33,9 +48,13 @@ export default function PhotoPickerSheet({ selected, onClose, onDone }) {
                         {t('common.cancel')}
                     </button>
                     <span className="mail-sheet__title">{t('mail.attach')}</span>
-                    <button className="mail-sheet__done" onClick={done}>
-                        {t('common.done')}
-                    </button>
+                    {single ? (
+                        <span className="mail-sheet__done" />
+                    ) : (
+                        <button className="mail-sheet__done" onClick={done}>
+                            {t('common.done')}
+                        </button>
+                    )}
                 </div>
 
                 {media.length === 0 ? (
@@ -46,7 +65,7 @@ export default function PhotoPickerSheet({ selected, onClose, onDone }) {
                             <button
                                 key={p.id}
                                 className={`mail-sheet__cell${picked.has(p.url) ? ' is-picked' : ''}`}
-                                onClick={() => toggle(p)}
+                                onClick={() => pick(p)}
                             >
                                 {p.type === 'video' ? (
                                     <video

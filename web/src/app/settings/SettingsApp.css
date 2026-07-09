@@ -541,7 +541,6 @@
     position: relative;
     aspect-ratio: 9 / 19;
     border-radius: 1.1em;
-    overflow: hidden;
     background: #2c2c2e;
     display: block;
     box-shadow: 0 0.25em 0.7em rgba(0, 0, 0, 0.35);
@@ -553,6 +552,7 @@
     height: 100%;
     object-fit: cover;
     display: block;
+    border-radius: 1.1em;
 }
 
 .wp-tile:active {
@@ -575,6 +575,7 @@
     text-align: center;
     padding: 1.5em 0.25em 0.5em;
     background: linear-gradient(to top, rgba(0, 0, 0, 0.62), transparent);
+    border-radius: 0 0 1.95em 1.95em;
 }
 
 .wp-check {
@@ -909,8 +910,7 @@
     bottom: 0;
     z-index: 41;
     max-height: 72%;
-    display: flex;
-    flex-direction: column;
+    overflow-y: auto;
     background: #1c1c1e;
     border-top-left-radius: 1.4em;
     border-top-right-radius: 1.4em;
@@ -1022,17 +1022,12 @@
 }
 
 .set-up__grid {
-    flex: 1 1 auto;
-    overflow-y: auto;
+    flex: 0 0 auto;
     display: grid;
     grid-template-columns: repeat(3, 1fr);
+    align-content: start;
     column-gap: 0.4em;
-    row-gap: 7.5em;
-    scrollbar-width: none;
-}
-
-.set-up__grid::-webkit-scrollbar {
-    display: none;
+    row-gap: 0.4em;
 }
 
 .set-up__empty {
@@ -1047,7 +1042,6 @@
     position: relative;
     aspect-ratio: 1;
     border-radius: 0.55em;
-    overflow: hidden;
     background: #2c2c2e;
 }
 
@@ -1057,6 +1051,7 @@
     height: 100%;
     object-fit: cover;
     display: block;
+    border-radius: 0.55em;
 }
 
 .set-up__cell:active {

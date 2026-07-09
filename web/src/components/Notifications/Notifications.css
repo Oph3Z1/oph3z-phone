@@ -230,6 +230,9 @@
     right: 0.5em;
     z-index: 2147483647;
     animation: notif-banner-in 0.34s cubic-bezier(0.32, 0.72, 0, 1);
+    cursor: pointer;
+    touch-action: none;
+    user-select: none;
 }
 
 .status-toast .notif-card {

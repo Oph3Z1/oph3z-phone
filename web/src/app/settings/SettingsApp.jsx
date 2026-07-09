@@ -252,6 +252,19 @@ const XG = () => (
         <path d="M6 6l12 12M18 6L6 18" />
     </svg>
 );
+const TrashG = () => (
+    <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+    >
+        <path d="M4 7h16M9 7V5.5A1.5 1.5 0 0 1 10.5 4h3A1.5 1.5 0 0 1 15 5.5V7m2 0v12a1.5 1.5 0 0 1-1.5 1.5h-7A1.5 1.5 0 0 1 7 19V7" />
+        <path d="M10 11v5M14 11v5" />
+    </svg>
+);
 const LinkG = () => (
     <svg
         viewBox="0 0 24 24"
@@ -1199,7 +1212,24 @@ function ProfileScreen({ onBack }) {
         dispatch(openApp('camera'));
     };
 
-    const sorted = [...gallery].sort((a, b) => (b.ts || 0) - (a.ts || 0));
+    const removePhoto = async () => {
+        const ok = await dispatch(
+            openDialog({
+                title: t('profile.removeTitle'),
+                message: t('profile.removeMsg'),
+                buttons: [
+                    { text: t('common.cancel'), style: 'cancel', value: false },
+                    { text: t('profile.removePhoto'), style: 'destructive', value: true },
+                ],
+            }),
+        );
+        if (!ok) return;
+        dispatch(saveAvatar(''));
+    };
+
+    const sorted = [...gallery]
+        .filter((p) => p.type !== 'video')
+        .sort((a, b) => (b.ts || 0) - (a.ts || 0));
 
     return (
         <div className="set">
@@ -1238,6 +1268,22 @@ function ProfileScreen({ onBack }) {
                         </SqIcon>
                         <span className="set-row__label">{t('profile.changeName')}</span>
                     </button>
+                    {avatar && (
+                        <>
+                            <div className="set-sep" />
+                            <button className="set-row" onClick={removePhoto}>
+                                <SqIcon bg="#ff3b30">
+                                    <TrashG />
+                                </SqIcon>
+                                <span
+                                    className="set-row__label"
+                                    style={{ color: '#ff3b30' }}
+                                >
+                                    {t('profile.removePhoto')}
+                                </span>
+                            </button>
+                        </>
+                    )}
                 </div>
             </div>
 

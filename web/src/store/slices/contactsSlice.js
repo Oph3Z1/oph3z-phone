@@ -20,6 +20,7 @@ const initialState = {
     recents: [],
     blocked: {},
     focus: null,
+    editorDraft: null,
 };
 
 const contactsSlice = createSlice({
@@ -54,6 +55,15 @@ const contactsSlice = createSlice({
         setContactFocus(state, action) {
             state.focus = action.payload;
         },
+        setEditorDraft(state, action) {
+            state.editorDraft = action.payload || null;
+        },
+        setEditorDraftImg(state, action) {
+            if (state.editorDraft) state.editorDraft.img = action.payload || '';
+        },
+        clearEditorDraft(state) {
+            state.editorDraft = null;
+        },
     },
 });
 
@@ -64,6 +74,9 @@ export const {
     setFavoriteLocal,
     setBlocked,
     setContactFocus,
+    setEditorDraft,
+    setEditorDraftImg,
+    clearEditorDraft,
 } = contactsSlice.actions;
 
 export const loadPhoneState = () => async (dispatch) => {

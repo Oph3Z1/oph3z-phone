@@ -11,6 +11,16 @@ const isFolderId = (state, id) => !!state.folders[id];
 
 export const folderFlat = (f) => (f && f.pages ? f.pages.flat() : (f && f.items) || []);
 
+export const appIsInstalled = (rootState, id) => {
+    if (!id) return false;
+    const ext = rootState.apps && rootState.apps.external;
+    if (ext && ext.some((a) => a.id === id)) return true;
+    const h = rootState.home || {};
+    if ((h.dock || []).includes(id)) return true;
+    if ((h.pages || []).some((p) => p.includes(id))) return true;
+    return Object.values(h.folders || {}).some((f) => folderFlat(f).includes(id));
+};
+
 const chunkArr = (arr, n) => {
     const out = [];
     for (let i = 0; i < arr.length; i += n) out.push(arr.slice(i, i + n));

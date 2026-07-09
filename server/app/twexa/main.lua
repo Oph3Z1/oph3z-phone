@@ -71,17 +71,15 @@ local function notifyAccount(targetAccId, opts)
     if not targetAccId then return end
     X.PushNotif(targetAccId, { type = opts.type, actor = opts.actorId, postId = opts.postId })
 
-    local target = X.GetAccount(targetAccId)
-    local targetCid
     local liveSrc = online[tostring(targetAccId)]
-    if liveSrc then targetCid = cidOf(liveSrc) else targetCid = target and target.lastCid or nil end
+    if not liveSrc then return end
+
+    local targetCid = cidOf(liveSrc)
     if targetCid and Notif then
         Notif.Push(targetCid, { app = 'twexa', title = opts.title or 'Twexa', body = opts.body, bodyKey = opts.bodyKey, bodyArgs = opts.bodyArgs, route = { app = 'twexa' } })
     end
 
-    if liveSrc then
-        TriggerClientEvent('oph3z-phone:client:x:live', liveSrc, { kind = 'notif' })
-    end
+    TriggerClientEvent('oph3z-phone:client:x:live', liveSrc, { kind = 'notif' })
 end
 
 local function notifyMentions(text, actorAcc, postId, skip)

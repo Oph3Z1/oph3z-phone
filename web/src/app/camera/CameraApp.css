@@ -239,3 +239,67 @@
     color: #b8b8bd;
     margin-top: -0.4em;
 }
+
+.camera__preview {
+    position: absolute;
+    inset: 0;
+    z-index: 12;
+    background: #000;
+}
+
+.camera__preview-img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.camera__preview-retake {
+    position: absolute;
+    top: calc(var(--safe-top) + 0.4em);
+    left: 0.9em;
+    z-index: 2;
+    color: #fff;
+    font-size: 0.98em;
+    font-weight: 600;
+    text-shadow: 0 0 0.5em rgba(0, 0, 0, 0.6);
+}
+
+.camera__preview-bar {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 2;
+    display: flex;
+    gap: 0.8em;
+    justify-content: center;
+    padding: 1em 1.2em calc(var(--safe-bottom) + 1.1em);
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.6), transparent);
+}
+
+.camera__preview-save,
+.camera__preview-use {
+    flex: 1 1 0;
+    max-width: 11em;
+    padding: 0.7em 1em;
+    border-radius: 1.6em;
+    font-size: 0.95em;
+    font-weight: 700;
+    text-align: center;
+}
+
+.camera__preview-save {
+    background: rgba(120, 120, 128, 0.55);
+    color: #fff;
+}
+
+.camera__preview-save:disabled {
+    opacity: 0.6;
+}
+
+.camera__preview-use {
+    background: #0a84ff;
+    color: #fff;
+}

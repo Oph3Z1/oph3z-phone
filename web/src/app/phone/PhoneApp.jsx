@@ -2,7 +2,12 @@ import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import './PhoneApp.css';
 
-import { loadPhoneState, setContactFocus, digitsOf } from '../../store/slices/contactsSlice';
+import {
+    loadPhoneState,
+    setContactFocus,
+    digitsOf,
+    clearEditorDraft,
+} from '../../store/slices/contactsSlice';
 import { setResumeThread } from '../../store/slices/messagesSlice';
 import { openApp, setLaunchTab } from '../../store/slices/phoneSlice';
 import { markNotifRead } from '../../store/slices/notificationsSlice';
@@ -29,6 +34,7 @@ export default function PhoneApp() {
     const loaded = useSelector((s) => s.contacts.loaded);
     const contacts = useSelector((s) => s.contacts.contacts);
     const focus = useSelector((s) => s.contacts.focus);
+    const editorDraft = useSelector((s) => s.contacts.editorDraft);
     const launchTab = useSelector((s) => s.phone.launchTab);
 
     const [tab, setTab] = useState('favorites');
@@ -49,6 +55,12 @@ export default function PhoneApp() {
     useEffect(() => {
         if (tab === 'recents') dispatch(markNotifRead({ app: 'call' }));
     }, [tab, dispatch]);
+
+    useEffect(() => {
+        if (!editorDraft) return;
+        setOverlay({ type: 'editor', contact: editorDraft });
+        dispatch(clearEditorDraft());
+    }, [editorDraft, dispatch]);
 
     useEffect(() => {
         if (!focus || !loaded) return;

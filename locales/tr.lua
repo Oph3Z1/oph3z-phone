@@ -86,6 +86,9 @@ Locales['tr'] = {
             ['uploadPhoto'] = "Fotoğraf Yükle",
             ['pasteUrl'] = "Bağlantıyı buraya yapıştır…",
             ['noPhotos'] = "Henüz fotoğraf yok.",
+            ['removePhoto'] = "Fotoğrafı Kaldır",
+            ['removeTitle'] = "Profil Fotoğrafını Kaldır",
+            ['removeMsg'] = "Mevcut profil fotoğrafın kaldırılsın mı?",
         },
 
         ['notifications'] = {
@@ -297,6 +300,9 @@ Locales['tr'] = {
             ['fieldNumber'] = "Telefon numarası",
             ['fieldNotes'] = "Notlar",
             ['fieldImage'] = "Görsel URL (isteğe bağlı)",
+            ['chooseFromGallery'] = "Galeriden Seç",
+            ['takePhoto'] = "Fotoğraf Çek",
+            ['removePhoto'] = "Fotoğrafı Kaldır",
         },
 
         ['call'] = {
@@ -436,6 +442,10 @@ Locales['tr'] = {
             ['cancel'] = "İptal",
             ['processing'] = "İşleniyor",
             ['processingHint'] = "Yakındaki sesler ekleniyor…",
+            ['savePhoto'] = "Fotoğrafı Kaydet",
+            ['usePhoto'] = "Fotoğrafı Kullan",
+            ['retake'] = "Yeniden Çek",
+            ['saved'] = "Kaydedildi",
         },
 
         ['photos'] = {

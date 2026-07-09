@@ -13,6 +13,7 @@ import { setShareTo, setResumeThread, setDraftAttach } from '../../store/slices/
 import { setResumeGroup, setGroupDraft } from '../../store/slices/groupsSlice';
 import { setCapture } from '../../store/slices/xSlice';
 import { setCapture as marketSetCapture } from '../../store/slices/marketplaceSlice';
+import { setEditorDraftImg } from '../../store/slices/contactsSlice';
 import { FlipIcon } from './components/icons';
 import { useT } from '../../i18n/useT';
 
@@ -27,6 +28,7 @@ export default function CameraApp() {
     const shareTo = useSelector((s) => s.messages.shareTo);
     const shareToRef = useRef(shareTo);
     shareToRef.current = shareTo;
+    const avatarShot = shareTo === 'profile' || shareTo === 'contact';
 
     const [mode, setMode] = useState('photo');
     const [recording, setRecording] = useState(false);
@@ -34,8 +36,16 @@ export default function CameraApp() {
     const [busy, setBusy] = useState(false);
     const [flash, setFlash] = useState(false);
     const [processing, setProcessing] = useState(false);
+    const [preview, setPreview] = useState(null);
+    const [previewSaved, setPreviewSaved] = useState(false);
+
+    useEffect(() => {
+        if (avatarShot) setMode('photo');
+    }, [avatarShot]);
 
     const feedRef = useRef(null);
+    const recCanvasRef = useRef(null);
+    const copyRafRef = useRef(0);
     const cfgRef = useRef(null);
     const videoCfgRef = useRef({ mode: 'off', gate: false });
     const recRef = useRef(null);
@@ -59,8 +69,29 @@ export default function CameraApp() {
             if (res && res.video) videoCfgRef.current = res.video;
         })();
         dispatch(loadPhotos());
+        try {
+            const wc = document.createElement('canvas');
+            wc.width = 16;
+            wc.height = 16;
+            wc.getContext('2d').fillRect(0, 0, 16, 16);
+            if (wc.captureStream && window.MediaRecorder) {
+                const ws = wc.captureStream(1);
+                const wmime = MediaRecorder.isTypeSupported('video/webm;codecs=vp8')
+                    ? 'video/webm;codecs=vp8'
+                    : 'video/webm';
+                const wrec = new MediaRecorder(ws, { mimeType: wmime });
+                wrec.start();
+                setTimeout(() => {
+                    try {
+                        wrec.stop();
+                    } catch (e) {}
+                    ws.getTracks().forEach((tr) => tr.stop());
+                }, 150);
+            }
+        } catch (e) {}
         return () => {
             if (recRef.current && recRef.current.state !== 'inactive') recRef.current.stop();
+            cancelAnimationFrame(copyRafRef.current);
             stopSelfMic();
             if (procTimerRef.current) clearTimeout(procTimerRef.current);
             fetchNui('phone:camera:exit', {}, {});
@@ -157,6 +188,12 @@ export default function CameraApp() {
             dispatch(openApp('settings'));
             return;
         }
+        if (to === 'contact') {
+            dispatch(setShareTo(null));
+            dispatch(setEditorDraftImg(url));
+            dispatch(openApp('call'));
+            return;
+        }
         const photo = await fetchNui('phone:camera:save', { url, type, duration }, null);
         if (photo) dispatch(upsertPhoto(photo));
         else console.error('[camera] save returned no photo for', url);
@@ -174,11 +211,42 @@ export default function CameraApp() {
         try {
             const blob = dataURLtoBlob(canvas.toDataURL('image/jpeg', 0.85));
             const url = await uploadToProvider(blob, 'photo.jpg', cfgRef.current);
-            if (url) await saveAndRoute(url, 'image');
+            if (url) {
+                const to = shareToRef.current;
+                if (to && to !== 'profile' && to !== 'contact') {
+                    setPreviewSaved(false);
+                    setPreview({ url, type: 'image' });
+                } else {
+                    await saveAndRoute(url, 'image');
+                }
+            }
         } catch (e) {
             console.error('[camera] takePhoto failed', e);
         }
         setBusy(false);
+    };
+
+    const retakePreview = () => {
+        setPreview(null);
+        setPreviewSaved(false);
+    };
+
+    const savePreview = async () => {
+        if (!preview || previewSaved) return;
+        const photo = await fetchNui(
+            'phone:camera:save',
+            { url: preview.url, type: preview.type },
+            null,
+        );
+        if (photo) dispatch(upsertPhoto(photo));
+        setPreviewSaved(true);
+    };
+
+    const usePreview = () => {
+        const p = preview;
+        setPreview(null);
+        setPreviewSaved(false);
+        if (p) routeShare(p.url, p.type);
     };
 
     const startSelfMic = async (gate) => {
@@ -225,9 +293,39 @@ export default function CameraApp() {
 
     const startRec = async () => {
         const canvas = feedRef.current;
-        if (!canvas || !canvas.captureStream) return;
+        if (!canvas) return;
+
+        let rc = recCanvasRef.current;
+        if (!rc) {
+            rc = document.createElement('canvas');
+            recCanvasRef.current = rc;
+        }
+        rc.width = canvas.width || 720;
+        rc.height = canvas.height || 1280;
+        const rctx = rc.getContext('2d');
+        const copyFrame = () => {
+            if (recCanvasRef.current !== rc) return;
+            if (canvas.width && rc.width !== canvas.width) rc.width = canvas.width;
+            if (canvas.height && rc.height !== canvas.height) rc.height = canvas.height;
+            try {
+                rctx.drawImage(canvas, 0, 0);
+            } catch (e) {}
+            copyRafRef.current = requestAnimationFrame(copyFrame);
+        };
+        copyFrame();
+
+        if (!rc.captureStream) {
+            cancelAnimationFrame(copyRafRef.current);
+            return;
+        }
+        let videoStream;
+        try {
+            videoStream = rc.captureStream(30);
+        } catch (e) {
+            cancelAnimationFrame(copyRafRef.current);
+            return;
+        }
         const vcfg = videoCfgRef.current || { mode: 'off', gate: false };
-        const videoStream = canvas.captureStream(30);
 
         let audioTrack = null;
         if (vcfg.mode === 'self') audioTrack = await startSelfMic(vcfg.gate);
@@ -289,6 +387,7 @@ export default function CameraApp() {
         const rec = recRef.current;
         if (rec && rec.state !== 'inactive') rec.stop();
         recRef.current = null;
+        cancelAnimationFrame(copyRafRef.current);
         setRecording(false);
     };
 
@@ -305,6 +404,10 @@ export default function CameraApp() {
         if (to === 'profile') {
             dispatch(setLaunchTab('profile'));
             dispatch(openApp('settings'));
+            return;
+        }
+        if (to === 'contact') {
+            dispatch(openApp('call'));
             return;
         }
         if (to === 'x' || to === 'xedit') {
@@ -337,7 +440,7 @@ export default function CameraApp() {
 
             <div className="camera__topbar" />
 
-            {shareTo && !recording && !processing && (
+            {shareTo && !recording && !processing && !preview && (
                 <button className="camera__cancel" onClick={backToChat}>
                     {t('camera.cancel')}
                 </button>
@@ -351,7 +454,7 @@ export default function CameraApp() {
             )}
 
             <div className="camera__bottombar">
-                {!recording && (
+                {!recording && !avatarShot && (
                     <div className="camera__modes">
                         <button
                             className={mode === 'photo' ? 'is-active' : ''}
@@ -397,6 +500,27 @@ export default function CameraApp() {
                     </button>
                 </div>
             </div>
+
+            {preview && (
+                <div className="camera__preview">
+                    <img className="camera__preview-img" src={preview.url} alt="" />
+                    <button className="camera__preview-retake" onClick={retakePreview}>
+                        {t('camera.retake')}
+                    </button>
+                    <div className="camera__preview-bar">
+                        <button
+                            className="camera__preview-save"
+                            onClick={savePreview}
+                            disabled={previewSaved}
+                        >
+                            {previewSaved ? t('camera.saved') : t('camera.savePhoto')}
+                        </button>
+                        <button className="camera__preview-use" onClick={usePreview}>
+                            {t('camera.usePhoto')}
+                        </button>
+                    </div>
+                </div>
+            )}
 
             {processing && (
                 <div className="camera__processing">

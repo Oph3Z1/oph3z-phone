@@ -1,7 +1,14 @@
 import { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import Avatar from '../components/Avatar';
-import { addContact, editContact } from '../../../store/slices/contactsSlice';
+import {
+    addContact,
+    editContact,
+    setEditorDraft,
+} from '../../../store/slices/contactsSlice';
+import { setShareTo } from '../../../store/slices/messagesSlice';
+import { openApp } from '../../../store/slices/phoneSlice';
+import PhotoPickerSheet from '../../mail/PhotoPickerSheet';
 import { useT } from '../../../i18n/useT';
 
 export default function ContactEditor({ contact, onClose }) {
@@ -13,6 +20,7 @@ export default function ContactEditor({ contact, onClose }) {
     const [number, setNumber] = useState(contact?.number || '');
     const [notes, setNotes] = useState(contact?.notes || '');
     const [img, setImg] = useState(contact?.img || '');
+    const [picker, setPicker] = useState(false);
 
     const canSave = name.trim() && number.trim();
 
@@ -27,6 +35,12 @@ export default function ContactEditor({ contact, onClose }) {
         if (isEdit) await dispatch(editContact({ id: contact.id, ...payload }));
         else await dispatch(addContact(payload));
         onClose();
+    };
+
+    const takePhoto = () => {
+        dispatch(setEditorDraft({ id: contact?.id, name, number, notes, img }));
+        dispatch(setShareTo('contact'));
+        dispatch(openApp('camera'));
     };
 
     return (
@@ -45,6 +59,23 @@ export default function ContactEditor({ contact, onClose }) {
 
             <div className="pa-editor__avatar">
                 <Avatar name={name} img={img} size="6em" />
+            </div>
+
+            <div className="pa-editor__photobtns">
+                <button className="pa-editor__photobtn" onClick={() => setPicker(true)}>
+                    {t('phone.chooseFromGallery')}
+                </button>
+                <button className="pa-editor__photobtn" onClick={takePhoto}>
+                    {t('phone.takePhoto')}
+                </button>
+                {img && (
+                    <button
+                        className="pa-editor__photobtn pa-editor__photobtn--danger"
+                        onClick={() => setImg('')}
+                    >
+                        {t('phone.removePhoto')}
+                    </button>
+                )}
             </div>
 
             <div className="pa-fields">
@@ -85,6 +116,19 @@ export default function ContactEditor({ contact, onClose }) {
                     />
                 </div>
             </div>
+
+            {picker && (
+                <PhotoPickerSheet
+                    single
+                    photosOnly
+                    selected={[]}
+                    onClose={() => setPicker(false)}
+                    onDone={(items) => {
+                        if (items && items[0]) setImg(items[0].url);
+                        setPicker(false);
+                    }}
+                />
+            )}
         </div>
     );
 }

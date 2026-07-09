@@ -86,6 +86,9 @@ Locales['en'] = {
             ['uploadPhoto'] = 'Upload Photo',
             ['pasteUrl'] = 'Paste url in here…',
             ['noPhotos'] = 'No photos yet.',
+            ['removePhoto'] = 'Remove Photo',
+            ['removeTitle'] = 'Remove Profile Photo',
+            ['removeMsg'] = 'Remove your current profile photo?',
         },
 
         ['notifications'] = {
@@ -297,6 +300,9 @@ Locales['en'] = {
             ['fieldNumber'] = 'Phone number',
             ['fieldNotes'] = 'Notes',
             ['fieldImage'] = 'Image URL (optional)',
+            ['chooseFromGallery'] = 'Choose from Gallery',
+            ['takePhoto'] = 'Take Photo',
+            ['removePhoto'] = 'Remove Photo',
         },
 
         ['call'] = {
@@ -436,6 +442,10 @@ Locales['en'] = {
             ['cancel'] = 'Cancel',
             ['processing'] = 'Processing',
             ['processingHint'] = 'Mixing in nearby audio…',
+            ['savePhoto'] = 'Save Photo',
+            ['usePhoto'] = 'Use Photo',
+            ['retake'] = 'Retake',
+            ['saved'] = 'Saved',
         },
 
         ['photos'] = {

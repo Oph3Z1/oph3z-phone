@@ -227,6 +227,8 @@ export default function EditProfile({ profile, initialCrop, onBack, onSaved }) {
             )}
             {picker && picker.mode === 'photos' && (
                 <PhotoPickerSheet
+                    single
+                    photosOnly
                     selected={[]}
                     onClose={() => setPicker(null)}
                     onDone={(items) => {

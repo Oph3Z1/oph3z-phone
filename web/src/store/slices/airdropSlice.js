@@ -8,6 +8,7 @@ import { pushToast } from './toastSlice';
 import { translateFrom } from '../../i18n/useT';
 import { AIRDROP_TOAST_ICON, describeAirdrop } from '../../components/Airdrop/airdropShared';
 import { getApp } from '../../app/registry';
+import { appIsInstalled } from './homeSlice';
 
 const initialState = {
     share: null,
@@ -188,7 +189,7 @@ export const acceptAirdrop = (transfer) => async (dispatch, getState) => {
         );
     } else if (res.kind === 'app' && res.app) {
         const app = res.app;
-        const installed = getState().apps.external.some((a) => a.id === app.id) || !!getApp(app.id);
+        const installed = appIsInstalled(getState(), app.id);
         if (installed) {
             dispatch(setDeliver({ appId: app.id, payload: app.payload }));
             dispatch(unlock());
@@ -203,9 +204,20 @@ export const acceptAirdrop = (transfer) => async (dispatch, getState) => {
             );
         }
     } else if (res.kind === 'xprofile' && res.xprofile) {
-        dispatch(setDeliver({ appId: 'twexa', payload: { handle: res.xprofile.handle } }));
-        dispatch(unlock());
-        dispatch(openApp('twexa'));
+        if (appIsInstalled(getState(), 'twexa')) {
+            dispatch(setDeliver({ appId: 'twexa', payload: { handle: res.xprofile.handle } }));
+            dispatch(unlock());
+            dispatch(openApp('twexa'));
+        } else {
+            const twexa = getApp('twexa');
+            dispatch(
+                pushToast({
+                    icon: AIRDROP_TOAST_ICON,
+                    title: tr('airdrop.title'),
+                    body: tr('airdrop.cantOpenApp', { app: (twexa && twexa.name) || 'Twexa' }),
+                }),
+            );
+        }
     }
 };
 
