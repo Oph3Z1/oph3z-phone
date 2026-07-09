@@ -4,7 +4,7 @@ Config.Debug = false -- prints extra info to console
 Config.DataFolder = 'data' -- Dont touch if you dont know what you are doing
 
 Config.Framework = 'qbox' -- esx, oldesx, qb, oldqb, qbox
-Config.MySQL = 'oxmysql' -- oxmysql, ghmattimysql
+Config.MySQL = 'oxmysql' -- oxmysql, ghmattimysql, mysql-async
 Config.Inventory = 'ox_inventory' -- ox_inventory, qb-inventory, qs-inventory, codem-inventory
 
 Config.Keybind   = 'F1' -- default key (player can rebind in GTA settings)
