@@ -11,7 +11,7 @@ See it in action: [YouTube video](YOUTUBE-LINK-HERE)
 
 ## Features
 
-The phone looks and feels like an iPhone. It scales to any screen size and has a lock screen with a live clock and weather, a home screen with apps you can move around, a control center, notifications and a dynamic island. There is also a walk mode so you can move around while using it, and the whole interface can be shown in different languages.
+The phone looks and feels like an iPhone. It scales to any screen size and has a lock screen with a live clock, the date and your notifications, a home screen with apps you can move around, a control center and a dynamic island. There is also a walk mode so you can move around while using it, and the whole interface can be shown in different languages.
 
 You can open the phone with a key (F1 by default), a command, or as an inventory item.
 
@@ -24,7 +24,12 @@ Apps included:
 - Twexa: a built-in social app, a bit like X (Twitter), where players post, follow, reply and repost.
 - Marketplace: buy and sell in the city. Post cars, houses or items with photos and a price.
 - Wallet: check your balance and transactions, send and receive money, and pay bills.
-- Mail, Maps with live GPS, a Clock with alarms and timers that nearby players can hear, a Calculator, Settings, and an App Store to install or remove apps.
+- Mail: send and read emails right from the phone.
+- Maps: a live map with GPS and saved locations.
+- Clock: set alarms and timers that nearby players can hear too.
+- Calculator: a simple everyday calculator.
+- Settings: change the wallpaper, brightness, language, ringtones and more.
+- App Store: install or remove apps on the phone.
 
 ## Third-party apps
 
@@ -43,50 +48,38 @@ Developers can build their own apps and add them to the phone without touching t
 
 ## Requirements
 
-- A FiveM server on recent artifacts
 - One framework: ESX, QBCore or Qbox (older ESX and QB versions work too)
 - pma-voice, for calls and voice
 - xsound, for ringtones, music and alarm sounds
-- oxmysql, only needed for the billing and invoices feature
+- A MySQL resource (oxmysql, ghmattimysql or mysql-async), only needed for the billing and invoices feature
 - An inventory (ox_inventory, qb-inventory, qs-inventory or codem-inventory), only if you want the phone as an item
-- Node.js 18 or newer, to build the interface
 - ffmpeg on the server, optional, only for recording video with nearby players' voices
 
 ## Installation
 
-1. Download the resource and put it in your resources folder, for example `resources/[phone]/oph3z-phone`.
+1. Download the resource and put it in your resources folder, for example `resources/[phone]/oph3z-phone`. The interface is already built and included, so you can run it as is.
 
-2. Build the interface. You need Node.js 18 or newer.
-
-   ```bash
-   cd resources/[phone]/oph3z-phone/web
-   npm install
-   npm run build
-   ```
-
-   This creates a `build` folder at the root of the resource. Run `npm run build` again any time you change something in `web/src`.
-
-3. Add it to your `server.cfg`, after your framework, pma-voice, xsound and oxmysql:
+2. Add it to your `server.cfg`, after your framework, pma-voice, xsound and your MySQL resource:
 
    ```cfg
    ensure oph3z-phone
    ```
 
-4. Open `config.lua` and set it up for your server:
+3. Open `config.lua` and set it up for your server:
 
    - `Config.Framework`: esx, oldesx, qb, oldqb or qbox
-   - `Config.MySQL`: oxmysql or ghmattimysql
+   - `Config.MySQL`: oxmysql, ghmattimysql or mysql-async
    - `Config.Inventory`: your inventory resource
    - `Config.Keybind`: the key that opens the phone (F1 by default)
    - The billing options, if you use invoices
 
-5. Optional: add your API keys in `config.lua` for the features that need them. Everything else works without keys.
+4. Add your own API keys in `config.lua`. The phone does not come with any keys, so the apps below will not work until you add yours:
 
-   - Music search needs a YouTube Data API v3 key (`Config.Music.apiKey`)
-   - GIFs in Messages need a GIPHY key (`Config.Gif.apiKey`)
-   - The Camera uploads photos and videos through Fivemanage or a Discord webhook (`Config.Camera`)
+   - Music needs a YouTube Data API v3 key to search and play songs (`Config.Music.apiKey`)
+   - Messages needs a GIPHY key to send GIFs (`Config.Gif.apiKey`)
+   - Camera needs Fivemanage or a Discord webhook to upload photos and videos (`Config.Camera`)
 
-6. Optional: use the phone as an item. Add this to `ox_inventory/data/items.lua`:
+5. Optional: use the phone as an item. Add this to `ox_inventory/data/items.lua`:
 
    ```lua
    ['phone'] = {
@@ -101,7 +94,7 @@ Developers can build their own apps and add them to the phone without touching t
 
    Then set `Config.RequireItem = true` if you want the phone to open only when the player has the item.
 
-7. Optional: record video with nearby players' voices. Install ffmpeg on the server, set `Config.VideoAudio = 'nearby'` in `config.lua`, and add this line to your `server.cfg`:
+6. Optional: record video with nearby players' voices. Install ffmpeg on the server, set `Config.VideoAudio = 'nearby'` in `config.lua`, and add this line to your `server.cfg`:
 
    ```cfg
    add_unsafe_child_process_permission oph3z-phone
@@ -137,6 +130,18 @@ You don't need to change any FiveM settings for this, only the ICE list above.
 ## Configuration
 
 Everything lives in `config.lua`, and each option has a short note next to it: the open key, the walk key, which apps show up, ringtones, how far away players can hear calls and music, and the API keys. Change what you need and restart the resource.
+
+## Development
+
+The interface is already built and shipped in the `build` folder, so you do not need Node.js just to run the phone. You only need it if you want to change the interface yourself. For that you need Node.js 18 or newer:
+
+```bash
+cd resources/[phone]/oph3z-phone/web
+npm install
+npm run build
+```
+
+This rebuilds the `build` folder at the root of the resource. Run `npm run build` again after each change you make in `web/src`.
 
 ## Beta and feedback
 
