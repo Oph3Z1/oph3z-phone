@@ -15,7 +15,7 @@ Config.RequireItem = false -- If true, the phone can ONLY be opened while the pl
 Config.XVerifyCommand = 'xverify' -- admin command to grant an X verified badge: /xverify <@username> [gold|blue]
 
 Config.PhoneNumberPrefix = '555' -- 555 + 4 digits -> displayed as "555-0142".
-Config.DefaultLocale = 'en' -- en
+Config.DefaultLocale = 'en' -- en, tr
 Config.MailDomain = 'mail.com'
 
 -- Billing
