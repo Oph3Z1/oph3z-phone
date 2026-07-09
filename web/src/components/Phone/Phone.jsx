@@ -20,7 +20,7 @@ import AlarmRing from '../Clock/AlarmRing';
 import AlertDialog from '../AlertDialog/AlertDialog';
 import InputDialog from '../InputDialog/InputDialog';
 import ControlCenter from '../ControlCenter/ControlCenter';
-import MusicIsland from '../../app/spotify/MusicIsland';
+import MusicIsland from '../../app/music/MusicIsland';
 
 export default function Phone() {
   const locked = useSelector((s) => s.phone.locked);
@@ -114,7 +114,7 @@ export default function Phone() {
         <TimerIsland />
         <AlarmRing />
 
-        {/* Music Dynamic Island (playing + not inside Spotify). Below call/AirDrop. */}
+        {/* Music Dynamic Island (playing + not inside Music). Below call/AirDrop. */}
         {!inCall && <MusicIsland />}
 
         {/* Call UI (incoming island / calling / in-call) on top of everything. */}

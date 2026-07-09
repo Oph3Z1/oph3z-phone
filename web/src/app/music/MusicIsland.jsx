@@ -21,11 +21,11 @@ export default function MusicIsland() {
   const [expanded, setExpanded] = useState(false);
 
   // Collapse whenever the island would hide, so it reopens compact next time.
-  const hidden = !music.title || activeApp === 'spotify' || locked || inCall || (!music.playing && !expanded);
+  const hidden = !music.title || activeApp === 'music' || locked || inCall || (!music.playing && !expanded);
   useEffect(() => { if (hidden) setExpanded(false); }, [hidden]);
   if (hidden) return null;
 
-  const openApp_ = () => { dispatch(unlock()); dispatch(openApp('spotify')); };
+  const openApp_ = () => { dispatch(unlock()); dispatch(openApp('music')); };
   const toggle = (e) => { e.stopPropagation(); fetchNui('phone:spotify:toggle', {}, {}); };
   const next = (e) => { e.stopPropagation(); fetchNui('phone:spotify:next', {}, {}); };
   const prev = (e) => { e.stopPropagation(); fetchNui('phone:spotify:prev', {}, {}); };

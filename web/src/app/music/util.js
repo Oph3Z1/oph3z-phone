@@ -7,8 +7,8 @@ export function fmtTime(sec) {
 
 // Deterministic gradient for a playlist/track with no artwork, from its name.
 const GRADS = [
-  ['#1db954', '#0b3d24'], ['#2ad17e', '#14332a'], ['#1ed760', '#0a2e1c'],
-  ['#3be37a', '#123a2c'], ['#17a34a', '#08251a'], ['#4ade80', '#0e3324'],
+  ['#fb2c48', '#3d0b16'], ['#ff5a6e', '#33141a'], ['#f43554', '#2e0a12'],
+  ['#ff6b7d', '#3a1218'], ['#e02540', '#25080e'], ['#ff5c6e', '#33101a'],
 ];
 function hash(str) {
   const key = String(str || '?');

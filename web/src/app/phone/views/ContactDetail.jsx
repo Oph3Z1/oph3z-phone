@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import Avatar from '../components/Avatar';
-import { ChevronLeftIcon, PhoneIcon } from '../components/icons';
+import { ChevronLeftIcon, PhoneIcon, VideoIcon } from '../components/icons';
 import {
   deleteContact,
   toggleFavorite,
@@ -96,6 +96,15 @@ export default function ContactDetail({ id, onBack, onEdit, backLabel }) {
             <PhoneIcon />
           </span>
           {t('phone.call')}
+        </button>
+        <button
+          className="pa-quick"
+          onClick={() => fetchNui('phone:call:start', { number: contact.number, video: true }, {})}
+        >
+          <span className="pa-quick__circle">
+            <VideoIcon />
+          </span>
+          {t('call.video')}
         </button>
         <button
           className="pa-quick"

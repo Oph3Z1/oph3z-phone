@@ -56,7 +56,7 @@ RegisterNUICallback('phone:phone:setAirplane', function(data, cb)
 end)
 
 RegisterNUICallback('phone:call:start', function(data, cb)
-    TriggerServerEvent('oph3z-phone:call:start', data and data.number)
+    TriggerServerEvent('oph3z-phone:call:start', data and data.number, data and data.video)
     cb('ok')
 end)
 
@@ -77,5 +77,10 @@ end)
 
 RegisterNUICallback('phone:call:mute', function(data, cb)
     if data then TriggerServerEvent('oph3z-phone:call:mute', data.callId, data.muted) end
+    cb('ok')
+end)
+
+RegisterNUICallback('phone:call:speaker', function(data, cb)
+    if data then TriggerServerEvent('oph3z-phone:call:speaker', data.callId, data.on) end
     cb('ok')
 end)

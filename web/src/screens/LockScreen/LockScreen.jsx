@@ -10,7 +10,7 @@ import { openRoute, clearNotification } from '../../store/slices/notificationsSl
 import NotificationList from '../../components/Notifications/NotificationList';
 import AirdropPendingCard from '../../components/Airdrop/AirdropPendingCard';
 import LockTimerWidget from '../../components/Clock/LockTimerWidget';
-import LockMusicWidget from '../../app/spotify/LockMusicWidget';
+import LockMusicWidget from '../../app/music/LockMusicWidget';
 import { fetchNui } from '../../utils/fetchNui';
 import { useNow } from '../../hooks/useNow';
 import { formatClock, formatLongDate } from '../../utils/datetime';

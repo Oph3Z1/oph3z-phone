@@ -24,7 +24,7 @@ export default function StatusBar() {
   const editing = useSelector((s) => s.home.editing && !s.phone.activeApp && !s.phone.locked);
   // The music Dynamic Island sits over the notch — hide the wifi icon to give it room.
   const islandOn = useSelector((s) =>
-    !!s.music.title && s.music.playing && s.phone.activeApp !== 'spotify' && !s.phone.locked && !s.call.state
+    !!s.music.title && s.music.playing && s.phone.activeApp !== 'music' && !s.phone.locked && !s.call.state
   );
 
   const clock = formatClock(useNow());

@@ -2,9 +2,10 @@ import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import './CallScreen.css';
 import Avatar from '../components/Avatar';
-import { PhoneIcon, MicIcon, MicOffIcon } from '../components/icons';
+import { PhoneIcon, MicIcon, MicOffIcon, VideoIcon, SpeakerIcon } from '../components/icons';
 import { fetchNui } from '../../../utils/fetchNui';
-import { setMuted } from '../../../store/slices/callSlice';
+import { setMuted, setSpeaker, setVideoReq } from '../../../store/slices/callSlice';
+import { getWallpaper } from '../../../config/phone.config';
 import { useT } from '../../../i18n/useT';
 
 const REASON_KEY = {
@@ -24,6 +25,7 @@ export default function CallScreen() {
   const dispatch = useDispatch();
   const t = useT();
   const call = useSelector((s) => s.call);
+  const wallpaperKey = useSelector((s) => s.settings.wallpaper);
 
   const [elapsed, setElapsed] = useState(0);
   useEffect(() => {
@@ -37,9 +39,9 @@ export default function CallScreen() {
   const title = call.name || call.number || t('call.unknown');
 
   let status = '';
-  if (call.state === 'outgoing') status = t('call.calling');
+  if (call.state === 'outgoing') status = call.wantsVideo ? t('call.callingVideo') : t('call.calling');
   else if (call.state === 'active') status = fmt(elapsed);
-  else if (call.state === 'incoming') status = t('call.incoming');
+  else if (call.state === 'incoming') status = call.wantsVideo ? t('call.incomingVideo') : t('call.incoming');
   else if (call.state === 'ended') status = t(REASON_KEY[call.reason] || 'call.reasonEnded');
   else if (call.state === 'failed') status = t(REASON_KEY[call.reason] || 'call.reasonFailed');
 
@@ -51,11 +53,25 @@ export default function CallScreen() {
     dispatch(setMuted(next));
     fetchNui('phone:call:mute', { callId: call.callId, muted: next }, {});
   };
+  const toggleSpeaker = () => {
+    const next = !call.speaker;
+    dispatch(setSpeaker(next));
+    fetchNui('phone:call:speaker', { callId: call.callId, on: next }, {});
+  };
+  const requestVideo = () => fetchNui('phone:video:request', { callId: call.callId }, {});
+  const acceptVideo = () => fetchNui('phone:video:accept', { callId: call.videoReq }, {});
+  const declineVideo = () => {
+    fetchNui('phone:video:decline', { callId: call.videoReq }, {});
+    dispatch(setVideoReq(null));
+  };
 
   const finished = call.state === 'ended' || call.state === 'failed';
 
   return (
     <div className="callscreen">
+      <img className="callscreen__wall" src={getWallpaper(wallpaperKey)} alt="" />
+      <div className="callscreen__scrim" />
+
       <div className="callscreen__top">
         <div className="callscreen__status">{status}</div>
         <div className="callscreen__name">{title}</div>
@@ -81,22 +97,48 @@ export default function CallScreen() {
             </button>
           </>
         ) : finished ? null : (
-          <>
-            <button
-              className={`cs-btn cs-btn--mute${call.muted ? ' is-on' : ''}`}
-              onClick={toggleMute}
-              aria-label="Mute"
-            >
-              {call.muted ? <MicOffIcon /> : <MicIcon />}
-              <span>{call.muted ? t('call.unmute') : t('call.mute')}</span>
-            </button>
+          <div className="cs-controls">
+            <div className="cs-controls__row">
+              <button
+                className={`cs-btn cs-btn--mute${call.muted ? ' is-on' : ''}`}
+                onClick={toggleMute}
+                aria-label="Mute"
+              >
+                {call.muted ? <MicOffIcon /> : <MicIcon />}
+                <span>{call.muted ? t('call.unmute') : t('call.mute')}</span>
+              </button>
+              <button
+                className={`cs-btn cs-btn--speaker${call.speaker ? ' is-on' : ''}`}
+                onClick={toggleSpeaker}
+                aria-label={t('call.speaker')}
+              >
+                <SpeakerIcon />
+                <span>{t('call.speaker')}</span>
+              </button>
+              {call.state === 'active' && (
+                <button className="cs-btn cs-btn--video" onClick={requestVideo} aria-label={t('call.video')}>
+                  <VideoIcon />
+                  <span>{t('call.video')}</span>
+                </button>
+              )}
+            </div>
             <button className="cs-btn cs-btn--end" onClick={hangup} aria-label="End">
               <PhoneIcon />
               <span>{t('call.end')}</span>
             </button>
-          </>
+          </div>
         )}
       </div>
+
+      {call.videoReq ? (
+        <div className="cs-videoreq">
+          <span className="cs-videoreq__text">{t('call.videoRequest')}</span>
+          <div className="cs-videoreq__btns">
+            <button className="cs-videoreq__decline" onClick={declineVideo}>{t('call.decline')}</button>
+            <button className="cs-videoreq__accept" onClick={acceptVideo}>{t('call.accept')}</button>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

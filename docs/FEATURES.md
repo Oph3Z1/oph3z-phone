@@ -61,10 +61,18 @@ assigns a channel → `outgoing` to caller, `incoming` to callee (+ 3D ringtone)
 `accept` → `connected` (both `setCallChannel(channel)`) → `hangup`/`decline`/30s
 timeout → `ended`. Both sides logged to Recents (caller=out, callee=in/missed).
 
-- **Incoming UI:** Dynamic-Island banner if the phone was open; **auto-opens to a full
-  incoming screen** if closed. Calling/in-call screens show **End + Mute only**.
+- **Incoming UI:** animated Dynamic-Island banner (spring expand + pulsing accept ring)
+  if the phone was open; **auto-opens to a full incoming screen** if closed. A phone
+  opened *by* the call only auto-closes if the call was **not answered** (answered → stays
+  open). Call screens use the player's **wallpaper, blurred** (iOS-style), behind the content.
+- **In-call controls:** Mute, Speaker, Video (upgrade to FaceTime), End.
 - **Mute:** relayed — the *other* player's client `toggleMutePlayer`s you (pma-safe; pma
   forbids `NetworkSetVoiceActive`). "You can still talk" is normal; *they* can't hear you.
+- **Speaker:** either party can toggle it; the server adds **nearby players**
+  (`Config.CallSpeakerRange`, 6m) to the pma-voice **call channel** via
+  `exports['pma-voice']:setPlayerCall`, kept in sync by a ~700ms proximity scan (skips
+  players already in another call). So people around you hear both ends (and can speak
+  into the call). Cleared on speaker-off / call end.
 - **Ringtone (3D, xsound):** server `PlayUrlPos(-1, …, calleeCoords, loop)` so callee +
   nearby players hear it; callee client updates `Position` to follow them; destroyed on
   answer/decline/timeout/hangup. URL = `Config.RingtoneUrl`
@@ -72,6 +80,37 @@ timeout → `ended`. Both sides logged to Recents (caller=out, callee=in/missed)
 - **2D UI sounds (web/public/audio/):** `ringback` (caller waiting), `end` (ended),
   `busy` (failed: busy/unavailable/invalid/airplane). Tries `.mp3/.ogg/.wav`.
 - **Bad numbers:** offline/invalid → `unavailable`; in a call → `busy`.
+
+### Video calls (FaceTime)
+
+Real WebRTC **video** layered on top of a normal call — **audio + mute stay on pma-voice**; WebRTC carries only the picture.
+
+- **Source:** reuses the Camera app's tech — a scripted selfie/back cam (walk while talking, hold **RMB** to rotate, flip front/back) renders to the gamerender canvas → `captureStream()` → outgoing video track. Client cam = `client/videocall.lua` (self-contained copy of the Camera scripted-cam, so the Camera app isn't touched). Teardown re-runs `Phone.startAnim()` so the phone-hold pose returns.
+- **Signaling:** SDP offer/answer + ICE candidates are relayed by callId through server events in `server/main.lua` (`oph3z-phone:video:signal / request / accept / decline / stop`, plus `video:start` on connect). Peer = `web/src/utils/videoCall.js` (queues signals until the screen mounts); UI = `VideoCallScreen.jsx` (remote video full-screen + self PiP + flip / mute / speaker / stop-video / end).
+- **Launch:** a **Video** button in Contact detail (direct FaceTime — the callee sees "Incoming video call" / a video Island), or the **Video** button on an active audio call, which sends an **upgrade request** the other side accepts/declines.
+
+### Video call setup (production — required for cross-network players)
+
+Video connects two players over WebRTC, which needs **ICE servers** (`Config.VideoCall.IceServers`).
+
+- **Same PC / LAN (dev):** nothing to configure — they connect over localhost/host candidates; the default public **STUN** entry is enough.
+- **Real servers (players on different networks):** STUN alone only works for players whose routers allow a direct peer-to-peer connection; players behind **symmetric NAT / CGNAT / strict firewalls** will hang on *"Connecting video…"*. The owner must add a **TURN** relay:
+
+    ```lua
+    Config.VideoCall = {
+        IceServers = {
+            { urls = 'stun:stun.l.google.com:19302' },
+            { urls = 'turn:YOUR_TURN_HOST:3478', username = 'user', credential = 'pass' },
+            { urls = 'turns:YOUR_TURN_HOST:5349', username = 'user', credential = 'pass' }, -- TLS, optional
+        },
+    }
+    ```
+
+  WebRTC tries a direct connection first and only **relays through TURN** when that fails, so TURN carries only the calls that actually need it. Getting a TURN server:
+  - **Managed / paid** (easiest): Cloudflare Realtime TURN, Metered / OpenRelay (free tier), Twilio — paste host + username + credential.
+  - **Self-host `coturn`** on the VPS: set a `user:pass`, open **3478 (UDP+TCP)**, **5349 (TCP/TLS)**, and the **relay UDP range** (coturn default `49152–65535`), then point `turn:vps-ip:3478`.
+
+  Only **video** goes over TURN (audio is pma-voice) — roughly **1–2 Mbps per *relayed* call**. No FiveM convars are needed; just the ICE list.
 
 ---
 
@@ -419,8 +458,10 @@ encoding/size, ring volume/distance) are hardcoded in the relevant Lua files.
 | Mail | `MailDomain` (address = `firstname.lastname@<MailDomain>`) |
 | Defaults | `DefaultSettings` = `{wallpaper, brightness, volume, airdrop, locked, airplane, notifSound, notifMaster}` (per-app `notifApps` is set from the UI, not seeded) |
 | Prop | `UseProp`, `PropModel` |
-| Calls | `RingTimeout` (30), `MaxRecents` (50), `RingtoneUrl` |
+| Calls | `RingTimeout` (30), `MaxRecents` (50), `RingtoneUrl`, `CallSpeakerRange` (6m — nearby hear a call on speaker) |
+| Video calls | `VideoCall.IceServers` (STUN default; add TURN for cross-network players — see Video call setup) |
 | Camera | `Camera.provider` (`discord`/`fivemanage`), `Camera.discord.webhook`, `Camera.fivemanage.{apiKey,url}` |
+| Video audio | `VideoAudio` (`off`/`self`/`nearby`), `VideoAudioRange`, `VideoAudioGate`, `FFmpegPath` (see Camera → Video audio) |
 | GIFs | `Gif.apiKey` (GIPHY) |
 
 ---

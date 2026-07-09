@@ -70,7 +70,7 @@ Config.Apps = {
     -- `store` = list it in the App Store; the extra fields are its store page.
     {
         id = 'x', 
-        label = 'X', 
+        label = 'Twexa',
         place = 'grid', 
         store = true,
         description = 'The town square. Post what\'s happening, follow people, reply, repost and see what everyone in the city is talking about.',
@@ -85,11 +85,11 @@ Config.Apps = {
     },
 
     {
-        id = 'spotify', 
-        label = 'Spotify', 
-        place = 'grid', 
+        id = 'music',
+        label = 'Music',
+        place = 'grid',
         store = true,
-        description = 'Music for everyone. Search millions of songs, build playlists, share tracks with friends and play out loud so everyone nearby can vibe with you.',
+        description = 'Millions of songs, all in one place. Search, build playlists, share tracks with friends and play out loud so everyone nearby can listen with you.',
     }
 }
 
@@ -97,13 +97,14 @@ Config.AppStore = {
     downloadSeconds = 5, -- how long the download takes (seconds)
 }
 
--- Phone prop ----------------------------------------------------------------
+-- Phone prop
 Config.UseProp = true -- attach a phone prop + play hand animation
 Config.PropModel = 'prop_amb_phone' -- prop model to put in the player's hand
 
--- Calls ---------------------------------------------------------------------
+-- Calls
 Config.RingTimeout = 30 -- seconds before an unanswered call is "missed"
 Config.MaxRecents  = 50 -- how many recent-call entries to keep
+Config.CallSpeakerRange = 6.0 -- metres: how far nearby players can hear a call put on speaker
 -- Fallback ringtone (used when a player hasn't picked one in Settings > Ringtones).
 -- Played in 3D via xsound so the callee + nearby players hear it.
 Config.RingtoneUrl = 'https://cfx-nui-xsound/html/sounds/ringtone.mp3'
@@ -111,6 +112,17 @@ Config.RingtoneUrl = 'https://cfx-nui-xsound/html/sounds/ringtone.mp3'
 -- Ringtones
 Config.Ringtones = {
     { id = 'default', name = 'Default', file = 'ringtone.mp3' },
+}
+
+-- Video calls (FaceTime)
+-- Video travels over WebRTC (audio stays on the normal voice call). Two players
+-- on the SAME machine/LAN connect with no setup. For real servers whose players
+-- are on different networks, add a TURN server below (see docs/FEATURES.md).
+Config.VideoCall = {
+    IceServers = {
+        { urls = 'stun:stun.l.google.com:19302' },
+        -- { urls = 'turn:your.turn.server:3478', username = 'user', credential = 'pass' },
+    },
 }
 
 -- Camera app

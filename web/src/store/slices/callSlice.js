@@ -8,8 +8,14 @@ const initialState = {
   name: '',
   img: '',
   muted: false,
+  speaker: false, // call put on speaker (nearby players can hear)
   answeredAt: null, // ms epoch when the call connected (for the timer)
   reason: null, // end/fail reason
+  wantsVideo: false, // this call was placed/received as a video (FaceTime) call
+  video: false, // the video layer (WebRTC) is currently active
+  videoRole: null, // 'offer' | 'answer' — who initiates the WebRTC handshake
+  videoIce: null, // ICE servers (from Config.VideoCall) for this session
+  videoReq: null, // callId of a pending "upgrade to video" request from the other side
 };
 
 const callSlice = createSlice({
@@ -28,6 +34,7 @@ const callSlice = createSlice({
             number: d.number || '',
             name: d.name || '',
             img: d.img || '',
+            wantsVideo: !!d.video,
           };
         case 'outgoing':
           return {
@@ -37,6 +44,7 @@ const callSlice = createSlice({
             number: d.number || '',
             name: d.name || '',
             img: d.img || '',
+            wantsVideo: !!d.video,
           };
         case 'active':
           state.state = 'active';
@@ -57,11 +65,31 @@ const callSlice = createSlice({
     setMuted(state, action) {
       state.muted = action.payload;
     },
+    setSpeaker(state, action) {
+      state.speaker = action.payload;
+    },
+    setVideo(state, action) {
+      const d = action.payload || {};
+      if (d.active) {
+        state.video = true;
+        state.videoRole = d.role || 'answer';
+        if (d.callId != null) state.callId = d.callId;
+        state.videoIce = d.ice || [];
+        state.videoReq = null;
+      } else {
+        state.video = false;
+        state.videoRole = null;
+        state.videoIce = null;
+      }
+    },
+    setVideoReq(state, action) {
+      state.videoReq = action.payload;
+    },
     clearCall() {
       return initialState;
     },
   },
 });
 
-export const { applyCall, setMuted, clearCall } = callSlice.actions;
+export const { applyCall, setMuted, setSpeaker, setVideo, setVideoReq, clearCall } = callSlice.actions;
 export default callSlice.reducer;

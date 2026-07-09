@@ -89,3 +89,38 @@ export const MicOffIcon = (p) => (
     <path d="M3 3l18 18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
   </svg>
 );
+
+export const VideoIcon = (p) => (
+  <svg {...base} {...p}>
+    <rect x="2" y="6" width="13" height="12" rx="2.5" />
+    <path d="M15 10l6-3.4v10.8L15 14z" />
+  </svg>
+);
+
+export const VideoOffIcon = (p) => (
+  <svg {...base} {...p}>
+    <rect x="2" y="6" width="13" height="12" rx="2.5" />
+    <path d="M15 10l6-3.4v10.8L15 14z" />
+    <path d="M3 3l18 18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+  </svg>
+);
+
+export const SpeakerIcon = (p) => (
+  <svg {...base} {...p}>
+    <path d="M4 9v6h3.5L13 20V4L7.5 9H4z" />
+    <path
+      d="M16 8.5a4 4 0 010 7M18.5 6a7.5 7.5 0 010 12"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+    />
+  </svg>
+);
+
+export const CamFlipIcon = (p) => (
+  <svg {...base} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}>
+    <path d="M4 9a8 8 0 0113-3l2 2M20 15a8 8 0 01-13 3l-2-2" />
+    <path d="M19 4v4h-4M5 20v-4h4" />
+  </svg>
+);

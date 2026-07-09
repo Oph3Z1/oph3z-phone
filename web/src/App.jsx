@@ -14,7 +14,8 @@ import { bumpLive } from './store/slices/xSlice';
 import { setSaved, setDownloadMs } from './store/slices/homeSlice';
 import { hydrate } from './store/slices/settingsSlice';
 import { setI18n } from './store/slices/i18nSlice';
-import { applyCall, clearCall } from './store/slices/callSlice';
+import { applyCall, clearCall, setVideo, setVideoReq } from './store/slices/callSlice';
+import { onVideoSignal, stopVideoCall } from './utils/videoCall';
 import { loadPhoneState } from './store/slices/contactsSlice';
 import { upsertPhoto, setLightbox } from './store/slices/photosSlice';
 import { presentNotification, loadNotifications, setPeek } from './store/slices/notificationsSlice';
@@ -240,6 +241,25 @@ export default function App() {
     }
 
     dispatch(applyCall(data));
+  });
+
+  // Video call (FaceTime): Lua drives start/stop; WebRTC signaling is relayed
+  // through it. Signals are forwarded to the peer module, which queues them until
+  // the video screen has created the connection.
+  useNuiEvent('phone:video:start', (d) => {
+    if (!d) return;
+    dispatch(setVideo({ active: true, role: d.role, callId: d.callId, ice: d.ice }));
+  });
+  useNuiEvent('phone:video:stop', () => {
+    stopVideoCall();
+    dispatch(setVideo({ active: false }));
+    dispatch(setVideoReq(null));
+  });
+  useNuiEvent('phone:video:signal', (d) => { if (d) onVideoSignal(d.blob); });
+  useNuiEvent('phone:video:request', (d) => dispatch(setVideoReq((d && d.callId) ?? null)));
+  useNuiEvent('phone:video:declined', () => {
+    dispatch(setVideoReq(null));
+    dispatch(pushToast({ kind: 'info', text: 'Video call declined' }));
   });
 
   // Tell Lua to close the phone (and release NUI focus).

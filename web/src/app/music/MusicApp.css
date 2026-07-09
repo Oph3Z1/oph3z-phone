@@ -1,12 +1,12 @@
 /* ==========================================================================
-   Music — immersive album-art aesthetic. Deep black, glass, green glow.
+   Music — immersive album-art aesthetic. Deep black, glass, red glow.
    The playing track's artwork blurs to fill the whole app (AmbientBackground);
    everything else floats over it in frosted glass.
    ========================================================================== */
 .spapp {
-  --g: #1ed760;
-  --g2: #14b453;
-  --glow: rgba(30, 215, 96, 0.45);
+  --g: #fb2c48;
+  --g2: #c81f39;
+  --glow: rgba(251, 44, 72, 0.45);
   --txt: #ffffff;
   --dim: rgba(255, 255, 255, 0.64);
   --dim2: rgba(255, 255, 255, 0.4);
@@ -24,7 +24,7 @@
 .sp-amb__art { position: absolute; inset: -25%; width: 150%; height: 150%; object-fit: cover;
   filter: blur(60px) saturate(1.5) brightness(0.6); transform: scale(1.1); animation: sp-amb-in 0.9s ease; }
 .sp-amb__aurora { position: absolute; inset: 0;
-  background: radial-gradient(120% 90% at 25% -10%, rgba(30,215,96,0.42), transparent 55%),
+  background: radial-gradient(120% 90% at 25% -10%, rgba(251,44,72,0.42), transparent 55%),
               radial-gradient(120% 90% at 95% 108%, rgba(20,180,83,0.3), transparent 55%), #050705;
   animation: sp-aurora 16s ease-in-out infinite alternate; }
 .sp-amb__scrim { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,0.25), rgba(0,0,0,0.5) 52%, rgba(0,0,0,0.94)); }
@@ -53,17 +53,17 @@
 .sp-hero {
   position: relative; display: flex; align-items: center; gap: 0.9em; width: calc(100% - 2.2em);
   margin: 0 1.1em; padding: 0.7em; text-align: left; color: var(--txt); overflow: hidden;
-  background: linear-gradient(120deg, rgba(30,215,96,0.28), rgba(255,255,255,0.05));
+  background: linear-gradient(120deg, rgba(251,44,72,0.28), rgba(255,255,255,0.05));
   border: 1px solid var(--brd); border-radius: 1.1em; backdrop-filter: blur(20px);
 }
 .sp-hero:active { transform: scale(0.99); }
 .sp-hero__art { width: 3.9em; height: 3.9em; border-radius: 0.7em; flex-shrink: 0; display: grid; place-items: center;
-  background: linear-gradient(135deg, #3ee07a, #12a350); background-size: cover; background-position: center; box-shadow: 0 0.5em 1.2em rgba(0,0,0,0.4); }
+  background: linear-gradient(135deg, #ff5c6e, #c81f39); background-size: cover; background-position: center; box-shadow: 0 0.5em 1.2em rgba(0,0,0,0.4); }
 .sp-hero__heart { color: #fff; filter: drop-shadow(0 2px 6px rgba(0,0,0,0.4)); }
 .sp-hero__art[style*="url"] .sp-hero__heart { display: none; }
 .sp-hero__body { flex: 1; min-width: 0; }
 .sp-hero__title { font-weight: 800; font-size: 1.1em; }
-.sp-hero__sub { color: var(--dim); font-size: 0.85em; margin-top: 0.1em; }
+.sp-hero__sub { color: var(--dim); font-size: 0.85em; margin-top: 0.1em; margin-left: 0.5em; }
 .sp-hero__glow { position: absolute; right: -20%; top: -60%; width: 60%; height: 200%; background: radial-gradient(closest-side, var(--glow), transparent); pointer-events: none; }
 
 .sp-sect { font-size: 1.05em; font-weight: 800; padding: 1.3em 1.1em 0.7em; letter-spacing: -0.01em; }
@@ -114,7 +114,7 @@
 
 /* ---- playlist view ------------------------------------------------------ */
 /* Liked Songs is deliberately mono-themed: solid black behind the list so the
-   ambient album-art background never bleeds through — only black + green. */
+   ambient album-art background never bleeds through — only black + red. */
 .sp-pl--liked { background: #050505; }
 .sp-pl__hero { position: relative; padding: calc(0.8em + var(--safe-top, 0px)) 1.1em 2.2em; margin-bottom: 0.5em; overflow: visible; }
 .sp-pl__bg { position: absolute; inset: 0; background-size: cover; background-position: center; filter: blur(3px) brightness(0.7); transform: scale(1.05); }
@@ -144,12 +144,12 @@
 .sp-mini__bar { position: absolute; left: 0; bottom: 0; height: 2px; background: var(--g); box-shadow: 0 0 6px var(--glow); }
 
 /* ---- floating glass pill nav -------------------------------------------- */
-.sp-nav { position: absolute; z-index: 6; left: 50%; transform: translateX(-50%); bottom: calc(0.9em + var(--safe-bottom, 0px));
-  display: flex; gap: 0.3em; padding: 0.35em; background: rgba(20,20,22,0.55); border: 1px solid var(--brd);
-  backdrop-filter: blur(26px) saturate(1.6); border-radius: 999px; box-shadow: 0 0.8em 2em rgba(0,0,0,0.55); }
+.sp-nav { position: absolute; z-index: 6; left: 0; right: 0; width: max-content; margin-left: auto; margin-right: auto; bottom: calc(0.9em + var(--safe-bottom, 0px));
+  display: flex; gap: 0.3em; padding: 0.35em; background: rgba(18,18,20,0.94); border: 1px solid var(--brd);
+  border-radius: 999px; box-shadow: 0 0.8em 2em rgba(0,0,0,0.55); }
 .sp-nav__btn { display: flex; align-items: center; gap: 0.5em; padding: 0.6em 1.15em; border: none; border-radius: 999px;
   background: none; color: var(--dim); font-size: 0.82em; font-weight: 700; }
-.sp-nav__btn.is-on { color: #04140a; background: var(--g); box-shadow: 0 0.3em 1em var(--glow); }
+.sp-nav__btn.is-on { color: #fff; background: var(--g); box-shadow: 0 0.3em 1em var(--glow); }
 
 /* ---- now playing (full-bleed) ------------------------------------------- */
 .sp-now { position: absolute; inset: 0; z-index: 20; overflow: hidden; display: flex; flex-direction: column;
@@ -163,7 +163,7 @@
 .sp-now__cover { flex: 1; margin: 1.3em 0; max-height: 20em; aspect-ratio: 1/1; align-self: center; width: 100%; max-width: 20em;
   border-radius: 1.1em; background-size: cover; background-position: center; display: grid; place-items: center; color: rgba(255,255,255,0.85);
   box-shadow: 0 1.6em 3.4em rgba(0,0,0,0.6); transition: transform 0.5s ease, box-shadow 0.5s ease; }
-.sp-now__cover.is-playing { box-shadow: 0 1.6em 3.4em rgba(0,0,0,0.6), 0 0 5em rgba(30,215,96,0.2); }
+.sp-now__cover.is-playing { box-shadow: 0 1.6em 3.4em rgba(0,0,0,0.6), 0 0 5em rgba(251,44,72,0.2); }
 .sp-now__cover:not(.is-playing) { transform: scale(0.9); }
 
 .sp-now__head { display: flex; align-items: center; gap: 0.8em; }
@@ -194,7 +194,7 @@
 
 /* ---- buttons / inputs / sheets ------------------------------------------ */
 .sp-btn { flex: 1; padding: 0.85em; border: none; border-radius: 999px; font-weight: 800; font-size: 0.92em; }
-.sp-btn--green { background: var(--g); color: #04140a; box-shadow: 0 0.4em 1.2em var(--glow); }
+.sp-btn--green { background: var(--g); color: #fff; box-shadow: 0 0.4em 1.2em var(--glow); }
 .sp-btn--green:disabled { opacity: 0.5; box-shadow: none; }
 .sp-btn--ghost { background: var(--glass2); color: #fff; }
 .sp-input { width: 100%; background: var(--glass2); border: 1px solid var(--brd); color: #fff; border-radius: 0.8em; padding: 0.8em 0.9em; font-size: 0.95em; outline: none; }
@@ -222,7 +222,7 @@
 
 /* ---- animated waveform (also used by the Island — hardcoded green) ------- */
 .sp-wave { display: inline-flex; align-items: flex-end; gap: 2.5px; }
-.sp-wave i { width: 3px; background: #1ed760; border-radius: 2px; height: 40%; }
+.sp-wave i { width: 3px; background: #fb2c48; border-radius: 2px; height: 40%; }
 .sp-wave.is-on i { animation: sp-bars 0.9s ease-in-out infinite; }
 .sp-wave i:nth-child(1) { animation-delay: 0s; }
 .sp-wave i:nth-child(2) { animation-delay: 0.2s; height: 70%; }
@@ -251,7 +251,7 @@
 .sp-isl__title { font-weight: 700; font-size: 0.95em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .sp-isl__artist { color: rgba(255,255,255,0.6); font-size: 0.78em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .sp-isl__track { height: 3px; border-radius: 999px; background: rgba(255,255,255,0.22); margin: 1em 0 0.3em; overflow: hidden; }
-.sp-isl__fill { display: block; height: 100%; background: #1ed760; }
+.sp-isl__fill { display: block; height: 100%; background: #fb2c48; }
 .sp-isl__times { display: flex; justify-content: space-between; color: rgba(255,255,255,0.6); font-size: 0.65em; }
 .sp-isl__ctl { display: flex; align-items: center; justify-content: center; gap: 1.6em; margin-top: 0.7em; }
 .sp-isl__ctl button { background: none; border: none; color: #fff; display: grid; place-items: center; }

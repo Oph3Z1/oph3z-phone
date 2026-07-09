@@ -1,7 +1,7 @@
 import { useSelector } from 'react-redux';
 import './IncomingIsland.css';
 import Avatar from '../components/Avatar';
-import { PhoneIcon } from '../components/icons';
+import { PhoneIcon, VideoIcon } from '../components/icons';
 import { fetchNui } from '../../../utils/fetchNui';
 
 // Compact Dynamic-Island incoming call (shown when the phone is already open).
@@ -16,7 +16,7 @@ export default function IncomingIsland() {
       <div className="island__left">
         <Avatar name={call.name} img={call.img} size="2.4em" />
         <div className="island__info">
-          <div className="island__sub">mobile</div>
+          <div className="island__sub">{call.wantsVideo ? 'FaceTime' : 'mobile'}</div>
           <div className="island__name">{call.name || call.number}</div>
         </div>
       </div>
@@ -25,7 +25,7 @@ export default function IncomingIsland() {
           <PhoneIcon />
         </button>
         <button className="island__btn island__btn--accept" onClick={accept} aria-label="Accept">
-          <PhoneIcon />
+          {call.wantsVideo ? <VideoIcon /> : <PhoneIcon />}
         </button>
       </div>
     </div>

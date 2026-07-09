@@ -232,10 +232,77 @@ local function stopRingtone(call)
     end
 end
 
+local function clearSpeakerListeners(call)
+    if not call or not call.listeners then return end
+    for l in pairs(call.listeners) do
+        if GetPlayerPed(l) ~= 0 then
+            exports['pma-voice']:setPlayerCall(l, 0)
+        end
+    end
+    call.listeners = {}
+end
+
+local function collectSpeakerNearby(src, call, out, range)
+    local ped = GetPlayerPed(src)
+    if not ped or ped == 0 then return end
+    local coords = GetEntityCoords(ped)
+    for _, pid in ipairs(GetPlayers()) do
+        local id = tonumber(pid)
+        if id and id ~= call.caller and id ~= call.callee then
+            local p = GetPlayerPed(id)
+            if p and p ~= 0 and #(coords - GetEntityCoords(p)) <= range then
+                local ch = Player(id).state.callChannel or 0
+                if ch == 0 or ch == call.channel then
+                    out[id] = true
+                end
+            end
+        end
+    end
+end
+
+local function ensureSpeakerScan(callId)
+    local call = activeCalls[callId]
+    if not call or call.speakerScan then return end
+    if not (call.speakerCaller or call.speakerCallee) then return end
+    call.speakerScan = true
+    call.listeners = call.listeners or {}
+    CreateThread(function()
+        local range = (Config.CallSpeakerRange or 6.0) + 0.0
+        while true do
+            local c = activeCalls[callId]
+            if not c or not (c.speakerCaller or c.speakerCallee) then break end
+            local desired = {}
+            if c.speakerCaller then collectSpeakerNearby(c.caller, c, desired, range) end
+            if c.speakerCallee then collectSpeakerNearby(c.callee, c, desired, range) end
+            for p in pairs(desired) do
+                if not c.listeners[p] then
+                    exports['pma-voice']:setPlayerCall(p, c.channel)
+                    c.listeners[p] = true
+                end
+            end
+            for p in pairs(c.listeners) do
+                if not desired[p] then
+                    if GetPlayerPed(p) ~= 0 then exports['pma-voice']:setPlayerCall(p, 0) end
+                    c.listeners[p] = nil
+                end
+            end
+            Wait(700)
+        end
+        local c = activeCalls[callId]
+        if c then
+            clearSpeakerListeners(c)
+            c.speakerScan = false
+        end
+    end)
+end
+
 local function endCall(callId, reason)
     local call = activeCalls[callId]
     if not call then return end
 
+    call.speakerCaller = false
+    call.speakerCallee = false
+    clearSpeakerListeners(call)
     stopRingtone(call)
     activeCalls[callId] = nil
     if playerCall[call.caller] == callId then playerCall[call.caller] = nil end
@@ -265,7 +332,7 @@ local function endCall(callId, reason)
     TriggerClientEvent('oph3z-phone:call:ended', call.callee, { callId = callId, reason = reason })
 end
 
-local function startCall(src, rawNumber)
+local function startCall(src, rawNumber, isVideo)
     local callerCid = getCitizenId(src)
     if not callerCid or playerCall[src] then return end
 
@@ -340,18 +407,18 @@ local function startCall(src, rawNumber)
         callerNumber = callerPhone.number, calleeNumber = calleePhone.number,
         callerNameSeen = calleeSeesCaller.name, callerImgSeen = calleeSeesCaller.img,
         calleeNameSeen = callerSeesCallee.name, calleeImgSeen = callerSeesCallee.img,
-        state = 'ringing', startedAt = os.time(),
+        state = 'ringing', startedAt = os.time(), video = isVideo == true,
     }
     playerCall[src] = callId
     playerCall[calleeSrc] = callId
 
     TriggerClientEvent('oph3z-phone:call:outgoing', src, {
         callId = callId, number = callerSeesCallee.number,
-        name = callerSeesCallee.name, img = callerSeesCallee.img,
+        name = callerSeesCallee.name, img = callerSeesCallee.img, video = isVideo == true,
     })
     TriggerClientEvent('oph3z-phone:call:incoming', calleeSrc, {
         callId = callId, number = calleeSeesCaller.number,
-        name = calleeSeesCaller.name, img = calleeSeesCaller.img,
+        name = calleeSeesCaller.name, img = calleeSeesCaller.img, video = isVideo == true,
     })
 
     startRingtone(activeCalls[callId])
@@ -363,8 +430,8 @@ local function startCall(src, rawNumber)
     return callId
 end
 
-RegisterNetEvent('oph3z-phone:call:start', function(rawNumber)
-    startCall(source, rawNumber)
+RegisterNetEvent('oph3z-phone:call:start', function(rawNumber, video)
+    startCall(source, rawNumber, video)
 end)
 
 PhoneCall = PhoneCall or {}
@@ -379,6 +446,54 @@ RegisterNetEvent('oph3z-phone:call:accept', function(callId)
     call.answeredAt = os.time()
     TriggerClientEvent('oph3z-phone:call:connected', call.caller, { callId = callId, channel = call.channel })
     TriggerClientEvent('oph3z-phone:call:connected', call.callee, { callId = callId, channel = call.channel })
+    if call.video then
+        TriggerClientEvent('oph3z-phone:video:start', call.caller, { callId = callId, role = 'offer' })
+        TriggerClientEvent('oph3z-phone:video:start', call.callee, { callId = callId, role = 'answer' })
+    end
+end)
+
+RegisterNetEvent('oph3z-phone:video:signal', function(callId, blob)
+    local src = source
+    local call = activeCalls[callId]
+    if not call or (src ~= call.caller and src ~= call.callee) then return end
+    TriggerClientEvent('oph3z-phone:video:signal', otherParty(call, src), callId, blob)
+end)
+
+RegisterNetEvent('oph3z-phone:video:request', function(callId)
+    local src = source
+    local call = activeCalls[callId]
+    if not call or (src ~= call.caller and src ~= call.callee) then return end
+    call.videoRequestedBy = src
+    TriggerClientEvent('oph3z-phone:video:request', otherParty(call, src), { callId = callId })
+end)
+
+RegisterNetEvent('oph3z-phone:video:accept', function(callId)
+    local src = source
+    local call = activeCalls[callId]
+    if not call or (src ~= call.caller and src ~= call.callee) then return end
+    local requester = call.videoRequestedBy
+    if not requester then return end
+    call.video = true
+    call.videoRequestedBy = nil
+    TriggerClientEvent('oph3z-phone:video:start', requester, { callId = callId, role = 'offer' })
+    TriggerClientEvent('oph3z-phone:video:start', otherParty(call, requester), { callId = callId, role = 'answer' })
+end)
+
+RegisterNetEvent('oph3z-phone:video:decline', function(callId)
+    local src = source
+    local call = activeCalls[callId]
+    if not call or (src ~= call.caller and src ~= call.callee) then return end
+    call.videoRequestedBy = nil
+    TriggerClientEvent('oph3z-phone:video:declined', otherParty(call, src), { callId = callId })
+end)
+
+RegisterNetEvent('oph3z-phone:video:stop', function(callId)
+    local src = source
+    local call = activeCalls[callId]
+    if not call or (src ~= call.caller and src ~= call.callee) then return end
+    call.video = false
+    TriggerClientEvent('oph3z-phone:video:stop', call.caller, { callId = callId })
+    TriggerClientEvent('oph3z-phone:video:stop', call.callee, { callId = callId })
 end)
 
 RegisterNetEvent('oph3z-phone:call:decline', function(callId)
@@ -400,6 +515,19 @@ RegisterNetEvent('oph3z-phone:call:mute', function(callId, muted)
     local call = activeCalls[callId]
     if not call or (src ~= call.caller and src ~= call.callee) then return end
     TriggerClientEvent('oph3z-phone:call:remoteMute', otherParty(call, src), src, muted and true or false)
+end)
+
+RegisterNetEvent('oph3z-phone:call:speaker', function(callId, on)
+    local src = source
+    local call = activeCalls[callId]
+    if not call or (src ~= call.caller and src ~= call.callee) then return end
+    on = on and true or false
+    if src == call.caller then
+        call.speakerCaller = on
+    else
+        call.speakerCallee = on
+    end
+    if on then ensureSpeakerScan(callId) end
 end)
 
 AddEventHandler('playerDropped', function()

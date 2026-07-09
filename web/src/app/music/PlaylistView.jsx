@@ -50,7 +50,7 @@ export default function PlaylistView({ playlistId, onBack }) {
     <div className={`sp-screen sp-pl${isLiked ? ' sp-pl--liked' : ''}`}>
       <div className="sp-pl__hero">
         <div className="sp-pl__bg" style={isLiked
-          ? { background: 'linear-gradient(160deg,#3ee07a,#0a3a22 70%)' }
+          ? { background: 'radial-gradient(115% 78% at 50% 12%, #fb2c48 0%, #6a1120 44%, #050505 78%)' }
           : cover ? { backgroundImage: `url(${cover.artwork})` } : { background: gradientFor(pl.name) }} />
         <div className="sp-pl__bgscrim" />
         <div className="sp-pl__bar">
@@ -58,7 +58,7 @@ export default function PlaylistView({ playlistId, onBack }) {
           {!isLiked && <button className="sp-round sp-round--dark" onClick={() => setMenu(true)}><MoreIcon size={20} /></button>}
         </div>
         <div className="sp-pl__cover" style={isLiked
-          ? { background: 'linear-gradient(135deg,#3ee07a,#12a350)' }
+          ? { background: 'linear-gradient(135deg,#ff5c6e,#c81f39)' }
           : cover ? { backgroundImage: `url(${cover.artwork})` } : { background: gradientFor(pl.name) }}>
           {isLiked ? <HeartIcon size={46} filled /> : (!cover && <NoteIcon size={40} />)}
         </div>

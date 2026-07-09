@@ -8,8 +8,34 @@
   color: #fff;
   padding-top: calc(var(--safe-top) + 1.4em);
   padding-bottom: calc(var(--safe-bottom) + 2.2em);
-  background: linear-gradient(180deg, #5a6a93 0%, #3a3168 45%, #271d4a 100%);
+  background: #0b0b0d;
+  overflow: hidden;
   user-select: none !important;
+}
+
+/* The player's wallpaper (preset or custom URL), blurred like the real iOS call screen. */
+.callscreen__wall {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scale(1.18);
+  filter: blur(1.6em) brightness(0.62) saturate(1.05);
+  z-index: 0;
+}
+.callscreen__scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background:
+    linear-gradient(180deg, rgba(0, 0, 0, 0.45) 0%, rgba(0, 0, 0, 0.15) 32%, rgba(0, 0, 0, 0.55) 100%);
+}
+.callscreen__top,
+.callscreen__avatar,
+.callscreen__actions {
+  position: relative;
+  z-index: 1;
 }
 
 .callscreen__top {
@@ -42,7 +68,7 @@
 .callscreen__actions {
   margin-top: auto;
   display: flex;
-  gap: 4em;
+  gap: 2.4em;
   align-items: flex-start;
   justify-content: center;
 }
@@ -87,3 +113,59 @@
 .cs-btn--accept > svg {
   background: #34c759;
 }
+
+.cs-btn--video > svg {
+  background: rgba(255, 255, 255, 0.22);
+}
+
+.cs-btn--speaker > svg {
+  background: rgba(255, 255, 255, 0.22);
+}
+.cs-btn--speaker.is-on > svg {
+  background: #fff;
+  color: #2a2150;
+}
+
+/* Active-call controls: a row of round buttons with End underneath (iOS-style). */
+.cs-controls {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5em;
+}
+.cs-controls__row {
+  display: flex;
+  gap: 2em;
+  align-items: flex-start;
+  justify-content: center;
+}
+
+.cs-videoreq {
+  position: absolute;
+  left: 1em;
+  right: 1em;
+  bottom: calc(var(--safe-bottom) + 1em);
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  gap: 0.7em;
+  padding: 0.95em 1em;
+  border-radius: 1.1em;
+  background: rgba(18, 18, 24, 0.85);
+  backdrop-filter: blur(0.7em);
+  -webkit-backdrop-filter: blur(0.7em);
+  box-shadow: 0 0.4em 1.2em rgba(0, 0, 0, 0.5);
+}
+.cs-videoreq__text { font-size: 0.95em; text-align: center; }
+.cs-videoreq__btns { display: flex; gap: 0.7em; }
+.cs-videoreq__btns button {
+  flex: 1;
+  padding: 0.62em;
+  border-radius: 0.8em;
+  font-weight: 600;
+  font-size: 0.9em;
+  cursor: pointer;
+  color: #fff;
+}
+.cs-videoreq__decline { background: rgba(255, 255, 255, 0.16); }
+.cs-videoreq__accept { background: #34c759; }

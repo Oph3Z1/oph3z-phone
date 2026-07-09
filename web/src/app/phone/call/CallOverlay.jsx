@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { clearCall } from '../../../store/slices/callSlice';
 import { useCallAudio } from '../../../hooks/useCallAudio';
 import CallScreen from './CallScreen';
+import VideoCallScreen from './VideoCallScreen';
 import IncomingIsland from './IncomingIsland';
 
 export default function CallOverlay() {
@@ -22,5 +23,7 @@ export default function CallOverlay() {
   if (!call.state) return null;
   // Compact island only for an incoming call while the phone was already open.
   if (call.state === 'incoming' && call.island) return <IncomingIsland />;
+  // Video (FaceTime) layer takes over once WebRTC video is active.
+  if (call.video) return <VideoCallScreen />;
   return <CallScreen />;
 }

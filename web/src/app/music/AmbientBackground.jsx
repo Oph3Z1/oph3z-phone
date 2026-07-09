@@ -1,5 +1,5 @@
 // The signature of the app: the current track's artwork blurred to fill the whole
-// screen, cross-fading on every song change. Falls back to a green aurora when
+// screen, cross-fading on every song change. Falls back to a red aurora when
 // nothing is playing. Sits behind all content (z-index 0).
 export default function AmbientBackground({ artwork }) {
   return (

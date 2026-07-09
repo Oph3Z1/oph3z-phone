@@ -297,9 +297,10 @@ local function localCallCleanup()
         exports['pma-voice']:setCallChannel(0)
     end
     local openedByCall = Phone.openedByCall
+    local answered = Phone.call ~= nil and Phone.call.state == 'active'
     Phone.call = nil
     Phone.openedByCall = nil
-    if openedByCall then
+    if openedByCall and not answered then
         SetTimeout(1600, function()
             if not Phone.call then Phone.close() end
         end)
@@ -314,6 +315,7 @@ RegisterNetEvent('oph3z-phone:call:incoming', function(data)
     callMsg({
         type = 'incoming', island = wasOpen,
         callId = data.callId, number = data.number, name = data.name, img = data.img,
+        video = data.video,
     })
 
     CreateThread(function()
@@ -330,7 +332,7 @@ end)
 RegisterNetEvent('oph3z-phone:call:outgoing', function(data)
     if not data then return end
     Phone.call = { callId = data.callId, role = 'caller', state = 'outgoing' }
-    callMsg({ type = 'outgoing', callId = data.callId, number = data.number, name = data.name, img = data.img })
+    callMsg({ type = 'outgoing', callId = data.callId, number = data.number, name = data.name, img = data.img, video = data.video })
 end)
 
 RegisterNetEvent('oph3z-phone:call:connected', function(data)

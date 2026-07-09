@@ -19,7 +19,7 @@ export default function ShareSheet({ track, onClose }) {
   const doAirdrop = () => {
     dispatch(openShare({
       kind: 'app',
-      app: { id: 'spotify', title: `${track.title} · ${track.artist || ''}`.trim(), icon: track.artwork || null, payload: { track }, preview: track.artwork || null },
+      app: { id: 'music', title: `${track.title} · ${track.artist || ''}`.trim(), icon: track.artwork || null, payload: { track }, preview: track.artwork || null },
     }));
     onClose();
   };
@@ -27,7 +27,7 @@ export default function ShareSheet({ track, onClose }) {
     dispatch(sendMessage(contact.number, {
       type: 'appshare',
       body: `${track.title} — ${track.artist || ''}`.trim(),
-      meta: { appId: 'spotify', title: track.title, subtitle: track.artist || '', image: track.artwork || null, data: { track } },
+      meta: { appId: 'music', title: track.title, subtitle: track.artist || '', image: track.artwork || null, data: { track } },
     }));
     dispatch(pushToast({ title: t('spotify.sharedWith', { name: contact.name }), body: '' }));
     onClose();

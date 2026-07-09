@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import './SpotifyApp.css';
+import './MusicApp.css';
 
 import { fetchNui } from '../../utils/fetchNui';
 import { loadLibrary, loadSpotifyState } from '../../store/slices/spotifySlice';
@@ -18,7 +18,7 @@ import TrackMenu from './TrackMenu';
 import CreatePlaylistSheet from './CreatePlaylistSheet';
 import { LibraryIcon, SearchIcon, PlayIcon, PauseIcon, NoteIcon, Waveform } from './icons';
 
-export default function SpotifyApp() {
+export default function MusicApp() {
   const dispatch = useDispatch();
   const t = useT();
   const music = useSelector((s) => s.music);
@@ -36,7 +36,7 @@ export default function SpotifyApp() {
 
   // A shared track was delivered (AirDrop accept / Messages card tap): play it.
   useEffect(() => {
-    if (deliver && deliver.appId === 'spotify') {
+    if (deliver && deliver.appId === 'music') {
       const track = deliver.payload && deliver.payload.track;
       dispatch(clearDeliver());
       if (track) { fetchNui('phone:spotify:play', { track, queue: [track], index: 1 }, {}); setNowOpen(true); }
