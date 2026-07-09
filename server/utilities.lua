@@ -39,11 +39,18 @@ end
 
 function ExecuteSql(query, params)
     local done, result = false, nil
-    local provider = Config.MySQL == 'ghmattimysql' and 'ghmattimysql' or 'oxmysql'
-    exports[provider]:execute(query, params or {}, function(data)
-        result = data
-        done = true
-    end)
+    if Config.MySQL == 'mysql-async' then
+        MySQL.Async.fetchAll(query, params or {}, function(data)
+            result = data
+            done = true
+        end)
+    else
+        local provider = Config.MySQL == 'ghmattimysql' and 'ghmattimysql' or 'oxmysql'
+        exports[provider]:execute(query, params or {}, function(data)
+            result = data
+            done = true
+        end)
+    end
     while not done do Citizen.Wait(0) end
     return result
 end
