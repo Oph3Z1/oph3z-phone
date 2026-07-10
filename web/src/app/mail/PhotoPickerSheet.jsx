@@ -57,37 +57,43 @@ export default function PhotoPickerSheet({
                     )}
                 </div>
 
-                {media.length === 0 ? (
-                    <div className="mail-sheet__empty">{t('mail.noMedia')}</div>
-                ) : (
-                    <div className="mail-sheet__grid">
-                        {media.map((p) => (
-                            <button
-                                key={p.id}
-                                className={`mail-sheet__cell${picked.has(p.url) ? ' is-picked' : ''}`}
-                                onClick={() => pick(p)}
-                            >
-                                {p.type === 'video' ? (
-                                    <video
-                                        className="mail-sheet__media"
-                                        src={p.url}
-                                        muted
-                                        playsInline
-                                        preload="metadata"
-                                    />
-                                ) : (
-                                    <img
-                                        className="mail-sheet__media"
-                                        src={p.thumb || p.url}
-                                        alt=""
-                                    />
-                                )}
-                                {p.type === 'video' && <span className="mail-sheet__vbadge" />}
-                                {picked.has(p.url) && <span className="mail-sheet__check" />}
-                            </button>
-                        ))}
-                    </div>
-                )}
+                <div className="mail-sheet__scroll">
+                    {media.length === 0 ? (
+                        <div className="mail-sheet__empty">{t('mail.noMedia')}</div>
+                    ) : (
+                        <div className="mail-sheet__grid">
+                            {media.map((p) => (
+                                <button
+                                    key={p.id}
+                                    className={`mail-sheet__cell${picked.has(p.url) ? ' is-picked' : ''}`}
+                                    onClick={() => pick(p)}
+                                >
+                                    {p.type === 'video' ? (
+                                        <video
+                                            className="mail-sheet__media"
+                                            src={p.url}
+                                            muted
+                                            playsInline
+                                            preload="metadata"
+                                        />
+                                    ) : (
+                                        <img
+                                            className="mail-sheet__media"
+                                            src={p.thumb || p.url}
+                                            alt=""
+                                        />
+                                    )}
+                                    {p.type === 'video' && (
+                                        <span className="mail-sheet__vbadge" />
+                                    )}
+                                    {picked.has(p.url) && (
+                                        <span className="mail-sheet__check" />
+                                    )}
+                                </button>
+                            ))}
+                        </div>
+                    )}
+                </div>
             </div>
         </div>
     );

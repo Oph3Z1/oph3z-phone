@@ -42,6 +42,7 @@ const Chevron = () => (
         <path d="M9 5l7 7-7 7" />
     </svg>
 );
+
 const ChevronL = () => (
     <svg
         viewBox="0 0 24 24"
@@ -54,11 +55,13 @@ const ChevronL = () => (
         <path d="M15 5l-7 7 7 7" />
     </svg>
 );
+
 const AirplaneG = () => (
     <svg viewBox="0 0 24 24" fill="currentColor">
         <path d="M21 16v-2l-8-5V3.5a1.5 1.5 0 00-3 0V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5z" />
     </svg>
 );
+
 const WifiG = () => (
     <svg
         viewBox="0 0 24 24"
@@ -73,6 +76,7 @@ const WifiG = () => (
         <circle cx="12" cy="19" r="1.1" fill="currentColor" stroke="none" />
     </svg>
 );
+
 const AirdropG = () => (
     <svg
         viewBox="0 0 24 24"
@@ -87,6 +91,7 @@ const AirdropG = () => (
         <circle cx="12" cy="12.5" r="1.5" fill="currentColor" stroke="none" />
     </svg>
 );
+
 const CheckG = () => (
     <svg
         viewBox="0 0 24 24"
@@ -99,11 +104,13 @@ const CheckG = () => (
         <path d="M5 12l4.5 4.5L19 7" />
     </svg>
 );
+
 const BellG = () => (
     <svg viewBox="0 0 24 24" fill="currentColor">
         <path d="M12 22a2.2 2.2 0 002.2-2.2H9.8A2.2 2.2 0 0012 22zm7-6l-1.6-1.6V10a5.4 5.4 0 00-4-5.2V4a1.4 1.4 0 00-2.8 0v.8A5.4 5.4 0 006.6 10v4.4L5 16v1h14z" />
     </svg>
 );
+
 const BellOffG = () => (
     <svg
         viewBox="0 0 24 24"
@@ -119,6 +126,7 @@ const BellOffG = () => (
         <line x1="4" y1="3.8" x2="20" y2="20" />
     </svg>
 );
+
 const RingtoneG = () => (
     <svg viewBox="0 0 24 24" fill="currentColor">
         <path d="M5 9v6h3l4 4V5L8 9H5z" />
@@ -138,6 +146,7 @@ const RingtoneG = () => (
         />
     </svg>
 );
+
 const WallpaperG = () => (
     <svg
         viewBox="0 0 24 24"
@@ -1328,26 +1337,28 @@ function ProfileScreen({ onBack }) {
                             </button>
                         </div>
 
-                        <div className="set-up__grid">
-                            {sorted.length === 0 && (
-                                <div className="set-up__empty">{t('profile.noPhotos')}</div>
-                            )}
-                            {sorted.map((item) => (
-                                <button
-                                    key={item.id}
-                                    className="set-up__cell"
-                                    onClick={() => applyPhoto(item.url)}
-                                >
-                                    {item.type === 'video' ? (
-                                        <>
-                                            <video src={item.url} muted />
-                                            <span className="set-up__vid">▶</span>
-                                        </>
-                                    ) : (
-                                        <img src={item.url} alt="" />
-                                    )}
-                                </button>
-                            ))}
+                        <div className="set-up__scroll">
+                            <div className="set-up__grid">
+                                {sorted.length === 0 && (
+                                    <div className="set-up__empty">{t('profile.noPhotos')}</div>
+                                )}
+                                {sorted.map((item) => (
+                                    <button
+                                        key={item.id}
+                                        className="set-up__cell"
+                                        onClick={() => applyPhoto(item.url)}
+                                    >
+                                        {item.type === 'video' ? (
+                                            <>
+                                                <video src={item.url} muted />
+                                                <span className="set-up__vid">▶</span>
+                                            </>
+                                        ) : (
+                                            <img src={item.url} alt="" />
+                                        )}
+                                    </button>
+                                ))}
+                            </div>
                         </div>
                     </div>
                 </>

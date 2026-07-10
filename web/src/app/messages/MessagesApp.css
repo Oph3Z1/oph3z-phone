@@ -1077,13 +1077,25 @@
     bottom: 0;
     z-index: 25;
     max-height: 64%;
-    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
     background: #141416;
     border-top-left-radius: 1.3em;
     border-top-right-radius: 1.3em;
     padding: 0.55em 0.7em calc(var(--safe-bottom) + 0.8em);
     box-shadow: 0 -0.5em 1.6em rgba(0, 0, 0, 0.55);
-    animation: msg-cash-up 0.24s cubic-bezier(0.32, 0.72, 0, 1) both;
+    animation: msg-cash-up 0.24s cubic-bezier(0.32, 0.72, 0, 1) backwards;
+}
+
+.msg-gallery__scroll {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    scrollbar-width: none;
+}
+
+.msg-gallery__scroll::-webkit-scrollbar {
+    display: none;
 }
 
 .msg-gallery__title {

@@ -496,28 +496,32 @@ export default function Conversation({ number, onBack, onOpenThread }) {
                             aria-label="Close"
                         />
                         <div className="msg-gallery__title">{t('messages.choosePhotoVideo')}</div>
-                        <div className="msg-gallery__grid">
-                            {gallery.length === 0 && (
-                                <div className="msg-gallery__empty">{t('messages.noPhotos')}</div>
-                            )}
-                            {[...gallery]
-                                .sort((a, b) => (b.ts || 0) - (a.ts || 0))
-                                .map((item) => (
-                                    <button
-                                        key={item.id}
-                                        className="msg-gallery__cell"
-                                        onClick={() => attachFromGallery(item)}
-                                    >
-                                        {item.type === 'video' ? (
-                                            <>
-                                                <video src={item.url} muted />
-                                                <span className="msg-gallery__vid">▶</span>
-                                            </>
-                                        ) : (
-                                            <img src={item.url} alt="" />
-                                        )}
-                                    </button>
-                                ))}
+                        <div className="msg-gallery__scroll">
+                            <div className="msg-gallery__grid">
+                                {gallery.length === 0 && (
+                                    <div className="msg-gallery__empty">
+                                        {t('messages.noPhotos')}
+                                    </div>
+                                )}
+                                {[...gallery]
+                                    .sort((a, b) => (b.ts || 0) - (a.ts || 0))
+                                    .map((item) => (
+                                        <button
+                                            key={item.id}
+                                            className="msg-gallery__cell"
+                                            onClick={() => attachFromGallery(item)}
+                                        >
+                                            {item.type === 'video' ? (
+                                                <>
+                                                    <video src={item.url} muted />
+                                                    <span className="msg-gallery__vid">▶</span>
+                                                </>
+                                            ) : (
+                                                <img src={item.url} alt="" />
+                                            )}
+                                        </button>
+                                    ))}
+                            </div>
                         </div>
                     </div>
                 </>

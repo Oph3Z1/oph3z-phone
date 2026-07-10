@@ -910,13 +910,25 @@
     bottom: 0;
     z-index: 41;
     max-height: 72%;
-    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
     background: #1c1c1e;
     border-top-left-radius: 1.4em;
     border-top-right-radius: 1.4em;
     padding: 1em 1em calc(var(--safe-bottom) + 1em);
     box-shadow: 0 -0.5em 1.8em rgba(0, 0, 0, 0.6);
-    animation: set-up-rise 0.26s cubic-bezier(0.32, 0.72, 0, 1) both;
+    animation: set-up-rise 0.26s cubic-bezier(0.32, 0.72, 0, 1) backwards;
+}
+
+.set-up__scroll {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    scrollbar-width: none;
+}
+
+.set-up__scroll::-webkit-scrollbar {
+    display: none;
 }
 
 @keyframes set-up-rise {

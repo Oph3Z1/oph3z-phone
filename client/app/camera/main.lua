@@ -183,6 +183,13 @@ RegisterNUICallback('phone:camera:mode', function(data, cb)
     cb('ok')
 end)
 
+RegisterNUICallback('phone:camera:framing', function(data, cb)
+    if Phone.cameraActive then
+        SetNuiFocusKeepInput(data and data.active == true)
+    end
+    cb('ok')
+end)
+
 RegisterNUICallback('phone:camera:flip', function(_, cb)
     frontCam = not frontCam
     if photoMode then

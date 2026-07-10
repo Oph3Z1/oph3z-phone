@@ -43,6 +43,10 @@ export default function CameraApp() {
         if (avatarShot) setMode('photo');
     }, [avatarShot]);
 
+    useEffect(() => {
+        fetchNui('phone:camera:framing', { active: !preview }, {});
+    }, [preview]);
+
     const feedRef = useRef(null);
     const recCanvasRef = useRef(null);
     const copyRafRef = useRef(0);
