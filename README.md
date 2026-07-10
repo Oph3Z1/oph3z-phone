@@ -37,7 +37,7 @@ This already covers all the base features you need to use a phone in roleplay, n
 
 Developers can build their own apps and add them to the phone without touching the main code. There is a separate starter template for that:
 
-[oph3z-phone-app-template](TEMPLATE-REPO-LINK-HERE)
+[oph3z-phone-app-template](https://github.com/Oph3Z1/oph3z-phone-example-app)
 <!-- Replace TEMPLATE-REPO-LINK-HERE with the template repo link. -->
 
 ## Tech stack
