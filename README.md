@@ -23,7 +23,7 @@ Apps included:
 - **Music**: search and play real songs, build playlists, and play out loud so people around you hear it too.
 - **Twexa**: a built-in social app, a bit like X (Twitter), where players post, follow, reply and repost.
 - **Marketplace**: buy and sell in the city. Post cars, houses or items with photos and a price.
-- **Wallet**: check your balance and transactions, send and receive money, and pay bills.
+- **Wallet**: check your balance and transactions, send (online and offline) and receive money, and pay bills.
 - **Mail**: send and read emails right from the phone.
 - **Maps**: a live map with GPS and saved locations.
 - **Clock**: set alarms and timers that nearby players can hear too.
