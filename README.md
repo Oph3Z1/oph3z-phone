@@ -6,7 +6,7 @@ A custom, iPhone-style phone for FiveM. It works on ESX, QBCore and Qbox, and co
 
 ## Showcase
 
-See it in action: [YouTube video](https://www.youtube.com/watch?v=nweWkywqcTw)
+See it in action with full details: [YouTube video](https://www.youtube.com/watch?v=nweWkywqcTw)
 
 ## Features
 
