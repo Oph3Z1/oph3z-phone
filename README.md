@@ -149,7 +149,7 @@ This rebuilds the `build` folder at the root of the resource. Run `npm run build
 
 Right now this is a beta. I have only been able to test it with two clients on the same PC, so there are probably a few bugs I have not run into yet. If you find one, or you have an idea or a suggestion, join the Discord and let me know:
 
-[Discord server](DISCORD-INVITE-HERE)
+[Discord server](https://discord.gg/JBekSqrDQH)
 
 ## License
 
