@@ -6,8 +6,7 @@ A custom, iPhone-style phone for FiveM. It works on ESX, QBCore and Qbox, and co
 
 ## Showcase
 
-See it in action: [YouTube video](YOUTUBE-LINK-HERE)
-<!-- Replace YOUTUBE-LINK-HERE with your video link. -->
+See it in action: [YouTube video](https://www.youtube.com/watch?v=nweWkywqcTw)
 
 ## Features
 
@@ -38,7 +37,6 @@ This already covers all the base features you need to use a phone in roleplay, n
 Developers can build their own apps and add them to the phone without touching the main code. There is a separate starter template for that:
 
 [oph3z-phone-app-template](https://github.com/Oph3Z1/oph3z-phone-example-app)
-<!-- Replace TEMPLATE-REPO-LINK-HERE with the template repo link. -->
 
 ## Tech stack
 
@@ -152,12 +150,9 @@ This rebuilds the `build` folder at the root of the resource. Run `npm run build
 Right now this is a beta. I have only been able to test it with two clients on the same PC, so there are probably a few bugs I have not run into yet. If you find one, or you have an idea or a suggestion, join the Discord and let me know:
 
 [Discord server](DISCORD-INVITE-HERE)
-<!-- Replace DISCORD-INVITE-HERE with your Discord invite. -->
 
 ## License
 
 Free to use and edit on your own server. Please do not resell it or re-release it as your own.
 
 ## Screenshots
-
-_Add screenshots here._
