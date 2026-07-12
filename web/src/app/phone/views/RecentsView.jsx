@@ -1,10 +1,12 @@
 import { useState } from 'react';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import Avatar from '../components/Avatar';
 import { InfoIcon, VideoIcon } from '../components/icons';
 import { fetchNui } from '../../../utils/fetchNui';
 import { pad2 } from '../../../utils/misc';
 import { useT } from '../../../i18n/useT';
+import { deleteRecent, clearRecents } from '../../../store/slices/contactsSlice';
+import { openDialog } from '../../../store/slices/dialogSlice';
 
 const digitsOnly = (s) => String(s || '').replace(/\D/g, '');
 
@@ -22,9 +24,11 @@ function formatTime(ts, t) {
 
 export default function RecentsView({ onProfile }) {
     const t = useT();
+    const dispatch = useDispatch();
     const recents = useSelector((s) => s.contacts.recents);
     const contacts = useSelector((s) => s.contacts.contacts);
     const [filter, setFilter] = useState('all');
+    const [editing, setEditing] = useState(false);
 
     const list = filter === 'missed' ? recents.filter((r) => r.missed) : recents;
 
@@ -35,11 +39,33 @@ export default function RecentsView({ onProfile }) {
 
     const call = (number) => fetchNui('phone:call:start', { number }, {});
 
+    const clearScoped = async () => {
+        const scope = filter === 'missed' ? 'missed' : 'all';
+        const ok = await dispatch(
+            openDialog({
+                title: scope === 'missed' ? t('phone.clearMissedTitle') : t('phone.clearRecentsTitle'),
+                message: scope === 'missed' ? t('phone.clearMissedMsg') : t('phone.clearRecentsMsg'),
+                buttons: [
+                    { text: t('common.cancel'), style: 'cancel', value: false },
+                    { text: t('phone.clear'), style: 'destructive', value: true },
+                ],
+            }),
+        );
+        if (ok) {
+            dispatch(clearRecents(scope));
+            setEditing(false);
+        }
+    };
+
     return (
         <>
             <div className="pa-topbar">
-                <button className="pa-actionbtn" style={{ visibility: 'hidden' }}>
-                    {t('phone.edit')}
+                <button
+                    className="pa-actionbtn"
+                    onClick={() => setEditing((e) => !e)}
+                    style={{ visibility: recents.length || editing ? 'visible' : 'hidden' }}
+                >
+                    {editing ? t('phone.done') : t('phone.edit')}
                 </button>
                 <div className="pa-segment" style={{ margin: 0, width: '45%' }}>
                     <button
@@ -55,7 +81,17 @@ export default function RecentsView({ onProfile }) {
                         {t('phone.missed')}
                     </button>
                 </div>
-                <span style={{ width: '3em' }} />
+                {editing && list.length ? (
+                    <button
+                        className="pa-actionbtn"
+                        style={{ color: '#ff453a' }}
+                        onClick={clearScoped}
+                    >
+                        {t('phone.clear')}
+                    </button>
+                ) : (
+                    <span style={{ width: '3em' }} />
+                )}
             </div>
             <div className="pa-title">{t('phone.recents')}</div>
 
@@ -73,8 +109,19 @@ export default function RecentsView({ onProfile }) {
                                 <button
                                     key={r.id}
                                     className="pa-row"
-                                    onClick={() => call(r.number)}
+                                    onClick={() => !editing && call(r.number)}
                                 >
+                                    {editing && (
+                                        <span
+                                            className="pa-fav-remove"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                dispatch(deleteRecent(r.id));
+                                            }}
+                                        >
+                                            –
+                                        </span>
+                                    )}
                                     <Avatar name={who.name} img={who.img} />
                                     <span className="pa-row__main">
                                         <span
@@ -95,15 +142,17 @@ export default function RecentsView({ onProfile }) {
                                         </span>
                                     </span>
                                     <span className="pa-row__time">{formatTime(r.ts, t)}</span>
-                                    <span
-                                        className="pa-row__info"
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            onProfile(r.number);
-                                        }}
-                                    >
-                                        <InfoIcon />
-                                    </span>
+                                    {!editing && (
+                                        <span
+                                            className="pa-row__info"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                onProfile(r.number);
+                                            }}
+                                        >
+                                            <InfoIcon />
+                                        </span>
+                                    )}
                                 </button>
                             );
                         })}

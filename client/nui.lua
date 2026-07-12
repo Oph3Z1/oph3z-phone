@@ -39,6 +39,14 @@ RegisterNUICallback('phone:phone:deleteContact', function(data, cb)
     cb(TriggerCallback('oph3z-phone:server:phone:deleteContact', data and data.id) or false)
 end)
 
+RegisterNUICallback('phone:phone:deleteRecent', function(data, cb)
+    cb(TriggerCallback('oph3z-phone:server:phone:deleteRecent', data and data.id) or false)
+end)
+
+RegisterNUICallback('phone:phone:clearRecents', function(data, cb)
+    cb(TriggerCallback('oph3z-phone:server:phone:clearRecents', data and data.scope) or false)
+end)
+
 RegisterNUICallback('phone:phone:setFavorite', function(data, cb)
     cb(TriggerCallback('oph3z-phone:server:phone:setFavorite', data) or false)
 end)

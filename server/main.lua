@@ -179,6 +179,39 @@ RegisterCallback('oph3z-phone:server:phone:deleteContact', function(source, id)
     return true
 end)
 
+RegisterCallback('oph3z-phone:server:phone:deleteRecent', function(source, id)
+    local citizenid = getCitizenId(source)
+    if not citizenid or not id then return false end
+
+    local doc = DB.EnsurePhone(citizenid, DB.LoadOrCreate(citizenid))
+    for i = #doc.phone.recents, 1, -1 do
+        if doc.phone.recents[i].id == id then
+            table.remove(doc.phone.recents, i)
+            DB.Save(citizenid, doc)
+            return true
+        end
+    end
+    return false
+end)
+
+RegisterCallback('oph3z-phone:server:phone:clearRecents', function(source, scope)
+    local citizenid = getCitizenId(source)
+    if not citizenid then return false end
+
+    local doc = DB.EnsurePhone(citizenid, DB.LoadOrCreate(citizenid))
+    if scope == 'missed' then
+        for i = #doc.phone.recents, 1, -1 do
+            if doc.phone.recents[i].missed then
+                table.remove(doc.phone.recents, i)
+            end
+        end
+    else
+        doc.phone.recents = {}
+    end
+    DB.Save(citizenid, doc)
+    return true
+end)
+
 RegisterCallback('oph3z-phone:server:phone:setFavorite', function(source, data)
     local citizenid = getCitizenId(source)
     if not citizenid or type(data) ~= 'table' then return false end

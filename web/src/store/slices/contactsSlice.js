@@ -5,10 +5,10 @@ import { isEnvBrowser } from '../../utils/misc';
 const MOCK = {
     number: '555-0142',
     contacts: [
-        { id: 1, name: 'Pappa', number: '555-0199', notes: '', img: '', favorite: true },
-        { id: 2, name: 'Mamma', number: '555-0123', notes: '', img: '', favorite: true },
-        { id: 3, name: 'Amirali', number: '555-0177', notes: 'Work', img: '', favorite: false },
-        { id: 4, name: 'Parsa', number: '555-0162', notes: '', img: '', favorite: false },
+        { id: 1, name: 'Dad', number: '555-0199', notes: '', img: '', favorite: true },
+        { id: 2, name: 'Mom', number: '555-0123', notes: '', img: '', favorite: true },
+        { id: 3, name: 'Test', number: '555-0177', notes: 'Work', img: '', favorite: false },
+        { id: 4, name: 'Adam', number: '555-0162', notes: '', img: '', favorite: false },
     ],
     recents: [],
 };
@@ -47,6 +47,15 @@ const contactsSlice = createSlice({
         removeContact(state, action) {
             state.contacts = state.contacts.filter((c) => c.id !== action.payload);
         },
+        removeRecent(state, action) {
+            state.recents = state.recents.filter((r) => r.id !== action.payload);
+        },
+        clearRecentsLocal(state, action) {
+            state.recents =
+                action.payload === 'missed'
+                    ? state.recents.filter((r) => !r.missed)
+                    : [];
+        },
         setFavoriteLocal(state, action) {
             const { id, favorite } = action.payload;
             const c = state.contacts.find((x) => x.id === id);
@@ -71,6 +80,8 @@ export const {
     hydrate,
     upsertContact,
     removeContact,
+    removeRecent,
+    clearRecentsLocal,
     setFavoriteLocal,
     setBlocked,
     setContactFocus,
@@ -106,6 +117,18 @@ export const editContact = (form) => async (dispatch, getState) => {
 export const deleteContact = (id) => async (dispatch) => {
     const ok = await fetchNui('phone:phone:deleteContact', { id }, true);
     if (ok) dispatch(removeContact(id));
+    return ok;
+};
+
+export const deleteRecent = (id) => async (dispatch) => {
+    const ok = await fetchNui('phone:phone:deleteRecent', { id }, true);
+    if (ok) dispatch(removeRecent(id));
+    return ok;
+};
+
+export const clearRecents = (scope) => async (dispatch) => {
+    const ok = await fetchNui('phone:phone:clearRecents', { scope }, true);
+    if (ok) dispatch(clearRecentsLocal(scope));
     return ok;
 };
 
