@@ -4,6 +4,14 @@ A custom, iPhone-style phone for FiveM. It works on ESX, QBCore and Qbox, and co
 
 > This is a beta release. Please read the [Beta and feedback](#beta-and-feedback) part before reporting anything.
 
+## Tech stack
+
+- Interface: React 18, Redux Toolkit, Vite, and CSS
+- Game side: Lua 5.4
+- Storage: JSON files, one per player (SQL is only used for billing)
+- Voice and sound: pma-voice and xsound (More options will be added soon)
+- Video calls: WebRTC
+
 ## Showcase
 
 See it in action with full details: [YouTube video](https://www.youtube.com/watch?v=nweWkywqcTw)
@@ -37,14 +45,6 @@ This already covers all the base features you need to use a phone in roleplay, n
 Developers can build their own apps and add them to the phone without touching the main code. There is a separate starter template for that:
 
 [oph3z-phone-app-template](https://github.com/Oph3Z1/oph3z-phone-example-app)
-
-## Tech stack
-
-- Interface: React 18, Redux Toolkit, Vite, and plain CSS
-- Game side: Lua 5.4
-- Storage: JSON files, one per player (MySQL is only used for billing)
-- Voice and sound: pma-voice and xsound
-- Video calls: WebRTC
 
 ## Requirements
 
