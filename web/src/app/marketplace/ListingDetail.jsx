@@ -75,7 +75,7 @@ export default function ListingDetail({ id, onBack, onChanged }) {
         return (
             <div className="mkt-screen">
                 <Topbar t={t} onBack={onBack} />
-                <div className="mkt-empty">{t('market.loading')}</div>
+                <div className="mkt-spinner" />
             </div>
         );
     }

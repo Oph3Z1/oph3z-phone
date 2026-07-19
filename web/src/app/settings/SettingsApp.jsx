@@ -1066,7 +1066,11 @@ function PrivacyScreen({ onBack }) {
 
     const entries = Object.entries(blocked || {}).map(([digits, e]) => {
         const c = contacts.find((x) => digitsOf(x.number) === digits);
-        return { digits, number: e.number || digits, name: e.name || (c && c.name) || null };
+        return {
+            digits,
+            number: e.number || digits,
+            name: e.name || (c && c.name) || null,
+        };
     });
 
     return (
@@ -1284,10 +1288,7 @@ function ProfileScreen({ onBack }) {
                                 <SqIcon bg="#ff3b30">
                                     <TrashG />
                                 </SqIcon>
-                                <span
-                                    className="set-row__label"
-                                    style={{ color: '#ff3b30' }}
-                                >
+                                <span className="set-row__label" style={{ color: '#ff3b30' }}>
                                     {t('profile.removePhoto')}
                                 </span>
                             </button>
@@ -1370,8 +1371,23 @@ function ProfileScreen({ onBack }) {
 export default function SettingsApp() {
     const dispatch = useDispatch();
     const t = useT();
-    const [view, setView] = useState('list');
+    const [layers, setLayers] = useState([{ id: 0, v: 'list' }]);
+    const nextId = useRef(1);
     const [copied, setCopied] = useState(false);
+
+    const go = (v) => {
+        setLayers((cur) => {
+            const base = cur[cur.length - 1];
+            if (base.v === v) return cur;
+            return [
+                { id: base.id, v: base.v },
+                { id: nextId.current++, v, entering: true },
+            ];
+        });
+    };
+    const openView = (v) => go(v);
+    const backToList = () => go('list');
+    const pruneLayers = () => setLayers((cur) => (cur.length > 1 ? cur.slice(-1) : cur));
     const identity = useSelector((s) => s.phone.identity);
     const airplane = useSelector((s) => s.settings.airplane);
     const airdrop = useSelector((s) => s.settings.airdrop);
@@ -1384,9 +1400,10 @@ export default function SettingsApp() {
 
     useEffect(() => {
         if (launchTab === 'profile') {
-            setView('profile');
+            go('profile');
             dispatch(setLaunchTab(null));
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [launchTab, dispatch]);
 
     const copyNumber = () => {
@@ -1417,167 +1434,188 @@ export default function SettingsApp() {
     const shareMyCard = () =>
         dispatch(openShare({ kind: 'contact', contact: { name, number, img: avatar } }));
 
-    if (view === 'profile') return <ProfileScreen onBack={() => setView('list')} />;
-    if (view === 'notifications') return <NotificationsScreen onBack={() => setView('list')} />;
-    if (view === 'ringtones') return <RingtonesScreen onBack={() => setView('list')} />;
-    if (view === 'wallpaper') return <WallpaperScreen onBack={() => setView('list')} />;
-    if (view === 'display') return <DisplayScreen onBack={() => setView('list')} />;
-    if (view === 'language') return <LanguageScreen onBack={() => setView('list')} />;
-    if (view === 'privacy') return <PrivacyScreen onBack={() => setView('list')} />;
-    if (view === 'about') return <AboutScreen onBack={() => setView('list')} />;
-    if (view !== 'list') return <SubScreen id={view} onBack={() => setView('list')} />;
+    const renderView = (v) => {
+        if (v === 'profile') return <ProfileScreen onBack={backToList} />;
+        if (v === 'notifications') return <NotificationsScreen onBack={backToList} />;
+        if (v === 'ringtones') return <RingtonesScreen onBack={backToList} />;
+        if (v === 'wallpaper') return <WallpaperScreen onBack={backToList} />;
+        if (v === 'display') return <DisplayScreen onBack={backToList} />;
+        if (v === 'language') return <LanguageScreen onBack={backToList} />;
+        if (v === 'privacy') return <PrivacyScreen onBack={backToList} />;
+        if (v === 'about') return <AboutScreen onBack={backToList} />;
+        if (v !== 'list') return <SubScreen id={v} onBack={backToList} />;
+        return (
+            <div className="set">
+                <div className="set__bar">
+                    <h1 className="set__title">{t('settings.title')}</h1>
+                </div>
 
-    return (
-        <div className="set">
-            <div className="set__bar">
-                <h1 className="set__title">{t('settings.title')}</h1>
-            </div>
+                <div className="set__scroll">
+                    <div className="set-card">
+                        <button className="set-profile" onClick={() => openView('profile')}>
+                            <span className="set-profile__avatar">
+                                {avatar ? (
+                                    <img src={avatar} alt="" />
+                                ) : (
+                                    name.charAt(0).toUpperCase()
+                                )}
+                            </span>
+                            <span className="set-profile__text">
+                                <span className="set-profile__name">{name}</span>
+                                <span className="set-profile__sub">{t('settings.profileSub')}</span>
+                            </span>
+                            <Chevron />
+                        </button>
+                        <div className="set-sep set-sep--profile" />
+                        <div className="set-phonerow">
+                            <span className="set-phonerow__text">
+                                <span className="set-phonerow__label">
+                                    {t('settings.phoneNumber')}
+                                </span>
+                                <span className="set-phonerow__num">{number}</span>
+                            </span>
+                            <span className="set-phonerow__icons">
+                                <button
+                                    className="set-phonerow__ico set-phonerow__ico--btn"
+                                    onClick={shareMyCard}
+                                    aria-label="Share my contact"
+                                >
+                                    <AirdropG />
+                                </button>
+                                <button
+                                    className={`set-phonerow__ico set-phonerow__ico--btn${copied ? ' is-copied' : ''}`}
+                                    onClick={copyNumber}
+                                    aria-label="Copy number"
+                                >
+                                    {copied ? <CheckG /> : <CopyG />}
+                                </button>
+                            </span>
+                        </div>
+                    </div>
 
-            <div className="set__scroll">
-                <div className="set-card">
-                    <button className="set-profile" onClick={() => setView('profile')}>
-                        <span className="set-profile__avatar">
-                            {avatar ? <img src={avatar} alt="" /> : name.charAt(0).toUpperCase()}
-                        </span>
-                        <span className="set-profile__text">
-                            <span className="set-profile__name">{name}</span>
-                            <span className="set-profile__sub">{t('settings.profileSub')}</span>
-                        </span>
-                        <Chevron />
-                    </button>
-                    <div className="set-sep set-sep--profile" />
-                    <div className="set-phonerow">
-                        <span className="set-phonerow__text">
-                            <span className="set-phonerow__label">{t('settings.phoneNumber')}</span>
-                            <span className="set-phonerow__num">{number}</span>
-                        </span>
-                        <span className="set-phonerow__icons">
-                            <button
-                                className="set-phonerow__ico set-phonerow__ico--btn"
-                                onClick={shareMyCard}
-                                aria-label="Share my contact"
-                            >
-                                <AirdropG />
-                            </button>
-                            <button
-                                className={`set-phonerow__ico set-phonerow__ico--btn${copied ? ' is-copied' : ''}`}
-                                onClick={copyNumber}
-                                aria-label="Copy number"
-                            >
-                                {copied ? <CheckG /> : <CopyG />}
-                            </button>
-                        </span>
+                    <div className="set-card">
+                        <ToggleRow
+                            icon={
+                                <SqIcon bg="#ff9f0a">
+                                    <AirplaneG />
+                                </SqIcon>
+                            }
+                            label={t('settings.airplane')}
+                            on={airplane}
+                            onChange={(v) => dispatch(setAirplane(v))}
+                        />
+                        <div className="set-sep" />
+                        <ValueRow
+                            icon={
+                                <SqIcon bg="#0a84ff">
+                                    <WifiG />
+                                </SqIcon>
+                            }
+                            label={t('settings.wifi')}
+                            value={WIFI_NAME}
+                        />
+                        <div className="set-sep" />
+                        <ToggleRow
+                            icon={
+                                <SqIcon bg="#0a84ff">
+                                    <AirdropG />
+                                </SqIcon>
+                            }
+                            label={t('settings.airdrop')}
+                            on={airdrop}
+                            onChange={(v) => dispatch(saveSetting('airdrop', v))}
+                        />
+                    </div>
+
+                    <div className="set-card">
+                        <NavRow
+                            icon={
+                                <SqIcon bg="#ff3b30">
+                                    <BellG />
+                                </SqIcon>
+                            }
+                            label={t('settings.notifications')}
+                            onClick={() => openView('notifications')}
+                        />
+                        <div className="set-sep" />
+                        <NavRow
+                            icon={
+                                <SqIcon bg="#ff2d55">
+                                    <RingtoneG />
+                                </SqIcon>
+                            }
+                            label={t('settings.ringtones')}
+                            onClick={() => openView('ringtones')}
+                        />
+                        <div className="set-sep" />
+                        <NavRow
+                            icon={
+                                <SqIcon bg="#30b0c7">
+                                    <WallpaperG />
+                                </SqIcon>
+                            }
+                            label={t('settings.wallpaper')}
+                            onClick={() => openView('wallpaper')}
+                        />
+                        <div className="set-sep" />
+                        <NavRow
+                            icon={
+                                <SqIcon bg="#0a84ff">
+                                    <DisplayG />
+                                </SqIcon>
+                            }
+                            label={t('settings.display')}
+                            onClick={() => openView('display')}
+                        />
+                    </div>
+
+                    <div className="set-card">
+                        <NavRow
+                            icon={
+                                <SqIcon bg="#0a84ff">
+                                    <LanguageG />
+                                </SqIcon>
+                            }
+                            label={t('settings.language')}
+                            onClick={() => openView('language')}
+                        />
+                        <div className="set-sep" />
+                        <NavRow
+                            icon={
+                                <SqIcon bg="#ff3b30">
+                                    <PrivacyG />
+                                </SqIcon>
+                            }
+                            label={t('settings.privacy')}
+                            onClick={() => openView('privacy')}
+                        />
+                        <div className="set-sep" />
+                        <NavRow
+                            icon={
+                                <SqIcon bg="#8e8e93">
+                                    <AboutG />
+                                </SqIcon>
+                            }
+                            label={t('settings.about')}
+                            onClick={() => openView('about')}
+                        />
                     </div>
                 </div>
-
-                <div className="set-card">
-                    <ToggleRow
-                        icon={
-                            <SqIcon bg="#ff9f0a">
-                                <AirplaneG />
-                            </SqIcon>
-                        }
-                        label={t('settings.airplane')}
-                        on={airplane}
-                        onChange={(v) => dispatch(setAirplane(v))}
-                    />
-                    <div className="set-sep" />
-                    <ValueRow
-                        icon={
-                            <SqIcon bg="#0a84ff">
-                                <WifiG />
-                            </SqIcon>
-                        }
-                        label={t('settings.wifi')}
-                        value={WIFI_NAME}
-                    />
-                    <div className="set-sep" />
-                    <ToggleRow
-                        icon={
-                            <SqIcon bg="#0a84ff">
-                                <AirdropG />
-                            </SqIcon>
-                        }
-                        label={t('settings.airdrop')}
-                        on={airdrop}
-                        onChange={(v) => dispatch(saveSetting('airdrop', v))}
-                    />
-                </div>
-
-                <div className="set-card">
-                    <NavRow
-                        icon={
-                            <SqIcon bg="#ff3b30">
-                                <BellG />
-                            </SqIcon>
-                        }
-                        label={t('settings.notifications')}
-                        onClick={() => setView('notifications')}
-                    />
-                    <div className="set-sep" />
-                    <NavRow
-                        icon={
-                            <SqIcon bg="#ff2d55">
-                                <RingtoneG />
-                            </SqIcon>
-                        }
-                        label={t('settings.ringtones')}
-                        onClick={() => setView('ringtones')}
-                    />
-                    <div className="set-sep" />
-                    <NavRow
-                        icon={
-                            <SqIcon bg="#30b0c7">
-                                <WallpaperG />
-                            </SqIcon>
-                        }
-                        label={t('settings.wallpaper')}
-                        onClick={() => setView('wallpaper')}
-                    />
-                    <div className="set-sep" />
-                    <NavRow
-                        icon={
-                            <SqIcon bg="#0a84ff">
-                                <DisplayG />
-                            </SqIcon>
-                        }
-                        label={t('settings.display')}
-                        onClick={() => setView('display')}
-                    />
-                </div>
-
-                <div className="set-card">
-                    <NavRow
-                        icon={
-                            <SqIcon bg="#0a84ff">
-                                <LanguageG />
-                            </SqIcon>
-                        }
-                        label={t('settings.language')}
-                        onClick={() => setView('language')}
-                    />
-                    <div className="set-sep" />
-                    <NavRow
-                        icon={
-                            <SqIcon bg="#ff3b30">
-                                <PrivacyG />
-                            </SqIcon>
-                        }
-                        label={t('settings.privacy')}
-                        onClick={() => setView('privacy')}
-                    />
-                    <div className="set-sep" />
-                    <NavRow
-                        icon={
-                            <SqIcon bg="#8e8e93">
-                                <AboutG />
-                            </SqIcon>
-                        }
-                        label={t('settings.about')}
-                        onClick={() => setView('about')}
-                    />
-                </div>
             </div>
+        );
+    };
+
+    return (
+        <div className="set-stack">
+            {layers.map((l) => (
+                <div
+                    key={l.id}
+                    className={`set-layer${l.entering ? ' set-layer--in' : ''}`}
+                    onAnimationEnd={l.entering ? pruneLayers : undefined}
+                >
+                    {renderView(l.v)}
+                </div>
+            ))}
         </div>
     );
 }

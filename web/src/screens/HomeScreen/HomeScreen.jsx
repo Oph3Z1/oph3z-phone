@@ -194,20 +194,35 @@ export default function HomeScreen() {
     useLayoutEffect(() => {
         const el = pagerRef.current;
         if (!el) return;
+        let raf = 0;
         const measure = () => {
             const r = el.getBoundingClientRect();
             const em = parseFloat(getComputedStyle(el).fontSize) || 16;
             const inset = 1.2 * em;
-            setGrid({
+            const next = {
                 inset,
                 tileW: (r.width - 2 * inset) / COLS,
                 tileH: r.height / ROWS,
-            });
+            };
+            setGrid((prev) =>
+                prev &&
+                Math.abs(prev.inset - next.inset) < 0.5 &&
+                Math.abs(prev.tileW - next.tileW) < 0.5 &&
+                Math.abs(prev.tileH - next.tileH) < 0.5
+                    ? prev
+                    : next,
+            );
         };
         measure();
-        const ro = new ResizeObserver(measure);
+        const ro = new ResizeObserver(() => {
+            cancelAnimationFrame(raf);
+            raf = requestAnimationFrame(measure);
+        });
         ro.observe(el);
-        return () => ro.disconnect();
+        return () => {
+            cancelAnimationFrame(raf);
+            ro.disconnect();
+        };
     }, []);
 
     const press = useRef(null);
@@ -502,7 +517,8 @@ export default function HomeScreen() {
                 <div className="hs-track" style={trackStyle}>
                     {pages.map((pageArr, pi) => (
                         <div className="hs-page" key={pi}>
-                            {grid && pageArr.map((itemId, idx) => renderTile(itemId, `p:${pi}`, idx))}
+                            {grid &&
+                                pageArr.map((itemId, idx) => renderTile(itemId, `p:${pi}`, idx))}
                         </div>
                     ))}
                 </div>

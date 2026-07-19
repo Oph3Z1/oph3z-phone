@@ -55,7 +55,7 @@ export default function Profile({ cid, reloadToken, onBack }) {
                 {missing ? (
                     <div className="mkt-empty">{t('market.noSeller')}</div>
                 ) : !seller ? (
-                    <div className="mkt-empty">{t('market.loading')}</div>
+                    <div className="mkt-spinner" />
                 ) : (
                     <>
                         <div className="mkt-pcard">
@@ -80,8 +80,8 @@ export default function Profile({ cid, reloadToken, onBack }) {
                             </div>
                         ) : (
                             <div className="mkt-grid mkt-grid--profile">
-                                {listings.map((l) => (
-                                    <ListingCard key={l.id} listing={l} />
+                                {listings.map((l, i) => (
+                                    <ListingCard key={l.id} listing={l} animateIn index={i} />
                                 ))}
                             </div>
                         )}

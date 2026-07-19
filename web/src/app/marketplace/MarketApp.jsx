@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import './MarketApp.css';
 
@@ -68,31 +68,96 @@ export default function MarketApp() {
         [push, dispatch],
     );
 
-    const view = stack[stack.length - 1];
-    let screen;
-    if (view.name === 'feed') {
-        screen = <Feed reloadToken={reloadToken} />;
-    } else if (view.name === 'listing') {
-        screen = <ListingDetail id={view.id} onBack={back} onChanged={bumpReload} />;
-    } else if (view.name === 'profile') {
-        screen = <Profile cid={view.cid} reloadToken={reloadToken} onBack={back} />;
-    } else if (view.name === 'compose') {
-        screen = (
-            <NewPost
-                onBack={back}
-                onPosted={() => {
-                    back();
-                    bumpReload();
-                }}
-            />
-        );
-    } else if (view.name === 'search') {
-        screen = <SearchScreen onBack={back} />;
-    }
+    const renderView = (view) => {
+        if (view.name === 'feed') return <Feed reloadToken={reloadToken} />;
+        if (view.name === 'listing')
+            return <ListingDetail id={view.id} onBack={back} onChanged={bumpReload} />;
+        if (view.name === 'profile')
+            return <Profile cid={view.cid} reloadToken={reloadToken} onBack={back} />;
+        if (view.name === 'compose')
+            return (
+                <NewPost
+                    onBack={back}
+                    onPosted={() => {
+                        back();
+                        bumpReload();
+                    }}
+                />
+            );
+        if (view.name === 'search') return <SearchScreen onBack={back} />;
+        return null;
+    };
 
     return (
         <MarketNavContext.Provider value={nav}>
-            <div className="mktapp">{screen}</div>
+            <div className="mktapp">
+                <MarketStack stack={stack} renderView={renderView} />
+            </div>
         </MarketNavContext.Provider>
+    );
+}
+
+function MarketStack({ stack, renderView }) {
+    const idRef = useRef(0);
+    const firstRef = useRef(true);
+    const [layers, setLayers] = useState(() => [
+        { id: 0, view: stack[stack.length - 1], anim: null },
+    ]);
+    const prevRef = useRef({ len: stack.length, top: stack[stack.length - 1] });
+
+    const fadeName = (n) => n === 'compose' || n === 'listing';
+
+    useEffect(() => {
+        const prev = prevRef.current;
+        const top = stack[stack.length - 1];
+        prevRef.current = { len: stack.length, top };
+        if (firstRef.current) {
+            firstRef.current = false;
+            return;
+        }
+        if (stack.length > prev.len) {
+            const anim = fadeName(top.name) ? 'drop-in' : 'push-in';
+            setLayers((cur) => [
+                { ...cur[cur.length - 1], anim: null },
+                { id: ++idRef.current, view: top, anim },
+            ]);
+        } else if (stack.length < prev.len) {
+            const anim = fadeName(prev.top.name) ? 'drop-out' : 'push-out';
+            setLayers((cur) => [
+                { id: ++idRef.current, view: top, anim: null },
+                { id: cur[cur.length - 1].id, view: prev.top, anim },
+            ]);
+        } else {
+            setLayers([{ id: ++idRef.current, view: top, anim: null }]);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [stack]);
+
+    const settle = (layer, e) => {
+        if (e.target !== e.currentTarget) return;
+        const el = e.currentTarget;
+        if (layer.anim === 'push-in' || layer.anim === 'drop-in') {
+            setLayers([{ id: layer.id, view: layer.view, anim: null }]);
+            el.style.animation = 'none';
+            requestAnimationFrame(() => {
+                el.style.animation = '';
+            });
+        } else {
+            setLayers((cur) => cur.filter((l) => l.id !== layer.id));
+        }
+    };
+
+    return (
+        <>
+            {layers.map((l) => (
+                <div
+                    key={l.id}
+                    className={`mkt-layer${l.anim ? ` mkt-layer--${l.anim}` : ''}`}
+                    onAnimationEnd={l.anim ? (e) => settle(l, e) : undefined}
+                >
+                    {renderView(l.view)}
+                </div>
+            ))}
+        </>
     );
 }

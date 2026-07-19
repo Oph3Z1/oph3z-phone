@@ -43,8 +43,10 @@ export default function RecentsView({ onProfile }) {
         const scope = filter === 'missed' ? 'missed' : 'all';
         const ok = await dispatch(
             openDialog({
-                title: scope === 'missed' ? t('phone.clearMissedTitle') : t('phone.clearRecentsTitle'),
-                message: scope === 'missed' ? t('phone.clearMissedMsg') : t('phone.clearRecentsMsg'),
+                title:
+                    scope === 'missed' ? t('phone.clearMissedTitle') : t('phone.clearRecentsTitle'),
+                message:
+                    scope === 'missed' ? t('phone.clearMissedMsg') : t('phone.clearRecentsMsg'),
                 buttons: [
                     { text: t('common.cancel'), style: 'cancel', value: false },
                     { text: t('phone.clear'), style: 'destructive', value: true },
@@ -103,12 +105,13 @@ export default function RecentsView({ onProfile }) {
                     </div>
                 ) : (
                     <div className="pa-list">
-                        {list.map((r) => {
+                        {list.map((r, i) => {
                             const who = resolve(r);
                             return (
                                 <button
                                     key={r.id}
-                                    className="pa-row"
+                                    className="pa-row pa-row--in"
+                                    style={{ animationDelay: `${Math.min(i, 12) * 0.03}s` }}
                                     onClick={() => !editing && call(r.number)}
                                 >
                                     {editing && (

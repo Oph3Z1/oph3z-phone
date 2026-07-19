@@ -19,6 +19,38 @@
     padding-bottom: calc(var(--safe-bottom) + 6.6em);
 }
 
+.phoneapp__body--in {
+    animation: phone-fade-in 0.22s ease-out;
+}
+
+.pa-overlay-in {
+    animation: phone-fade-in 0.2s ease-out;
+}
+
+@keyframes phone-fade-in {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.pa-row--in {
+    animation: pa-row-in 0.34s ease-out both;
+}
+
+@keyframes pa-row-in {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
 .pa-topbar,
 .pa-title,
 .pa-search,

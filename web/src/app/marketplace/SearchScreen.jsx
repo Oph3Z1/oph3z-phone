@@ -63,13 +63,13 @@ export default function SearchScreen({ onBack }) {
                 {!q.trim() ? (
                     <div className="mkt-empty mkt-empty--sm">{t('market.searchHint')}</div>
                 ) : loading ? (
-                    <div className="mkt-empty mkt-empty--sm">{t('market.loading')}</div>
+                    <div className="mkt-spinner" />
                 ) : items.length === 0 ? (
                     <div className="mkt-empty mkt-empty--sm">{t('market.noResults')}</div>
                 ) : (
                     <div className="mkt-grid">
-                        {items.map((l) => (
-                            <ListingCard key={l.id} listing={l} />
+                        {items.map((l, i) => (
+                            <ListingCard key={l.id} listing={l} animateIn index={i} />
                         ))}
                     </div>
                 )}

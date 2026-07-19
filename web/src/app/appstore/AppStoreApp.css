@@ -8,6 +8,45 @@
     overflow: hidden;
 }
 
+.astore-stack {
+    position: absolute;
+    inset: 0;
+}
+
+.astore-layer {
+    position: absolute;
+    inset: 0;
+    background: #000;
+}
+
+.astore-layer--in {
+    animation: astore-fade-in 0.22s ease-out;
+}
+
+@keyframes astore-fade-in {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.astore-row--in {
+    animation: astore-row-in 0.34s ease-out both;
+}
+
+@keyframes astore-row-in {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
 .astore__topbar {
     flex: 0 0 auto;
     height: calc(var(--safe-top) + 0.2em);

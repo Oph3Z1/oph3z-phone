@@ -117,7 +117,7 @@ export default function PhoneApp() {
 
     return (
         <div className="phoneapp">
-            <div className="phoneapp__body screen-in" key={tab}>
+            <div className="phoneapp__body phoneapp__body--in" key={tab}>
                 {renderTab()}
             </div>
 

@@ -121,6 +121,7 @@ export default function PlaylistView({ playlistId, onBack }) {
                             queue={tracks}
                             index={i + 1}
                             playlistId={pl.id}
+                            animateIn
                         />
                     ))
                 )}

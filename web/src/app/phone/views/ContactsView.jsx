@@ -73,8 +73,13 @@ export default function ContactsView({ onOpen, onAdd }) {
         sectionRefs.current[letter]?.scrollIntoView({ block: 'start', behavior: 'smooth' });
     };
 
-    const Row = (c) => (
-        <button key={c.id} className="pa-row" onClick={() => onOpen(c.id)}>
+    const Row = (c, i) => (
+        <button
+            key={c.id}
+            className="pa-row pa-row--in"
+            style={{ animationDelay: `${Math.min(i || 0, 12) * 0.03}s` }}
+            onClick={() => onOpen(c.id)}
+        >
             <Avatar name={c.name} img={c.img} />
             <span className="pa-row__main">
                 <span className="pa-row__name">{c.name}</span>

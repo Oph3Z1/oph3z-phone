@@ -28,6 +28,106 @@
     min-height: 0;
 }
 
+.mkt-layer {
+    position: absolute;
+    inset: 0;
+    background: var(--mkt-bg);
+}
+
+.mkt-layer:not(:last-child) .mkt-fab {
+    display: none;
+}
+
+.mkt-layer--push-in {
+    animation: mkt-push-in 0.26s ease-out;
+}
+
+.mkt-layer--push-out {
+    z-index: 2;
+    animation: mkt-push-out 0.2s ease-in forwards;
+}
+
+.mkt-layer--drop-in {
+    z-index: 2;
+    animation: mkt-drop-in 0.2s ease-out;
+}
+
+.mkt-layer--drop-out {
+    z-index: 2;
+    animation: mkt-drop-out 0.16s ease-in forwards;
+}
+
+@keyframes mkt-push-in {
+    from {
+        opacity: 0;
+        transform: translateY(16px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes mkt-push-out {
+    from {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateY(16px);
+    }
+}
+
+@keyframes mkt-drop-in {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes mkt-drop-out {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
+    }
+}
+
+.mkt-card--in {
+    animation: mkt-card-in 0.34s ease-out both;
+}
+
+@keyframes mkt-card-in {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.mkt-spinner {
+    width: 1.7em;
+    height: 1.7em;
+    margin: 2.6em auto 0;
+    border-radius: 50%;
+    border: 2.5px solid var(--mkt-line);
+    border-top-color: var(--mkt-y);
+    animation: mkt-spin 0.7s linear infinite;
+}
+
+@keyframes mkt-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
 .mkt-scroll {
     flex: 1;
     min-height: 0;
@@ -513,6 +613,16 @@
     align-items: center;
     justify-content: center;
     overflow: hidden;
+    animation: mkt-stage-in 0.24s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+@keyframes mkt-stage-in {
+    from {
+        transform: scale(0.9);
+    }
+    to {
+        transform: scale(1);
+    }
 }
 
 .mkt-viewer__media {

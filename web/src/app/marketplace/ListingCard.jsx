@@ -4,14 +4,18 @@ import { fmtPrice, timeAgo, CATEGORY_ICON } from './util';
 import Avatar from './Avatar';
 import { PlayIcon } from './icons';
 
-export default function ListingCard({ listing }) {
+export default function ListingCard({ listing, animateIn = false, index = 0 }) {
     const t = useT();
     const nav = useMarketNav();
     const cover = (listing.media && listing.media[0]) || null;
     const count = listing.media ? listing.media.length : 0;
 
     return (
-        <button className="mkt-card" onClick={() => nav.openListing(listing.id)}>
+        <button
+            className={`mkt-card${animateIn ? ' mkt-card--in' : ''}`}
+            style={animateIn ? { animationDelay: `${Math.min(index, 12) * 0.04}s` } : undefined}
+            onClick={() => nav.openListing(listing.id)}
+        >
             <div className="mkt-card__media">
                 {cover ? (
                     <img

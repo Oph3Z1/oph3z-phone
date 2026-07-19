@@ -39,10 +39,11 @@ export default function FavoritesView({ onOpen }) {
                     </div>
                 ) : (
                     <div className="pa-list">
-                        {favorites.map((c) => (
+                        {favorites.map((c, i) => (
                             <button
                                 key={c.id}
-                                className="pa-row"
+                                className="pa-row pa-row--in"
+                                style={{ animationDelay: `${Math.min(i, 12) * 0.03}s` }}
                                 onClick={() => !editing && call(c)}
                             >
                                 {editing && (

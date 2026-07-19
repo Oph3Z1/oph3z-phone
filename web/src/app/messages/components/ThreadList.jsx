@@ -116,13 +116,14 @@ export default function ThreadList({ onOpen, onCompose, onNewGroup }) {
 
                 {threads.length === 0 && <div className="msg-empty">{tr('messages.empty')}</div>}
 
-                {threads.map((t) => {
+                {threads.map((t, i) => {
                     const selectable = edit && !t.isGroup;
                     const isSel = selected.has(t.number);
                     return (
                         <button
                             key={keyOf(t)}
-                            className="msg-row"
+                            className="msg-row msg-row--in"
+                            style={{ animationDelay: `${Math.min(i, 12) * 0.04}s` }}
                             onClick={() =>
                                 selectable ? toggleSelect(t.number) : edit ? null : onOpen(t)
                             }

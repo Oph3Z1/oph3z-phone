@@ -77,27 +77,32 @@ export default function Feed({ me, reloadToken, onOpenSearch, onOpenNotifs }) {
                             onClick={() => setTab(k)}
                         >
                             {t(`x.${k}`)}
-                            {tab === k && <span className="x-feed__tabind" />}
                         </button>
                     ))}
+                    <span
+                        className="x-feed__tabind"
+                        style={{ left: tab === 'foryou' ? '25%' : '75%' }}
+                    />
                 </div>
             </div>
 
             <div className="x-scroll x-feed__scroll">
                 {items === null ? (
-                    <div className="x-empty">{t('x.loading')}</div>
+                    <div className="x-spinner" />
                 ) : items.length === 0 ? (
                     <div className="x-empty">
                         {tab === 'following' ? t('x.followingEmpty') : t('x.feedEmpty')}
                     </div>
                 ) : (
                     <div className="x-list">
-                        {items.map((p) => (
+                        {items.map((p, i) => (
                             <PostCard
                                 key={`${p.id}-${p.feedTs || ''}`}
                                 post={p}
                                 me={me}
                                 onChanged={() => setNonce((n) => n + 1)}
+                                animateIn
+                                index={i}
                             />
                         ))}
                     </div>

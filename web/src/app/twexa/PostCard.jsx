@@ -19,7 +19,14 @@ import {
     Verified,
 } from './icons';
 
-export default function PostCard({ post, me, onChanged, big = false }) {
+export default function PostCard({
+    post,
+    me,
+    onChanged,
+    big = false,
+    animateIn = false,
+    index = 0,
+}) {
     const dispatch = useDispatch();
     const t = useT();
     const nav = useXNav();
@@ -29,6 +36,8 @@ export default function PostCard({ post, me, onChanged, big = false }) {
     const [reposted, setReposted] = useState(post.reposted);
     const [repostCount, setRepostCount] = useState(post.repostCount);
     const [menu, setMenu] = useState(false);
+    const [likePulse, setLikePulse] = useState(0);
+    const [repostPulse, setRepostPulse] = useState(0);
 
     useEffect(() => {
         setLiked(post.liked);
@@ -44,6 +53,7 @@ export default function PostCard({ post, me, onChanged, big = false }) {
         e.stopPropagation();
         const next = !liked;
         setLiked(next);
+        if (next) setLikePulse((p) => p + 1);
         setLikeCount((c) => c + (next ? 1 : -1));
         const res = await fetchNui(
             'phone:x:like',
@@ -60,6 +70,7 @@ export default function PostCard({ post, me, onChanged, big = false }) {
         e.stopPropagation();
         const next = !reposted;
         setReposted(next);
+        if (next) setRepostPulse((p) => p + 1);
         setRepostCount((c) => c + (next ? 1 : -1));
         const res = await fetchNui(
             'phone:x:repost',
@@ -103,7 +114,11 @@ export default function PostCard({ post, me, onChanged, big = false }) {
     };
 
     return (
-        <article className={`x-post${big ? ' x-post--big' : ''}`} onClick={openDetail}>
+        <article
+            className={`x-post${big ? ' x-post--big' : ''}${animateIn ? ' x-post--in' : ''}`}
+            style={animateIn ? { animationDelay: `${Math.min(index, 12) * 0.04}s` } : undefined}
+            onClick={openDetail}
+        >
             {post.repostBy && (
                 <div className="x-post__repost">
                     <RepostSmall size={13} />
@@ -185,14 +200,24 @@ export default function PostCard({ post, me, onChanged, big = false }) {
                             className={`x-act x-act--repost${reposted ? ' is-on' : ''}`}
                             onClick={toggleRepost}
                         >
-                            <RepostIcon active={reposted} />
+                            <span
+                                className={`x-pop${repostPulse ? ' x-pop--go' : ''}`}
+                                key={repostPulse}
+                            >
+                                <RepostIcon active={reposted} />
+                            </span>
                             <span>{repostCount ? fmtCount(repostCount) : ''}</span>
                         </button>
                         <button
                             className={`x-act x-act--like${liked ? ' is-on' : ''}`}
                             onClick={toggleLike}
                         >
-                            <HeartIcon active={liked} />
+                            <span
+                                className={`x-pop${likePulse ? ' x-pop--go' : ''}`}
+                                key={likePulse}
+                            >
+                                <HeartIcon active={liked} />
+                            </span>
                             <span>{likeCount ? fmtCount(likeCount) : ''}</span>
                         </button>
                     </div>

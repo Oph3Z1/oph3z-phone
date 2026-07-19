@@ -86,6 +86,34 @@
     -webkit-overflow-scrolling: touch;
 }
 
+.sp-content--in {
+    animation: sp-fade-in 0.22s ease-out;
+}
+
+@keyframes sp-fade-in {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.sp-row--in {
+    animation: sp-row-in 0.34s ease-out both;
+}
+
+@keyframes sp-row-in {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
 .sp-content::-webkit-scrollbar {
     width: 0;
 }

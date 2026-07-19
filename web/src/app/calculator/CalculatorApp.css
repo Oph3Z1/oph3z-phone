@@ -139,10 +139,98 @@
     font-weight: 400;
     color: #fff;
     transition: filter 0.1s ease;
+    animation: calc-key-in 0.18s ease-out both;
 }
 
 .calc__key:active {
     filter: brightness(1.35);
+}
+
+@keyframes calc-key-in {
+    from {
+        opacity: 0;
+        transform: translateY(9px) scale(0.94);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.calc__pad .calc__key:nth-child(1) {
+    animation-delay: 0.01s;
+}
+
+.calc__pad .calc__key:nth-child(2) {
+    animation-delay: 0.02s;
+}
+
+.calc__pad .calc__key:nth-child(3) {
+    animation-delay: 0.03s;
+}
+
+.calc__pad .calc__key:nth-child(4) {
+    animation-delay: 0.04s;
+}
+
+.calc__pad .calc__key:nth-child(5) {
+    animation-delay: 0.05s;
+}
+
+.calc__pad .calc__key:nth-child(6) {
+    animation-delay: 0.06s;
+}
+
+.calc__pad .calc__key:nth-child(7) {
+    animation-delay: 0.07s;
+}
+
+.calc__pad .calc__key:nth-child(8) {
+    animation-delay: 0.08s;
+}
+
+.calc__pad .calc__key:nth-child(9) {
+    animation-delay: 0.09s;
+}
+
+.calc__pad .calc__key:nth-child(10) {
+    animation-delay: 0.1s;
+}
+
+.calc__pad .calc__key:nth-child(11) {
+    animation-delay: 0.11s;
+}
+
+.calc__pad .calc__key:nth-child(12) {
+    animation-delay: 0.12s;
+}
+
+.calc__pad .calc__key:nth-child(13) {
+    animation-delay: 0.13s;
+}
+
+.calc__pad .calc__key:nth-child(14) {
+    animation-delay: 0.14s;
+}
+
+.calc__pad .calc__key:nth-child(15) {
+    animation-delay: 0.15s;
+}
+
+.calc__pad .calc__key:nth-child(16) {
+    animation-delay: 0.16s;
+}
+
+.calc__pad .calc__key:nth-child(17) {
+    animation-delay: 0.17s;
+}
+
+.calc__pad .calc__key:nth-child(18) {
+    animation-delay: 0.18s;
+}
+
+.calc__pad .calc__key:nth-child(19) {
+    animation-delay: 0.19s;
 }
 
 .calc__key--fn {

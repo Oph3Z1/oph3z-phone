@@ -44,7 +44,7 @@ export default function ContactEditor({ contact, onClose }) {
     };
 
     return (
-        <div className="pa-editor screen-in-side">
+        <div className="pa-editor pa-overlay-in">
             <div className="pa-editor__nav">
                 <button className="pa-editor__cancel" onClick={onClose}>
                     {t('phone.cancel')}

@@ -80,7 +80,7 @@ export default function MusicApp() {
             <div className="spapp">
                 <AmbientBackground artwork={music.artwork} />
 
-                <div className="sp-content">
+                <div className="sp-content sp-content--in" key={playlist ? `pl:${playlist}` : tab}>
                     {playlist ? (
                         <PlaylistView playlistId={playlist} onBack={() => setPlaylist(null)} />
                     ) : tab === 'library' ? (

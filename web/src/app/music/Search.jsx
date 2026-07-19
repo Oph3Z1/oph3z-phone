@@ -88,7 +88,7 @@ export default function Search() {
                     </div>
                 ) : (
                     results.map((tr, i) => (
-                        <TrackRow key={tr.id} track={tr} queue={results} index={i + 1} />
+                        <TrackRow key={tr.id} track={tr} queue={results} index={i + 1} animateIn />
                     ))
                 )}
             </div>

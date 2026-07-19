@@ -8,6 +8,29 @@
     overflow: hidden;
 }
 
+.set-stack {
+    position: absolute;
+    inset: 0;
+}
+
+.set-layer {
+    position: absolute;
+    inset: 0;
+}
+
+.set-layer--in {
+    animation: set-fade-in 0.22s ease-out;
+}
+
+@keyframes set-fade-in {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
 .set__bar {
     flex: 0 0 auto;
     padding: calc(var(--safe-top) + 0.4em) 1em 0.3em;

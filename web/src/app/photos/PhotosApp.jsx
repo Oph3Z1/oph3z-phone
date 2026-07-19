@@ -121,6 +121,7 @@ export default function PhotosApp() {
 
             <div className="photos__scroll" ref={scrollRef}>
                 <PhotoGrid
+                    key={tab}
                     items={list}
                     selectMode={selectMode}
                     selected={selected}

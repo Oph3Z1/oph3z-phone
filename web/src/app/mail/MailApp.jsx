@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import './MailApp.css';
 
@@ -56,44 +56,81 @@ export default function MailApp() {
         setView({ name: 'list' });
     };
 
-    if (view.name === 'detail') {
+    const renderView = (v) => {
+        if (v.name === 'detail')
+            return (
+                <MailDetail
+                    mail={v.mail}
+                    folder={v.folder}
+                    onBack={() => setView({ name: 'list' })}
+                    onReply={(m) =>
+                        setView({
+                            name: 'compose',
+                            draft: { to: m.from, subject: replySubject(m.subject) },
+                        })
+                    }
+                    onDelete={(m) => confirmDelete(m, v.folder)}
+                />
+            );
+        if (v.name === 'compose')
+            return (
+                <MailCompose
+                    draft={v.draft}
+                    onClose={() => setView({ name: 'list' })}
+                    onSent={() => {
+                        setFolder('sent');
+                        setView({ name: 'list' });
+                    }}
+                />
+            );
         return (
-            <MailDetail
-                mail={view.mail}
-                folder={view.folder}
-                onBack={() => setView({ name: 'list' })}
-                onReply={(m) =>
-                    setView({
-                        name: 'compose',
-                        draft: { to: m.from, subject: replySubject(m.subject) },
-                    })
-                }
-                onDelete={(m) => confirmDelete(m, view.folder)}
+            <MailList
+                folder={folder}
+                setFolder={setFolder}
+                onOpen={(m) => openMail(m, folder)}
+                onCompose={() => setView({ name: 'compose', draft: null })}
+                onDelete={(m) => confirmDelete(m, folder)}
             />
         );
-    }
+    };
 
-    if (view.name === 'compose') {
-        return (
-            <MailCompose
-                draft={view.draft}
-                onClose={() => setView({ name: 'list' })}
-                onSent={() => {
-                    setFolder('sent');
-                    setView({ name: 'list' });
-                }}
-            />
-        );
-    }
+    return <MailStack view={view} render={renderView} />;
+}
+
+function MailStack({ view, render }) {
+    const idRef = useRef(0);
+    const firstRef = useRef(true);
+    const [layers, setLayers] = useState(() => [{ id: 0, view }]);
+    const prevRef = useRef(view);
+
+    useEffect(() => {
+        if (firstRef.current) {
+            firstRef.current = false;
+            prevRef.current = view;
+            return;
+        }
+        if (view === prevRef.current) return;
+        prevRef.current = view;
+        setLayers((cur) => [
+            { ...cur[cur.length - 1], entering: false },
+            { id: ++idRef.current, view, entering: true },
+        ]);
+    }, [view]);
+
+    const prune = () => setLayers((cur) => (cur.length > 1 ? cur.slice(-1) : cur));
 
     return (
-        <MailList
-            folder={folder}
-            setFolder={setFolder}
-            onOpen={(m) => openMail(m, folder)}
-            onCompose={() => setView({ name: 'compose', draft: null })}
-            onDelete={(m) => confirmDelete(m, folder)}
-        />
+        <>
+            {layers.map((l) => (
+                <div
+                    key={l.id}
+                    className={`mail-layer${l.entering ? ' mail-layer--in' : ''}`}
+                    onAnimationEnd={l.entering ? prune : undefined}
+                >
+                    {render(l.view)}
+                </div>
+            ))}
+        </>
     );
 }
 

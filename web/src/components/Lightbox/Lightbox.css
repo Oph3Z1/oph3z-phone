@@ -9,6 +9,16 @@
     overflow: hidden;
     touch-action: none;
     cursor: zoom-out;
+    animation: lb-fade 0.16s ease-out;
+}
+
+@keyframes lb-fade {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
 }
 
 .lightbox__img {
@@ -20,6 +30,16 @@
     transition: transform 0.05s linear;
     will-change: transform;
     box-shadow: 0 2vh 6vh rgba(0, 0, 0, 0.6);
+    animation: lb-zoom 0.22s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+@keyframes lb-zoom {
+    from {
+        transform: scale(0.9);
+    }
+    to {
+        transform: scale(1);
+    }
 }
 
 .lightbox__close {

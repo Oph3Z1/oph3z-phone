@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import './AppStoreApp.css';
 import { openApp } from '../../store/slices/phoneSlice';
@@ -130,10 +130,11 @@ function StoreList({ apps, installed, onOpen }) {
                         {t('appstore.noResults', { query: query.trim() })}
                     </div>
                 )}
-                {filtered.map((a) => (
+                {filtered.map((a, i) => (
                     <div
                         key={a.id}
-                        className="astore-row"
+                        className="astore-row astore-row--in"
+                        style={{ animationDelay: `${Math.min(i, 12) * 0.04}s` }}
                         role="button"
                         onClick={() => onOpen(a.id)}
                     >
@@ -156,7 +157,7 @@ function StoreDetail({ app, installed, onBack }) {
     const t = useT();
     const shots = Array.isArray(app.swiperItems) ? app.swiperItems : [];
     return (
-        <div className="astore astore--detail screen-in-side">
+        <div className="astore astore--detail">
             <div
                 className="astore-detail__header"
                 style={app.headerImage ? { backgroundImage: `url(${app.headerImage})` } : undefined}
@@ -205,17 +206,46 @@ function StoreDetail({ app, installed, onBack }) {
 export default function AppStoreApp() {
     const apps = useStoreCatalog();
     const installed = useInstalledSet();
-    const [detail, setDetail] = useState(null);
 
-    const current = detail ? apps.find((a) => a.id === detail) : null;
-    if (current) {
-        return (
-            <StoreDetail
-                app={current}
-                installed={installed.has(current.id)}
-                onBack={() => setDetail(null)}
-            />
-        );
-    }
-    return <StoreList apps={apps} installed={installed} onOpen={setDetail} />;
+    const [layers, setLayers] = useState([{ id: 0, v: null }]);
+    const nextId = useRef(1);
+    const go = (v) => {
+        setLayers((cur) => {
+            const base = cur[cur.length - 1];
+            if (base.v === v) return cur;
+            return [
+                { id: base.id, v: base.v },
+                { id: nextId.current++, v, entering: true },
+            ];
+        });
+    };
+    const pruneLayers = () => setLayers((cur) => (cur.length > 1 ? cur.slice(-1) : cur));
+
+    const renderView = (v) => {
+        const current = v ? apps.find((a) => a.id === v) : null;
+        if (current) {
+            return (
+                <StoreDetail
+                    app={current}
+                    installed={installed.has(current.id)}
+                    onBack={() => go(null)}
+                />
+            );
+        }
+        return <StoreList apps={apps} installed={installed} onOpen={(id) => go(id)} />;
+    };
+
+    return (
+        <div className="astore-stack">
+            {layers.map((l) => (
+                <div
+                    key={l.id}
+                    className={`astore-layer${l.entering ? ' astore-layer--in' : ''}`}
+                    onAnimationEnd={l.entering ? pruneLayers : undefined}
+                >
+                    {renderView(l.v)}
+                </div>
+            ))}
+        </div>
+    );
 }

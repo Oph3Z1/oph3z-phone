@@ -194,12 +194,14 @@ export default function Profile({ target, me, reloadToken, onBack, onEdit }) {
 
                 <div className="x-list">
                     {list && list.length > 0 ? (
-                        list.map((post) => (
+                        list.map((post, i) => (
                             <PostCard
                                 key={`${tab}-${post.id}`}
                                 post={post}
                                 me={me}
                                 onChanged={load}
+                                animateIn
+                                index={i}
                             />
                         ))
                     ) : (

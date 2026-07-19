@@ -4,7 +4,7 @@ import { useT } from '../../i18n/useT';
 import { mailDate, initialOf, snippet, avatarColor } from './mailUtil';
 import { ComposeIcon, PaperclipIcon } from './icons';
 
-function Row({ mail, folder, onOpen, onDelete }) {
+function Row({ mail, folder, onOpen, onDelete, index = 0 }) {
     const pressTimer = useRef(null);
     const longFired = useRef(false);
     const isInbox = folder === 'inbox';
@@ -28,7 +28,8 @@ function Row({ mail, folder, onOpen, onDelete }) {
 
     return (
         <button
-            className={`mail-row${isInbox && !mail.read ? ' is-unread' : ''}`}
+            className={`mail-row mail-row--in${isInbox && !mail.read ? ' is-unread' : ''}`}
+            style={{ animationDelay: `${Math.min(index, 12) * 0.04}s` }}
             onClick={click}
             onPointerDown={start}
             onPointerUp={end}
@@ -100,13 +101,14 @@ export default function MailList({ folder, setFolder, onOpen, onCompose, onDelet
                         {folder === 'inbox' ? t('mail.emptyInbox') : t('mail.emptySent')}
                     </div>
                 ) : (
-                    mails.map((m) => (
+                    mails.map((m, i) => (
                         <Row
                             key={m.id}
                             mail={m}
                             folder={folder}
                             onOpen={onOpen}
                             onDelete={onDelete}
+                            index={i}
                         />
                     ))
                 )}

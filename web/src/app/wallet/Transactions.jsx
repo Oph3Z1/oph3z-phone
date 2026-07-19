@@ -4,11 +4,14 @@ import { useT } from '../../i18n/useT';
 import { signedMoney, isCredit, fmtNumber, txDateLong } from './walletUtil';
 import { ChevronLeft, SearchIcon, ArrowUpRight, ArrowDownLeft, BillIcon } from './icons';
 
-function DetailRow({ tx }) {
+function DetailRow({ tx, index = 0 }) {
     const credit = isCredit(tx.kind);
     const Icon = tx.kind === 'bill' ? BillIcon : credit ? ArrowUpRight : ArrowDownLeft;
     return (
-        <div className="wl-txd">
+        <div
+            className="wl-txd wl-row--in"
+            style={{ animationDelay: `${Math.min(index, 12) * 0.04}s` }}
+        >
             <span className={`wl-tx__ico wl-tx__ico--${tx.kind}`}>
                 <Icon />
             </span>
@@ -77,8 +80,8 @@ export default function Transactions({ onClose }) {
                     </div>
                 ) : (
                     <div className="wl-list">
-                        {filtered.map((tx) => (
-                            <DetailRow key={tx.id} tx={tx} />
+                        {filtered.map((tx, i) => (
+                            <DetailRow key={tx.id} tx={tx} index={i} />
                         ))}
                     </div>
                 )}

@@ -129,7 +129,7 @@ export default function Feed({ reloadToken }) {
 
             <div className="mkt-scroll">
                 {items === null ? (
-                    <div className="mkt-empty">{t('market.loading')}</div>
+                    <div className="mkt-spinner" />
                 ) : items.length === 0 ? (
                     <div className="mkt-empty">
                         <div className="mkt-empty__glyph">{CATEGORY_ICON[cat] || '🛍️'}</div>
@@ -138,8 +138,8 @@ export default function Feed({ reloadToken }) {
                     </div>
                 ) : (
                     <div className="mkt-grid">
-                        {items.map((l) => (
-                            <ListingCard key={l.id} listing={l} />
+                        {items.map((l, i) => (
+                            <ListingCard key={l.id} listing={l} animateIn index={i} />
                         ))}
                     </div>
                 )}

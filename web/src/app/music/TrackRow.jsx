@@ -3,7 +3,7 @@ import { useSpotify } from './ctx';
 import { fmtTime, gradientFor } from './util';
 import { MoreIcon, NoteIcon, Waveform } from './icons';
 
-export default function TrackRow({ track, queue, index, playlistId }) {
+export default function TrackRow({ track, queue, index, playlistId, animateIn = false }) {
     const sp = useSpotify();
     const currentId = useSelector((s) => s.spotify.trackId);
     const playing = useSelector((s) => s.music.playing);
@@ -11,7 +11,10 @@ export default function TrackRow({ track, queue, index, playlistId }) {
 
     return (
         <div
-            className={`sp-row${isCurrent ? ' is-current' : ''}`}
+            className={`sp-row${isCurrent ? ' is-current' : ''}${animateIn ? ' sp-row--in' : ''}`}
+            style={
+                animateIn ? { animationDelay: `${Math.min(index || 0, 12) * 0.04}s` } : undefined
+            }
             onClick={() => sp.play(track, queue, index)}
         >
             <div

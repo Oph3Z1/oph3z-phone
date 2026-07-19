@@ -19,7 +19,7 @@ export default function ClockApp() {
     const dispatch = useDispatch();
     const t = useT();
     const loaded = useSelector((s) => s.clock.loaded);
-    const [tab, setTab] = useState('timer');
+    const [tab, setTab] = useState('alarm');
 
     useEffect(() => {
         if (!loaded) dispatch(loadClock());
@@ -38,7 +38,7 @@ export default function ClockApp() {
 
     return (
         <div className="clockapp">
-            <div className="clockapp__body screen-in" key={tab}>
+            <div className="clockapp__body clockapp__body--in" key={tab}>
                 {renderTab()}
             </div>
 

@@ -292,7 +292,7 @@ export default function Conversation({ number, onBack, onOpenThread }) {
     const name = conv?.name || number;
 
     return (
-        <div className="msg msg--conv screen-in-side">
+        <div className="msg msg--conv">
             <div className="msg-conv__bar">
                 <button className="msg-conv__back" onClick={handleBack} aria-label="Back">
                     <ChevronLeftIcon />

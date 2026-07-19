@@ -30,13 +30,20 @@ export default function TopicScreen({ tag, me, onBack }) {
             </div>
             <div className="x-scroll">
                 {items === null ? (
-                    <div className="x-empty">{t('x.loading')}</div>
+                    <div className="x-spinner" />
                 ) : items.length === 0 ? (
                     <div className="x-empty x-empty--sm">{t('x.nothingHere')}</div>
                 ) : (
                     <div className="x-list">
-                        {items.map((p) => (
-                            <PostCard key={p.id} post={p} me={me} onChanged={load} />
+                        {items.map((p, i) => (
+                            <PostCard
+                                key={p.id}
+                                post={p}
+                                me={me}
+                                onChanged={load}
+                                animateIn
+                                index={i}
+                            />
                         ))}
                     </div>
                 )}

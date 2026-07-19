@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import './MessagesApp.css';
 
@@ -73,60 +73,96 @@ export default function MessagesApp() {
         );
     });
 
-    if (view.name === 'thread') {
+    const renderView = (v) => {
+        if (v.name === 'thread')
+            return (
+                <Conversation
+                    number={v.number}
+                    onBack={() => setView({ name: 'list' })}
+                    onOpenThread={(num) => setView({ name: 'thread', number: num })}
+                />
+            );
+        if (v.name === 'group')
+            return (
+                <GroupConversation
+                    gid={v.gid}
+                    onBack={() => setView({ name: 'list' })}
+                    onInfo={() => setView({ name: 'groupinfo', gid: v.gid })}
+                />
+            );
+        if (v.name === 'groupinfo')
+            return (
+                <GroupInfo
+                    gid={v.gid}
+                    onBack={() => setView({ name: 'group', gid: v.gid })}
+                    onLeft={() => setView({ name: 'list' })}
+                />
+            );
+        if (v.name === 'new')
+            return (
+                <NewMessage
+                    onClose={() => setView({ name: 'list' })}
+                    onOpen={(number) => setView({ name: 'thread', number })}
+                />
+            );
+        if (v.name === 'newgroup')
+            return (
+                <NewGroup
+                    onClose={() => setView({ name: 'list' })}
+                    onCreated={(gid) => setView({ name: 'group', gid })}
+                />
+            );
         return (
-            <Conversation
-                number={view.number}
-                onBack={() => setView({ name: 'list' })}
-                onOpenThread={(num) => setView({ name: 'thread', number: num })}
+            <ThreadList
+                onOpen={(t) =>
+                    setView(
+                        t.isGroup
+                            ? { name: 'group', gid: t.gid }
+                            : { name: 'thread', number: t.number },
+                    )
+                }
+                onCompose={() => setView({ name: 'new' })}
+                onNewGroup={() => setView({ name: 'newgroup' })}
             />
         );
-    }
-    if (view.name === 'group') {
-        return (
-            <GroupConversation
-                gid={view.gid}
-                onBack={() => setView({ name: 'list' })}
-                onInfo={() => setView({ name: 'groupinfo', gid: view.gid })}
-            />
-        );
-    }
-    if (view.name === 'groupinfo') {
-        return (
-            <GroupInfo
-                gid={view.gid}
-                onBack={() => setView({ name: 'group', gid: view.gid })}
-                onLeft={() => setView({ name: 'list' })}
-            />
-        );
-    }
-    if (view.name === 'new') {
-        return (
-            <NewMessage
-                onClose={() => setView({ name: 'list' })}
-                onOpen={(number) => setView({ name: 'thread', number })}
-            />
-        );
-    }
-    if (view.name === 'newgroup') {
-        return (
-            <NewGroup
-                onClose={() => setView({ name: 'list' })}
-                onCreated={(gid) => setView({ name: 'group', gid })}
-            />
-        );
-    }
+    };
+
+    return <MessagesStack view={view} render={renderView} />;
+}
+
+function MessagesStack({ view, render }) {
+    const idRef = useRef(0);
+    const firstRef = useRef(true);
+    const [layers, setLayers] = useState(() => [{ id: 0, view }]);
+    const prevRef = useRef(view);
+
+    useEffect(() => {
+        if (firstRef.current) {
+            firstRef.current = false;
+            prevRef.current = view;
+            return;
+        }
+        if (view === prevRef.current) return;
+        prevRef.current = view;
+        setLayers((cur) => [
+            { ...cur[cur.length - 1], entering: false },
+            { id: ++idRef.current, view, entering: true },
+        ]);
+    }, [view]);
+
+    const prune = () => setLayers((cur) => (cur.length > 1 ? cur.slice(-1) : cur));
+
     return (
-        <ThreadList
-            onOpen={(t) =>
-                setView(
-                    t.isGroup
-                        ? { name: 'group', gid: t.gid }
-                        : { name: 'thread', number: t.number },
-                )
-            }
-            onCompose={() => setView({ name: 'new' })}
-            onNewGroup={() => setView({ name: 'newgroup' })}
-        />
+        <>
+            {layers.map((l) => (
+                <div
+                    key={l.id}
+                    className={`msg-layer${l.entering ? ' msg-layer--in' : ''}`}
+                    onAnimationEnd={l.entering ? prune : undefined}
+                >
+                    {render(l.view)}
+                </div>
+            ))}
+        </>
     );
 }

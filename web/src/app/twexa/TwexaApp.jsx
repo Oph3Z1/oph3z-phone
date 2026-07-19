@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import './TwexaApp.css';
 
@@ -126,69 +126,63 @@ export default function TwexaApp() {
         );
     }
 
-    const view = stack[stack.length - 1];
-
-    let screen;
-    if (view.name === 'feed') {
-        screen = (
-            <Feed
-                me={me}
-                reloadToken={reloadToken}
-                onOpenSearch={nav.openSearch}
-                onOpenNotifs={nav.openNotifs}
-            />
-        );
-    } else if (view.name === 'compose') {
-        screen = (
-            <Compose
-                me={me}
-                replyTo={view.replyTo}
-                initialMedia={view.initialMedia}
-                onClose={back}
-                onPosted={() => {
-                    back();
-                    bumpReload();
-                }}
-            />
-        );
-    } else if (view.name === 'post') {
-        screen = <PostDetail id={view.id} me={me} reloadToken={reloadToken} onBack={back} />;
-    } else if (view.name === 'profile') {
-        screen = (
-            <Profile
-                target={view.target}
-                me={me}
-                reloadToken={reloadToken}
-                onBack={back}
-                onEdit={() => {
-                    setEditProfile('self');
-                }}
-            />
-        );
-    } else if (view.name === 'topic') {
-        screen = <TopicScreen tag={view.tag} me={me} onBack={back} />;
-    } else if (view.name === 'followlist') {
-        screen = (
-            <FollowListScreen
-                target={view.target}
-                initialTab={view.tab}
-                isSelf={view.isSelf}
-                me={me}
-                onBack={back}
-            />
-        );
-    } else if (view.name === 'engagers') {
-        screen = <EngagersScreen postId={view.postId} initialTab={view.tab} onBack={back} />;
-    } else if (view.name === 'search') {
-        screen = <SearchScreen onBack={back} />;
-    } else if (view.name === 'notifs') {
-        screen = <NotificationsScreen onBack={back} />;
-    }
+    const renderView = (view) => {
+        if (view.name === 'feed')
+            return (
+                <Feed
+                    me={me}
+                    reloadToken={reloadToken}
+                    onOpenSearch={nav.openSearch}
+                    onOpenNotifs={nav.openNotifs}
+                />
+            );
+        if (view.name === 'compose')
+            return (
+                <Compose
+                    me={me}
+                    replyTo={view.replyTo}
+                    initialMedia={view.initialMedia}
+                    onClose={back}
+                    onPosted={() => {
+                        back();
+                        bumpReload();
+                    }}
+                />
+            );
+        if (view.name === 'post')
+            return <PostDetail id={view.id} me={me} reloadToken={reloadToken} onBack={back} />;
+        if (view.name === 'profile')
+            return (
+                <Profile
+                    target={view.target}
+                    me={me}
+                    reloadToken={reloadToken}
+                    onBack={back}
+                    onEdit={() => setEditProfile('self')}
+                />
+            );
+        if (view.name === 'topic') return <TopicScreen tag={view.tag} me={me} onBack={back} />;
+        if (view.name === 'followlist')
+            return (
+                <FollowListScreen
+                    target={view.target}
+                    initialTab={view.tab}
+                    isSelf={view.isSelf}
+                    me={me}
+                    onBack={back}
+                />
+            );
+        if (view.name === 'engagers')
+            return <EngagersScreen postId={view.postId} initialTab={view.tab} onBack={back} />;
+        if (view.name === 'search') return <SearchScreen onBack={back} />;
+        if (view.name === 'notifs') return <NotificationsScreen onBack={back} />;
+        return null;
+    };
 
     return (
         <XNavContext.Provider value={nav}>
             <div className="xapp">
-                {screen}
+                <ScreenStack stack={stack} renderView={renderView} />
 
                 {editProfile && (
                     <EditProfileOverlay
@@ -206,11 +200,14 @@ export default function TwexaApp() {
                 )}
 
                 {video && (
-                    <div className="x-viewer" onClick={() => setVideo(null)}>
+                    <div className="x-viewer x-viewer--in" onClick={() => setVideo(null)}>
                         <button className="x-viewer__close" onClick={() => setVideo(null)}>
                             <CloseIcon />
                         </button>
-                        <div className="x-viewer__stage" onClick={(e) => e.stopPropagation()}>
+                        <div
+                            className="x-viewer__stage x-viewer__stage--in"
+                            onClick={(e) => e.stopPropagation()}
+                        >
                             <VideoPlayer src={video.url} poster={video.thumb} />
                         </div>
                     </div>
@@ -219,6 +216,70 @@ export default function TwexaApp() {
                 {share && <ShareProfileSheet profile={share} onClose={() => setShare(null)} />}
             </div>
         </XNavContext.Provider>
+    );
+}
+
+function ScreenStack({ stack, renderView }) {
+    const idRef = useRef(0);
+    const firstRef = useRef(true);
+    const [layers, setLayers] = useState(() => [
+        { id: 0, view: stack[stack.length - 1], anim: null },
+    ]);
+    const prevRef = useRef({ len: stack.length, top: stack[stack.length - 1] });
+
+    useEffect(() => {
+        const prev = prevRef.current;
+        const top = stack[stack.length - 1];
+        prevRef.current = { len: stack.length, top };
+        if (firstRef.current) {
+            firstRef.current = false;
+            return;
+        }
+        if (stack.length > prev.len) {
+            const anim = top.name === 'compose' || top.name === 'post' ? 'drop-in' : 'push-in';
+            setLayers((cur) => [
+                { ...cur[cur.length - 1], anim: null },
+                { id: ++idRef.current, view: top, anim },
+            ]);
+        } else if (stack.length < prev.len) {
+            const anim =
+                prev.top.name === 'compose' || prev.top.name === 'post' ? 'drop-out' : 'push-out';
+            setLayers((cur) => [
+                { id: ++idRef.current, view: top, anim: null },
+                { id: cur[cur.length - 1].id, view: prev.top, anim },
+            ]);
+        } else {
+            setLayers([{ id: ++idRef.current, view: top, anim: null }]);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [stack]);
+
+    const settle = (layer, e) => {
+        if (e.target !== e.currentTarget) return;
+        const el = e.currentTarget;
+        if (layer.anim === 'push-in' || layer.anim === 'sheet-in' || layer.anim === 'drop-in') {
+            setLayers([{ id: layer.id, view: layer.view, anim: null }]);
+            el.style.animation = 'none';
+            requestAnimationFrame(() => {
+                el.style.animation = '';
+            });
+        } else {
+            setLayers((cur) => cur.filter((l) => l.id !== layer.id));
+        }
+    };
+
+    return (
+        <>
+            {layers.map((l) => (
+                <div
+                    key={l.id}
+                    className={`x-layer${l.anim ? ` x-layer--${l.anim}` : ''}`}
+                    onAnimationEnd={l.anim ? (e) => settle(l, e) : undefined}
+                >
+                    {renderView(l.view)}
+                </div>
+            ))}
+        </>
     );
 }
 

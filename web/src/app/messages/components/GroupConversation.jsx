@@ -128,7 +128,7 @@ export default function GroupConversation({ gid, onBack, onInfo }) {
     const memberCount = group?.members?.length || 0;
 
     return (
-        <div className="msg msg--conv screen-in-side">
+        <div className="msg msg--conv">
             <div className="msg-conv__bar">
                 <button className="msg-conv__back" onClick={onBack} aria-label="Back">
                     <ChevronLeftIcon />

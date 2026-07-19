@@ -12,6 +12,40 @@
     --mail-dim: #8a8a8e;
 }
 
+.mail-layer {
+    position: absolute;
+    inset: 0;
+    background: #000;
+}
+
+.mail-layer--in {
+    animation: mail-fade-in 0.22s ease-out;
+}
+
+@keyframes mail-fade-in {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.mail-row--in {
+    animation: mail-row-in 0.34s ease-out both;
+}
+
+@keyframes mail-row-in {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
 .mail-head {
     flex-shrink: 0;
     padding: calc(var(--safe-top) + 0.3em) 1.1em 0.5em;
