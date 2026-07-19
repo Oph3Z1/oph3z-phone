@@ -59,7 +59,7 @@ export default function HistoryScreen({ onBack, onPick }) {
     };
 
     return (
-        <div className="calc-hist">
+        <div className="calc-hist screen-in-side">
             <div className="calc-hist__bar">
                 <button className="calc-hist__back" onClick={onBack} aria-label={t('common.done')}>
                     <ChevronLeft />

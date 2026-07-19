@@ -17,6 +17,7 @@ export default function ListingCard({ listing }) {
                     <img
                         src={cover.type === 'video' ? cover.thumb || cover.url : cover.url}
                         alt=""
+                        loading="lazy"
                     />
                 ) : (
                     <div className="mkt-card__nomedia">

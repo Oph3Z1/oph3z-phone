@@ -80,7 +80,7 @@ RegisterCallback('oph3z-phone:server:messages:open', function(src, input)
     if t and (t.unread or 0) > 0 then
         t.unread = 0
         for _, m in ipairs(t.items) do m.read = true end
-        DB.Save(cid, doc)
+        DB.SaveNow(cid, doc)
     end
 
     return {
@@ -99,7 +99,7 @@ RegisterCallback('oph3z-phone:server:messages:delete', function(src, input)
     for _, number in ipairs(input.numbers) do
         doc.messages.threads[DB.Digits(number)] = nil
     end
-    DB.Save(cid, doc)
+    DB.SaveNow(cid, doc)
     return true
 end)
 
@@ -113,7 +113,7 @@ RegisterCallback('oph3z-phone:server:messages:read', function(src, input)
     if t and (t.unread or 0) > 0 then
         t.unread = 0
         for _, m in ipairs(t.items) do m.read = true end
-        DB.Save(cid, doc)
+        DB.SaveNow(cid, doc)
     end
     return true
 end)
@@ -138,7 +138,7 @@ local function deliver(senderCid, toDigits, mtype, body, meta)
     local senderDoc = ensureMessages(DB.EnsurePhone(senderCid, DB.LoadOrCreate(senderCid)))
     local senderNumber = DB.Digits(senderDoc.phone.numberRaw)
     appendToThread(senderDoc, toDigits, { id = id, dir = 'out', type = mtype, body = body, meta = meta, ts = ts, read = true })
-    DB.Save(senderCid, senderDoc)
+    DB.SaveNow(senderCid, senderDoc)
 
     local recipCid = DB.GetCitizenIdByNumber(toDigits)
     if recipCid and recipCid ~= senderCid then
@@ -146,7 +146,7 @@ local function deliver(senderCid, toDigits, mtype, body, meta)
         if not DB.IsBlocked(recipDoc, senderNumber) then
             local inMsg = { id = id, dir = 'in', type = mtype, body = body, meta = meta, ts = ts, read = false }
             appendToThread(recipDoc, senderNumber, inMsg, true)
-            DB.Save(recipCid, recipDoc)
+            DB.SaveNow(recipCid, recipDoc)
 
             local contact = DB.ResolveContact(recipCid, senderNumber)
             local senderName = contact and contact.name or DB.FormatNumber(senderNumber)
@@ -229,11 +229,11 @@ end
 local function setStatusBoth(myCid, otherNumber, otherCid, myNumber, id, status)
     local myDoc = ensureMessages(DB.LoadOrCreate(myCid))
     local m = findMsg(myDoc, otherNumber, id)
-    if m then m.meta = m.meta or {}; m.meta.status = status; DB.Save(myCid, myDoc) end
+    if m then m.meta = m.meta or {}; m.meta.status = status; DB.SaveNow(myCid, myDoc) end
     if otherCid then
         local oDoc = ensureMessages(DB.LoadOrCreate(otherCid))
         local om = findMsg(oDoc, myNumber, id)
-        if om then om.meta = om.meta or {}; om.meta.status = status; DB.Save(otherCid, oDoc) end
+        if om then om.meta = om.meta or {}; om.meta.status = status; DB.SaveNow(otherCid, oDoc) end
     end
 end
 
@@ -322,7 +322,7 @@ local function saveLoc(cid, number, id, x, y, label, live, reason)
     if label ~= nil then m.meta.label = label end
     if live ~= nil then m.meta.live = live end
     if reason ~= nil then m.meta.endReason = reason end
-    DB.Save(cid, doc)
+    DB.SaveNow(cid, doc)
 end
 
 local function endShare(sid, reason)

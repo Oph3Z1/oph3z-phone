@@ -38,7 +38,9 @@ export default function ClockApp() {
 
     return (
         <div className="clockapp">
-            <div className="clockapp__body">{renderTab()}</div>
+            <div className="clockapp__body screen-in" key={tab}>
+                {renderTab()}
+            </div>
 
             <nav className="clockapp__tabbar">
                 {TABS.map(({ id, Icon }) => (

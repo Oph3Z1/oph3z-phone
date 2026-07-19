@@ -60,6 +60,7 @@
     overflow: hidden;
     background: #1c1c1e;
     display: block;
+    content-visibility: auto;
 }
 
 .ph-thumb__media {

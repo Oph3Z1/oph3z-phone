@@ -16,7 +16,7 @@ export default function MediaGrid({ media }) {
                             onClick={() => nav.openVideo && nav.openVideo(m)}
                         >
                             {m.thumb ? (
-                                <img src={m.thumb} alt="" />
+                                <img src={m.thumb} alt="" loading="lazy" />
                             ) : (
                                 <video src={m.url} muted playsInline preload="metadata" />
                             )}

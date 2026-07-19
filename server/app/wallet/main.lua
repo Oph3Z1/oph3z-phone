@@ -27,7 +27,7 @@ local function logTx(citizenid, tx)
     doc.wallet.nextTxId = doc.wallet.nextTxId + 1
     table.insert(doc.wallet.transactions, 1, tx)
     while #doc.wallet.transactions > MAX_TX do table.remove(doc.wallet.transactions) end
-    DB.Save(citizenid, doc)
+    DB.SaveNow(citizenid, doc)
     return tx
 end
 

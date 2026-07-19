@@ -28,10 +28,19 @@ local function isQbox() return Config.Framework == 'qbox' end
 
 function RegisterCallback(name, fn)
     if not waitForFramework() then return end
+    local function safeCall(source, cb, data)
+        local ok, result = pcall(fn, source, data)
+        if not ok then
+            print(('^1[oph3z-phone] callback "%s" failed: %s^0'):format(name, tostring(result)))
+            cb(nil)
+            return
+        end
+        cb(result)
+    end
     if frameworkObject.Functions and frameworkObject.Functions.CreateCallback then
-        frameworkObject.Functions.CreateCallback(name, function(source, cb, data) cb(fn(source, data)) end)
+        frameworkObject.Functions.CreateCallback(name, safeCall)
     elseif frameworkObject.RegisterServerCallback then
-        frameworkObject.RegisterServerCallback(name, function(source, cb, data) cb(fn(source, data)) end)
+        frameworkObject.RegisterServerCallback(name, safeCall)
     else
         print('^1[oph3z-phone] Framework has no server-callback system for "'..name..'".^0')
     end

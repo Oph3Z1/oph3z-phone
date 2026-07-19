@@ -26,9 +26,34 @@ local function writeFile(name, tbl)
     SaveResourceFile(RESOURCE, ('%s/%s'):format(DIR, name), json.encode(tbl), -1)
 end
 
+local dirtyFiles = {}
+
+local function markDirty(name, tbl)
+    cache[name] = tbl
+    dirtyFiles[name] = true
+end
+
+local function flushFiles()
+    for name in pairs(dirtyFiles) do
+        dirtyFiles[name] = nil
+        if cache[name] then writeFile(name, cache[name]) end
+    end
+end
+
+CreateThread(function()
+    while true do
+        Wait(10000)
+        flushFiles()
+    end
+end)
+
+AddEventHandler('onResourceStop', function(res)
+    if res == RESOURCE then flushFiles() end
+end)
+
 local function listings() return readFile('listings.json') end
 local function meta() return readFile('_meta.json') end
-local function saveListings() writeFile('listings.json', listings()) end
+local function saveListings() markDirty('listings.json', listings()) end
 local function saveMeta() writeFile('_meta.json', meta()) end
 
 local function nextId(key)

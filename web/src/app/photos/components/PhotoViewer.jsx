@@ -149,7 +149,7 @@ export default function PhotoViewer({ items, startId, onClose }) {
                         {p.type === 'video' ? (
                             <video src={p.url} muted preload="metadata" />
                         ) : (
-                            <img src={p.thumb || p.url} alt="" />
+                            <img src={p.thumb || p.url} alt="" loading="lazy" />
                         )}
                     </button>
                 ))}

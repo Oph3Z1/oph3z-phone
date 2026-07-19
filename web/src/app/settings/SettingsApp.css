@@ -112,8 +112,17 @@
 .set-card {
     background: #1c1c1e;
     border-radius: 0.95em;
-    overflow: hidden;
     margin-bottom: 2em;
+}
+
+.set-card > :first-child {
+    border-top-left-radius: 0.95em;
+    border-top-right-radius: 0.95em;
+}
+
+.set-card > :last-child {
+    border-bottom-left-radius: 0.95em;
+    border-bottom-right-radius: 0.95em;
 }
 
 .set-sep {
@@ -390,7 +399,6 @@
     box-sizing: border-box;
     touch-action: pan-y;
     user-select: none;
-    will-change: transform;
 }
 
 .blk-row__av {

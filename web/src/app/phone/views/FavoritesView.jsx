@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import Avatar from '../components/Avatar';
 import { InfoIcon, StarIcon } from '../components/icons';
@@ -9,7 +9,8 @@ import { useT } from '../../../i18n/useT';
 export default function FavoritesView({ onOpen }) {
     const dispatch = useDispatch();
     const t = useT();
-    const favorites = useSelector((s) => s.contacts.contacts.filter((c) => c.favorite));
+    const contacts = useSelector((s) => s.contacts.contacts);
+    const favorites = useMemo(() => contacts.filter((c) => c.favorite), [contacts]);
     const [editing, setEditing] = useState(false);
 
     const call = (contact) => {

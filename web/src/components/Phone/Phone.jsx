@@ -55,20 +55,29 @@ export default function Phone() {
     useLayoutEffect(() => {
         const el = screenRef.current;
         if (!el) return;
+        let raf = 0;
+        let snapX = 0;
+        let snapY = 0;
         const applyScale = () => {
-            const scale = el.clientWidth / DESIGN_WIDTH;
-            el.style.fontSize = `${scale * 16}px`;
+            const next = `${(el.clientWidth / DESIGN_WIDTH) * 16}px`;
+            if (el.style.fontSize !== next) el.style.fontSize = next;
+            const r = el.getBoundingClientRect();
+            snapX += Math.round(r.left) - r.left;
+            snapY += Math.round(r.top) - r.top;
+            const t = `translate(calc(-50% + ${snapX.toFixed(2)}px), calc(-50% + ${snapY.toFixed(2)}px))`;
+            if (el.style.transform !== t) el.style.transform = t;
         };
         applyScale();
-        const ro = new ResizeObserver(applyScale);
+        const ro = new ResizeObserver(() => {
+            cancelAnimationFrame(raf);
+            raf = requestAnimationFrame(applyScale);
+        });
         ro.observe(el);
-        return () => ro.disconnect();
+        return () => {
+            cancelAnimationFrame(raf);
+            ro.disconnect();
+        };
     }, []);
-
-    const renderBase = () => {
-        if (activeApp) return <AppScreen appId={activeApp} />;
-        return <HomeScreen />;
-    };
 
     const showHomeBar = !locked && !!activeApp && !inCall;
 
@@ -77,7 +86,11 @@ export default function Phone() {
             <div className="phone__screen" ref={screenRef}>
                 <img className="phone__wallpaper" src={getWallpaper(wallpaperKey)} alt="" />
 
-                {!locked && <div className="phone__layer phone__layer--base">{renderBase()}</div>}
+                {!locked && (
+                    <div className="phone__layer phone__layer--base">
+                        {activeApp ? <AppScreen appId={activeApp} /> : <HomeScreen />}
+                    </div>
+                )}
 
                 {lockMounted && <LockScreen exiting={lockExiting} onExited={handleLockExited} />}
 

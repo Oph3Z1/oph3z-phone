@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import './HomeScreen.css';
 import { openApp } from '../../store/slices/phoneSlice';
@@ -21,6 +21,56 @@ import {
 } from '../../store/slices/homeSlice';
 import { openDialog } from '../../store/slices/dialogSlice';
 import FolderView from './FolderView';
+import { getWallpaper } from '../../config/phone.config';
+
+function DockGlass() {
+    const wallpaperKey = useSelector((s) => s.settings.wallpaper);
+    const ref = useRef(null);
+
+    useEffect(() => {
+        const canvas = ref.current;
+        if (!canvas) return;
+        const dock = canvas.parentElement;
+        const screen = dock && dock.closest('.phone__screen');
+        if (!screen) return;
+        let alive = true;
+        const img = new Image();
+        const draw = () => {
+            if (!alive || !img.complete || !img.naturalWidth) return;
+            const dr = dock.getBoundingClientRect();
+            const sr = screen.getBoundingClientRect();
+            if (dr.width < 1 || dr.height < 1) return;
+            const dpr = window.devicePixelRatio || 1;
+            canvas.width = Math.max(1, Math.round(dr.width * dpr));
+            canvas.height = Math.max(1, Math.round(dr.height * dpr));
+            const ctx = canvas.getContext('2d');
+            if (!ctx) return;
+            const scale = Math.max(sr.width / img.naturalWidth, sr.height / img.naturalHeight);
+            const dw = img.naturalWidth * scale;
+            const dh = img.naturalHeight * scale;
+            const ox = sr.left + (sr.width - dw) / 2 - dr.left;
+            const oy = sr.top + (sr.height - dh) / 2 - dr.top;
+            const blur = parseFloat(getComputedStyle(dock).fontSize || '16') * 1.2;
+            ctx.scale(dpr, dpr);
+            ctx.filter = `blur(${blur}px)`;
+            ctx.drawImage(img, ox, oy, dw, dh);
+            ctx.filter = 'none';
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.16)';
+            ctx.fillRect(0, 0, dr.width, dr.height);
+        };
+        img.onload = draw;
+        img.src = getWallpaper(wallpaperKey);
+        const ro = new ResizeObserver(draw);
+        ro.observe(dock);
+        draw();
+        return () => {
+            alive = false;
+            ro.disconnect();
+        };
+    }, [wallpaperKey]);
+
+    return <canvas ref={ref} className="hs-dock__glass" />;
+}
 
 const COLS = 4;
 const ROWS = 6;
@@ -139,6 +189,26 @@ export default function HomeScreen() {
     const [folderTarget, setFolderTarget] = useState(null);
     const [swapTarget, setSwapTarget] = useState(null);
     const [swipeDx, setSwipeDx] = useState(0);
+    const [grid, setGrid] = useState(null);
+
+    useLayoutEffect(() => {
+        const el = pagerRef.current;
+        if (!el) return;
+        const measure = () => {
+            const r = el.getBoundingClientRect();
+            const em = parseFloat(getComputedStyle(el).fontSize) || 16;
+            const inset = 1.2 * em;
+            setGrid({
+                inset,
+                tileW: (r.width - 2 * inset) / COLS,
+                tileH: r.height / ROWS,
+            });
+        };
+        measure();
+        const ro = new ResizeObserver(measure);
+        ro.observe(el);
+        return () => ro.disconnect();
+    }, []);
 
     const press = useRef(null);
     const geom = useRef({});
@@ -162,8 +232,8 @@ export default function HomeScreen() {
 
     const beginDrag = (itemId, isFolder, cx, cy) => {
         const g = geom.current.pager;
-        const w = g ? g.width / COLS : 60;
-        const h = g ? g.height / ROWS : 76;
+        const w = grid ? grid.tileW : g ? g.width / COLS : 60;
+        const h = grid ? grid.tileH : g ? g.height / ROWS : 76;
         hover.current = null;
         const { x, y } = cloneXY(cx, cy);
         setDrag({ itemId, isFolder });
@@ -290,7 +360,7 @@ export default function HomeScreen() {
             let d2 = dx;
             const atStart = page === 0,
                 atEnd = page === pages.length - 1;
-            if ((d2 > 0 && atStart) || (d2 < 0 && atEnd)) d2 *= 0.28;
+            if ((d2 > 0 && atStart) || (d2 < 0 && atEnd)) d2 = 0;
             setSwipeDx(d2);
         }
     };
@@ -374,12 +444,22 @@ export default function HomeScreen() {
         const isFolderTarget = folderTarget === itemId;
         const isSwapTarget = swapTarget === itemId && !isFolderTarget;
         const deletable = !isFolder && app && app.deletable;
-        const style =
-            container === 'dock'
-                ? undefined
-                : {
-                      transform: `translate(${(index % COLS) * 100}%, ${Math.floor(index / COLS) * 100}%)`,
-                  };
+        let style;
+        if (container === 'dock') {
+            style = undefined;
+        } else if (grid) {
+            const col = index % COLS;
+            const row = Math.floor(index / COLS);
+            style = {
+                transform: `translate(${Math.round(grid.inset + col * grid.tileW)}px, ${Math.round(row * grid.tileH)}px)`,
+                width: `${Math.round(grid.tileW)}px`,
+                height: `${Math.round(grid.tileH)}px`,
+            };
+        } else {
+            style = {
+                transform: `translate(${(index % COLS) * 100}%, ${Math.floor(index / COLS) * 100}%)`,
+            };
+        }
         return (
             <div
                 key={itemId}
@@ -422,7 +502,7 @@ export default function HomeScreen() {
                 <div className="hs-track" style={trackStyle}>
                     {pages.map((pageArr, pi) => (
                         <div className="hs-page" key={pi}>
-                            {pageArr.map((itemId, idx) => renderTile(itemId, `p:${pi}`, idx))}
+                            {grid && pageArr.map((itemId, idx) => renderTile(itemId, `p:${pi}`, idx))}
                         </div>
                     ))}
                 </div>
@@ -442,6 +522,7 @@ export default function HomeScreen() {
             )}
 
             <div className="hs-dock" ref={dockRef}>
+                <DockGlass />
                 {dock.map((itemId, idx) => renderTile(itemId, 'dock', idx))}
             </div>
 

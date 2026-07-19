@@ -67,7 +67,7 @@ local function addGidToPlayer(number, gid)
         if g == gid then return end
     end
     doc.messages.groupIds[#doc.messages.groupIds + 1] = gid
-    DB.Save(cid, doc)
+    DB.SaveNow(cid, doc)
 end
 
 local function removeGidFromPlayer(number, gid)
@@ -80,7 +80,7 @@ local function removeGidFromPlayer(number, gid)
         if g ~= gid then out[#out + 1] = g end
     end
     doc.messages.groupIds = out
-    DB.Save(cid, doc)
+    DB.SaveNow(cid, doc)
 end
 
 local function indexOfId(items, id)

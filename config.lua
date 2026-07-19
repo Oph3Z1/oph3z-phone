@@ -8,7 +8,7 @@ Config.MySQL = 'oxmysql' -- oxmysql, ghmattimysql, mysql-async
 Config.Inventory = 'ox_inventory' -- ox_inventory, qb-inventory, qs-inventory, codem-inventory
 
 Config.Keybind   = 'F1' -- default key (player can rebind in GTA settings)
-Config.WalkKey   = 'LMENU' -- while the phone is open, tap to toggle "walk mode" (move + use phone). LMENU = Left Alt
+Config.WalkKey   = 'F7' -- while the phone is open, tap to toggle "walk mode" (move + use phone). LMENU = Left Alt
 Config.ItemName  = 'phone'-- ox_inventory item that opens the phone
 Config.RequireItem = false -- If true, the phone can ONLY be opened while the player owns Config.ItemName
 
@@ -66,7 +66,7 @@ Config.Apps = {
     { id = 'settings',   label = 'Settings',   place = 'grid' },
     { id = 'calculator', label = 'Calculator', place = 'grid' },
     { id = 'appstore',   label = 'App Store',  place = 'grid' },
-    -- X is a BUILT-IN app but store-gated: it isn't auto-placed on the home screen.
+    -- For example Twexa is a BUILT-IN app but store-gated: it isn't auto-placed on the home screen.
     -- Players install it from the App Store (and can uninstall it).
     -- `store` = list it in the App Store; the extra fields are its store page.
     {
@@ -136,7 +136,7 @@ Config.Camera = {
     },
     
     fivemanage = {
-        apiKey = '',
+        apiKey = 'MaUggIdxK7oGR98qa7HjRWcFqveBP1pp',
         url = 'https://api.fivemanage.com/api/v3/file',
     }
 }
@@ -149,7 +149,7 @@ Config.Camera = {
 --               into the video by a server-side ffmpeg step. Needs ffmpeg on
 --               the host (VPS / dedicated). A short "Processing" screen shows
 --               after you stop recording while the audio is mixed in.
-Config.VideoAudio = 'nearby'
+Config.VideoAudio = 'self'
 
 -- How far (metres) to gather nearby microphones in 'nearby' mode.
 Config.VideoAudioRange = 12.0
@@ -169,12 +169,12 @@ Config.FFmpegPath = 'ffmpeg'
 
 -- GIFs (Messages)
 Config.Gif = {
-    apiKey = '', -- paste your GIPHY API key here
+    apiKey = 'fbkCoWNVgakEayeG0G9hDALim5pwNWr8', -- paste your GIPHY API key here
 }
 
 -- Music app / Spotify
 Config.Music = {
-    apiKey = '', -- YouTube Data API v3 key: https://console.cloud.google.com
+    apiKey = 'AIzaSyAo41rsOkmsNUV0E--psc7IAmKsVvuan-8', -- YouTube Data API v3 key: https://console.cloud.google.com
     AllowNearby = true, -- let players broadcast to nearby players (in-app speaker toggle)
     NearbyRange = 12.0, -- metres nearby players can hear the music
 }

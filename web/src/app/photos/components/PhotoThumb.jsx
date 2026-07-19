@@ -23,7 +23,7 @@ export default function PhotoThumb({ photo, selectMode, selected, onOpen, onTogg
                     }}
                 />
             ) : (
-                <img className="ph-thumb__media" src={photo.thumb || photo.url} alt="" />
+                <img className="ph-thumb__media" src={photo.thumb || photo.url} alt="" loading="lazy" />
             )}
 
             {photo.type === 'video' && <span className="ph-thumb__dur">{fmtDuration(dur)}</span>}

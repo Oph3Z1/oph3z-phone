@@ -9,7 +9,6 @@
     position: fixed;
     right: 2.5vh;
     bottom: 2.5vh;
-    height: var(--phone-height);
     aspect-ratio: var(--case-aspect);
     z-index: 1;
     filter: drop-shadow(0 1.5vh 3vh rgba(0, 0, 0, 0.55));

@@ -4,17 +4,15 @@
     display: flex;
     flex-direction: column;
     padding: calc(var(--safe-top) + 0.4em) 1.2em 0.55em;
-    animation: home-in 0.32s ease;
+    animation: home-in 0.25s ease-out;
 }
 
 @keyframes home-in {
     from {
         opacity: 0;
-        transform: scale(1.06);
     }
     to {
         opacity: 1;
-        transform: scale(1);
     }
 }
 
@@ -23,6 +21,7 @@
     position: relative;
     min-height: 0;
     overflow: hidden;
+    margin: 0 -1.2em;
 }
 
 .hs-track {
@@ -63,23 +62,40 @@
     cursor: grabbing;
 }
 
-.hs-tile.is-foldertarget .hs-tile__img {
+.hs-tile.is-foldertarget .hs-tile__iconwrap {
     transform: scale(1.35);
+}
+
+.hs-tile.is-foldertarget .hs-tile__img {
     filter: brightness(1.15);
 }
 
-.hs-tile.is-swaptarget .hs-tile__img {
+.hs-tile.is-swaptarget .hs-tile__iconwrap {
     transform: scale(0.86);
+}
+
+.hs-tile.is-swaptarget .hs-tile__img {
     filter: brightness(0.78);
 }
 
-.homescreen:not(.is-editing) .hs-tile:hover .hs-tile__img {
-    transform: translateY(-0.12em) scale(1.05);
-    filter: brightness(1.08);
+.homescreen:not(.is-editing) .hs-tile:hover,
+.hs-folderview .hs-tile:hover {
+    z-index: 2;
+}
+
+.homescreen:not(.is-editing) .hs-tile:hover .hs-tile__img,
+.hs-folderview .hs-tile:hover .hs-tile__img {
+    width: 3.64em;
+    height: 3.64em;
+    margin: -0.12em;
+}
+
+.homescreen:not(.is-editing) .hs-tile:hover .hs-tile__label,
+.hs-folderview .hs-tile:hover .hs-tile__label {
+    font-size: 0.77em;
 }
 
 .homescreen:not(.is-editing) .hs-tile:active .hs-tile__img {
-    transform: scale(0.92);
     filter: brightness(0.95);
 }
 
@@ -90,11 +106,11 @@
     gap: 0.4em;
 }
 
-.hs-tile.is-editing .hs-tile__inner {
+.hs-tile.is-editing .hs-tile__img {
     animation: jiggle 0.26s infinite;
 }
 
-.hs-tile.is-editing:nth-child(2n) .hs-tile__inner {
+.hs-tile.is-editing:nth-child(2n) .hs-tile__img {
     animation-name: jiggle2;
 }
 
@@ -126,18 +142,22 @@
     position: relative;
     display: inline-block;
     line-height: 0;
+    transition: transform 0.16s ease;
 }
 
 .hs-tile__img {
     position: relative;
     width: 3.4em;
     height: 3.4em;
+    margin: 0;
     border-radius: 0.95em;
     overflow: hidden;
     box-shadow: 0 0.15em 0.4em rgba(0, 0, 0, 0.3);
     display: block;
     transition:
-        transform 0.14s ease,
+        width 0.15s ease,
+        height 0.15s ease,
+        margin 0.15s ease,
         filter 0.14s ease;
 }
 
@@ -214,12 +234,14 @@
 
 .hs-tile__label {
     font-size: 0.72em;
+    line-height: 1.3;
     color: #fff;
     text-shadow: 0 0.06em 0.25em rgba(0, 0, 0, 0.5);
     white-space: nowrap;
     max-width: 6.5em;
     overflow: hidden;
     text-overflow: ellipsis;
+    transition: font-size 0.15s ease;
 }
 
 .hs-tile__del {
@@ -300,6 +322,7 @@
 }
 
 .hs-dock {
+    position: relative;
     flex: 0 0 auto;
     display: flex;
     justify-content: space-around;
@@ -308,12 +331,18 @@
     padding: 0.7em 0.9em;
     border-radius: 1.8em;
     background: rgba(255, 255, 255, 0.16);
-    backdrop-filter: blur(1.2em);
-    -webkit-backdrop-filter: blur(1.2em);
+}
+
+.hs-dock__glass {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: inherit;
 }
 
 .hs-tile--dock {
-    position: static;
+    position: relative;
     width: auto;
     height: auto;
     flex: 0 0 auto;
@@ -458,9 +487,4 @@
     width: auto;
     height: auto;
     padding: 0;
-}
-
-.hs-folderview .hs-tile:hover .hs-tile__img {
-    transform: scale(1.06);
-    filter: brightness(1.08);
 }

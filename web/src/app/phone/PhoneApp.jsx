@@ -117,7 +117,9 @@ export default function PhoneApp() {
 
     return (
         <div className="phoneapp">
-            <div className="phoneapp__body">{renderTab()}</div>
+            <div className="phoneapp__body screen-in" key={tab}>
+                {renderTab()}
+            </div>
 
             <nav className="phoneapp__tabbar">
                 {TABS.map(({ id, Icon }) => (

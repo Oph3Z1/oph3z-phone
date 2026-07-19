@@ -1689,3 +1689,17 @@
 .x-auth__switch:hover {
     text-decoration: underline;
 }
+.x-btn,
+.x-iconbtn,
+.x-act {
+    transition: transform 0.12s ease;
+}
+
+.x-btn:active,
+.x-iconbtn:active {
+    transform: scale(0.95);
+}
+
+.x-act:active {
+    transform: scale(0.92);
+}

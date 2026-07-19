@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import Avatar from './Avatar';
 import Bubble from './Bubble';
@@ -69,7 +69,8 @@ export default function Conversation({ number, onBack, onOpenThread }) {
     const conv = useSelector((s) => s.messages.byNumber[number]);
     const selfNumber = digitsOf(useSelector((s) => s.contacts.number));
     const contacts = useSelector((s) => s.contacts.contacts);
-    const shareApps = useSelector((s) => s.apps.external.filter((a) => a.share));
+    const externalApps = useSelector((s) => s.apps.external);
+    const shareApps = useMemo(() => externalApps.filter((a) => a.share), [externalApps]);
     const gallery = useSelector((s) => s.photos.items);
     const draft = useSelector((s) => s.messages.draftAttach[number]);
     const returnProfile = useSelector((s) => s.messages.returnProfile);
@@ -291,7 +292,7 @@ export default function Conversation({ number, onBack, onOpenThread }) {
     const name = conv?.name || number;
 
     return (
-        <div className="msg msg--conv">
+        <div className="msg msg--conv screen-in-side">
             <div className="msg-conv__bar">
                 <button className="msg-conv__back" onClick={handleBack} aria-label="Back">
                     <ChevronLeftIcon />

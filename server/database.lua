@@ -23,8 +23,21 @@ local function isValidId(citizenid)
         and citizenid:match('^[%w:_%-]+$') ~= nil
 end
 
+local docCache  = {}
+local docDirty  = {}
+local docAccess = {}
+
+local FLUSH_INTERVAL = 10000
+local EVICT_AFTER    = 600
+
 function DB.Load(citizenid)
     if not isValidId(citizenid) then return nil end
+
+    local cached = docCache[citizenid]
+    if cached then
+        docAccess[citizenid] = os.time()
+        return cached
+    end
 
     local raw = LoadResourceFile(RESOURCE, filePath(citizenid))
     if not raw or raw == '' then return nil end
@@ -35,23 +48,74 @@ function DB.Load(citizenid)
         return nil
     end
 
+    docCache[citizenid]  = decoded
+    docAccess[citizenid] = os.time()
     return decoded
+end
+
+local function writeDoc(citizenid)
+    local doc = docCache[citizenid]
+    if not doc then return false end
+
+    doc.updatedAt = os.time()
+
+    local encoded = json.encode(doc)
+    local success = SaveResourceFile(RESOURCE, filePath(citizenid), encoded, -1)
+
+    if Config.Debug then
+        print(('[oph3z-phone] DB flush(%s) -> %s'):format(citizenid, tostring(success)))
+    end
+
+    return success == true or success == 1
 end
 
 function DB.Save(citizenid, document)
     if not isValidId(citizenid) or type(document) ~= 'table' then return false end
 
-    document.updatedAt = os.time()
-
-    local encoded = json.encode(document, { indent = true })
-    local success = SaveResourceFile(RESOURCE, filePath(citizenid), encoded, -1)
-
-    if Config.Debug then
-        print(('[oph3z-phone] DB.Save(%s) -> %s'):format(citizenid, tostring(success)))
-    end
-
-    return success == true or success == 1
+    docCache[citizenid]  = document
+    docAccess[citizenid] = os.time()
+    docDirty[citizenid]  = true
+    return true
 end
+
+function DB.SaveNow(citizenid, document)
+    if not isValidId(citizenid) or type(document) ~= 'table' then return false end
+
+    docCache[citizenid]  = document
+    docAccess[citizenid] = os.time()
+    docDirty[citizenid]  = nil
+    return writeDoc(citizenid)
+end
+
+function DB.FlushAll()
+    for cid in pairs(docDirty) do
+        docDirty[cid] = nil
+        writeDoc(cid)
+    end
+end
+
+CreateThread(function()
+    while true do
+        Wait(FLUSH_INTERVAL)
+        DB.FlushAll()
+
+        local now = os.time()
+        for cid, ts in pairs(docAccess) do
+            if not docDirty[cid] and (now - ts) > EVICT_AFTER then
+                docCache[cid]  = nil
+                docAccess[cid] = nil
+            end
+        end
+    end
+end)
+
+AddEventHandler('playerDropped', function()
+    DB.FlushAll()
+end)
+
+AddEventHandler('onResourceStop', function(res)
+    if res == RESOURCE then DB.FlushAll() end
+end)
 
 function DB.LoadOrCreate(citizenid)
     local doc = DB.Load(citizenid)

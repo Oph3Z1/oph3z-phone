@@ -19,11 +19,23 @@
     }
 }
 
+@keyframes alertdlg-pop {
+    from {
+        opacity: 0;
+        transform: scale(0.94);
+    }
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
 .alertdlg__card {
     width: 100%;
     max-width: 16em;
     border-radius: 1.1em;
     overflow: hidden;
+    animation: alertdlg-pop 0.22s cubic-bezier(0.32, 0.72, 0, 1) backwards;
     background: rgba(44, 44, 46, 0.86);
     backdrop-filter: blur(2.2em) saturate(150%);
     -webkit-backdrop-filter: blur(2.2em) saturate(150%);

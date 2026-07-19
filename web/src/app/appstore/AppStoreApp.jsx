@@ -156,7 +156,7 @@ function StoreDetail({ app, installed, onBack }) {
     const t = useT();
     const shots = Array.isArray(app.swiperItems) ? app.swiperItems : [];
     return (
-        <div className="astore astore--detail">
+        <div className="astore astore--detail screen-in-side">
             <div
                 className="astore-detail__header"
                 style={app.headerImage ? { backgroundImage: `url(${app.headerImage})` } : undefined}

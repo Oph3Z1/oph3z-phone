@@ -23,16 +23,41 @@ local function writeFile(name, tbl)
     SaveResourceFile(RESOURCE, ('%s/%s'):format(DIR, name), json.encode(tbl), -1)
 end
 
+local dirtyFiles = {}
+
+local function markDirty(name, tbl)
+    cache[name] = tbl
+    dirtyFiles[name] = true
+end
+
+local function flushFiles()
+    for name in pairs(dirtyFiles) do
+        dirtyFiles[name] = nil
+        if cache[name] then writeFile(name, cache[name]) end
+    end
+end
+
+CreateThread(function()
+    while true do
+        Wait(10000)
+        flushFiles()
+    end
+end)
+
+AddEventHandler('onResourceStop', function(res)
+    if res == RESOURCE then flushFiles() end
+end)
+
 local function accounts() return readFile('accounts.json') end
 local function handles()  return readFile('_handles.json')  end
 local function posts()    return readFile('posts.json')     end
 local function notifs()   return readFile('notifs.json')    end
 local function meta()     return readFile('_meta.json')     end
 
-local function saveAccounts() writeFile('accounts.json', accounts()) end
+local function saveAccounts() markDirty('accounts.json', accounts()) end
 local function saveHandles()  writeFile('_handles.json', handles())  end
-local function savePosts()    writeFile('posts.json', posts())       end
-local function saveNotifs()   writeFile('notifs.json', notifs())     end
+local function savePosts()    markDirty('posts.json', posts())       end
+local function saveNotifs()   markDirty('notifs.json', notifs())     end
 local function saveMeta()     writeFile('_meta.json', meta())        end
 
 local function nextId(key)

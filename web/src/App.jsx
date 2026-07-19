@@ -66,6 +66,23 @@ export default function App() {
         const dt = translations?.[language]?.datetime || translations?.en?.datetime || null;
         setDateNames(dt);
     }, [translations, language]);
+
+    useEffect(() => {
+        const FADE_ANIMS = [
+            'screen-in',
+            'screen-in-side',
+            'phone-app-in',
+            'home-in',
+            'x-post-in',
+            'alertdlg-pop',
+            'inputdlg-pop',
+        ];
+        const onEnd = (e) => {
+            if (FADE_ANIMS.includes(e.animationName)) e.target.style.animation = 'none';
+        };
+        document.addEventListener('animationend', onEnd);
+        return () => document.removeEventListener('animationend', onEnd);
+    }, []);
     const callState = useSelector((s) => s.call.state);
     const callStateRef = useRef(callState);
     callStateRef.current = callState;

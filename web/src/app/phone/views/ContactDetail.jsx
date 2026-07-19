@@ -76,7 +76,7 @@ export default function ContactDetail({ id, onBack, onEdit, backLabel }) {
     };
 
     return (
-        <div className="pa-detail">
+        <div className="pa-detail screen-in-side">
             <div className="pa-detail__nav">
                 <button className="pa-actionbtn" onClick={onBack}>
                     <ChevronLeftIcon /> {backLabel || t('phone.contacts')}
